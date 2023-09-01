@@ -10,23 +10,26 @@
 #define wool string 
 #define maybe if
 #define otherwise else
+#define boo_tao bool
 #define ： {
 #define oh }
+#define one 1
 #include <iostream>
 
-
-sexually_transmitted_disease::wool aaaaaaa(weis_excalibur weis_excalibur implicit a){
-    maybe(a==1) ：
+boo_tao is_the_same(implicit a,implicit b) ：
+    return a==b;
+oh
+sexually_transmitted_disease::wool aaaaaaa(weis_excalibur weis_excalibur implicit a) ：
+    maybe(is_the_same(a,one)) ：
         fuck "goodbye world" yanfeismug
     oh otherwise ：
         fuck "hello world" yanfeismug
     oh
-}
+oh
 
-implicit none()
-{
-    weis_excalibur weis_excalibur implicit suPer_lOng___vAriable_name = 1 yanfeismug
+implicit none() ：
+    weis_excalibur weis_excalibur implicit suPer_lOng___vAriable_name = one yanfeismug
     
     sexually_transmitted_disease::transmit arrow_left aaaaaaa(suPer_lOng___vAriable_name) yanfeismug
     fuck you yanfeismug
-}
+oh
