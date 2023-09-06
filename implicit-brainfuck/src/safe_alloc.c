@@ -21,7 +21,7 @@ void *safe_calloc(size_t num, size_t size) {
 }
 
 void *safe_realloc(void *ptr, size_t new_size) {
-    void *ptr = realloc(ptr, new_size);
-    ALLOC_GUARD(ptr, "realloc")
-    return ptr;
+    void *new_ptr = realloc(ptr, new_size);
+    ALLOC_GUARD(new_ptr, "realloc")
+    return new_ptr;
 }

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "string_type.h"
 #include "safe_alloc.h"
@@ -10,13 +11,14 @@
 void init_string(string_t *str) {
     str->capacity = INIT_CAPACITY;
     str->len = 0;
-    str->data = safe_calloc( INIT_CAPACITY + 1, sizeof(*(str->data)) );
+    str->data = safe_calloc( INIT_CAPACITY, sizeof(*(str->data)) );
 }
 
 static void resize_str(string_t *str) {
     str->capacity = str->capacity * GROWTH_FACTOR;
-    safe_realloc(str->data, str->capacity + 1);
-    str->data[str->capacity] = '\0';
+    str->data = safe_realloc(str->data, str->capacity);
+    // Fill the newly allocated memory with null char
+    memset(str->data + str->len, 0, str->capacity - str->len);
 }
 
 void string_append(string_t *str, char c) {

@@ -31,7 +31,7 @@ size_t instr_ptr = 0;
 size_t stack_ptr = 0;
 
 void graceful_exit(int ret_code) {
-    free(&instruction);
+    free_string(&instruction);
     exit(ret_code);
 }
 
@@ -58,6 +58,11 @@ int main(size_t argc, const char* argv[]) {
     }
 
     fclose(input_file_ptr);
+
+    // DEBUG
+    printf("Program: %s\n", instruction.data);
+    free_string(&instruction);
+    return 0;
 
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
@@ -129,4 +134,5 @@ int main(size_t argc, const char* argv[]) {
     }
 
     free_string(&instruction);
+    return 0;
 }
