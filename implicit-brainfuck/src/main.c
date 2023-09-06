@@ -19,8 +19,8 @@
 /* Pre-increment operator with wrap-around through modulo operation*/
 #define PRE_INC_MOD(n, max) (n + 1) % max
 
-#define MAX_MEMORY_SIZE 1024
-#define MAX_STACK_SIZE 1024
+#define MAX_MEMORY_SIZE 65536
+#define MAX_STACK_SIZE 65536
 
 const char *valid_char = "+-<>.,[]";
 
