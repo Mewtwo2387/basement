@@ -24,7 +24,7 @@
 
 const char *valid_char = "+-<>.,[]";
 
-char data[MAX_MEMORY_SIZE] = { '\0' };
+unsigned char data[MAX_MEMORY_SIZE] = { '\0' };
 string_t instruction;
 size_t stack[MAX_STACK_SIZE] = { (size_t)0 };
 
