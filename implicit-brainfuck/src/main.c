@@ -59,11 +59,6 @@ int main(size_t argc, const char* argv[]) {
 
     fclose(input_file_ptr);
 
-    // DEBUG
-    printf("Program: %s\n", instruction.data);
-    free_string(&instruction);
-    return 0;
-
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
         c = instruction.data[instr_ptr];
