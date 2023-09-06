@@ -16,6 +16,9 @@
 
 #include "string_type.h"
 
+/* Pre-increment operator with wrap-around through modulo operation*/
+#define PRE_INC_MOD(n, max) (n + 1) % max
+
 #define MAX_MEMORY_SIZE 1024
 #define MAX_STACK_SIZE 1024
 
@@ -70,7 +73,8 @@ int main(size_t argc, const char* argv[]) {
                 // Skip the entire loop if 0
                 int bracket_lvl = 1;
                 while (instr_ptr < instruction.len && bracket_lvl > 0) {
-                    c = instruction.data[++instr_ptr];
+                    instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
+                    c = instruction.data[instr_ptr];
                     if (c == '[')
                         ++bracket_lvl;
                     if (c == ']')
@@ -85,12 +89,13 @@ int main(size_t argc, const char* argv[]) {
                     fprintf(stderr, "stack overflow!\n");
                     graceful_exit(1);
                 }
-                stack[stack_ptr++] = ++instr_ptr;
+                instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
+                stack[stack_ptr++] = instr_ptr;
             }
             continue;
         case ']':
             if (data[data_ptr] == 0) {
-                ++instr_ptr;
+                instr_ptr = (instr_ptr + 1) % MAX_MEMORY_SIZE;
             } else {
                 if (stack_ptr == 0) {
                     fprintf(stderr, "stack underflow!\n");
@@ -125,7 +130,7 @@ int main(size_t argc, const char* argv[]) {
             fprintf(stderr, "you fucking broke it, didnt ya?\n");
             graceful_exit(1);
         }
-        ++instr_ptr;
+        instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
     }
 
     free_string(&instruction);
