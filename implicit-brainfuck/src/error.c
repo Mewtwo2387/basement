@@ -19,20 +19,23 @@ static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
                  highest possible values which SHOULD be greater than `size`,
                  the array size.
         */ 
-        if ((pos + i) < size) {
+        if ((pos + i) < size)
             fprintf(stderr, (datum_as_char)? "%c " : "%3.3i ", arr[pos + i]);
-        } else if (!datum_as_char) {
+        else if (!datum_as_char)
             fprintf(stderr, "??? ");
-        }
     }
     fprintf(stderr, "\n");
 
     /* Print the position indicator */
     for (int i = loffset; i < roffset; ++i) {
-        if (i == 0)
+        if (i == 0) {
             fprintf(stderr, (datum_as_char)? "^ " : "^^^ ");
-        else 
-            fprintf(stderr, (datum_as_char)? "  " : "    ");
+        } else {
+            if ((pos + i) < size)
+                fprintf(stderr, (datum_as_char)? "  " : "    ");
+            else if (!datum_as_char)
+                fprintf(stderr, "    ");
+        }
     }
     fprintf(stderr, "\n");
 }
