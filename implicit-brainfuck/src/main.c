@@ -113,15 +113,16 @@ int main(size_t argc, const char* argv[]) {
         case '[':
             if (data[data_ptr] == 0) {
                 // Skip the entire loop if 0
-                int bracket_lvl = 1;
-                while (instr_ptr < instruction.len && bracket_lvl > 0) {
+                int bracket_lvl = 0;
+                
+                while ( !(bracket_lvl == 1 && c == ']') ) {
+                    if (c == '[') ++bracket_lvl;
+                    if (c == ']') --bracket_lvl;
+
                     instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
                     c = instruction.data[instr_ptr];
-                    if (c == '[')
-                        ++bracket_lvl;
-                    if (c == ']')
-                        --bracket_lvl;
                 }
+
                 if (instr_ptr == instruction.len && bracket_lvl > 0) {
                     fprintf(stderr, "mismatched bracket pairs!\n");
                     graceful_exit(1);
@@ -131,18 +132,19 @@ int main(size_t argc, const char* argv[]) {
                     fprintf(stderr, "stack overflow!\n");
                     graceful_exit(1);
                 }
-                instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
                 stack[stack_ptr++] = instr_ptr;
             }
+            instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
             continue;
         case ']':
+            if (stack_ptr == 0) {
+                fprintf(stderr, "stack underflow!\n");
+                graceful_exit(1);
+            }
             if (data[data_ptr] == 0) {
                 instr_ptr = (instr_ptr + 1) % MAX_MEMORY_SIZE;
+                --stack_ptr;
             } else {
-                if (stack_ptr == 0) {
-                    fprintf(stderr, "stack underflow!\n");
-                    graceful_exit(1);
-                }
                 instr_ptr = stack[stack_ptr - 1];
             }
             continue;
