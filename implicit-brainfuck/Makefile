@@ -12,10 +12,10 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -g -lm -fsanitize=address -std=c11
+CPPFLAGS ?= $(INC_FLAGS) -g -fsanitize=address -std=c11
 
 $(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) -lm -fsanitize=address -std=c11	
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) -fsanitize=address -std=c11	
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s
