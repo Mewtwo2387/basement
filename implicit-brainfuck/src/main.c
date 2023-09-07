@@ -106,10 +106,34 @@ int main(size_t argc, const char* argv[]) {
 
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
-        c = instruction.data[instr_ptr];
+        if (instr_ptr >= instruction.len) {
+            fprintf(stderr, "(instruction) buffer overflow!\n");
+            graceful_exit(1);
+        }
+        if (data_ptr >= MAX_MEMORY_SIZE) {
+            fprintf(stderr, "(data) buffer overflow!\n");
+            graceful_exit(1);
+        }
 
-        /* Stack manipulating instructions */
-        switch (c) {
+        switch ( (c = instruction.data[instr_ptr]) ) {
+        case '+':
+            ++data[data_ptr];
+            break;
+        case '-':
+            --data[data_ptr];
+            break;
+        case '>':
+            ++data_ptr;
+            break;
+        case '<':
+            --data_ptr;
+            break;
+        case '.':
+            putc(data[data_ptr], stdout);
+            break;
+        case ',':
+            data[data_ptr] = getc(stdin);
+            break;
         case '[':
             if (data[data_ptr] == 0) {
                 // Skip the entire loop if 0
@@ -134,8 +158,7 @@ int main(size_t argc, const char* argv[]) {
                 }
                 stack[stack_ptr++] = instr_ptr;
             }
-            instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
-            continue;
+            break;
         case ']':
             if (stack_ptr == 0) {
                 fprintf(stderr, "stack underflow!\n");
@@ -148,28 +171,6 @@ int main(size_t argc, const char* argv[]) {
                 instr_ptr = stack[stack_ptr - 1];
             }
             continue;
-        }
-
-        /* Data manipulating instructions */
-        switch (c) {
-        case '+':
-            ++data[data_ptr];
-            break;
-        case '-':
-            --data[data_ptr];
-            break;
-        case '>':
-            ++data_ptr;
-            break;
-        case '<':
-            --data_ptr;
-            break;
-        case '.':
-            putc(data[data_ptr], stdout);
-            break;
-        case ',':
-            data[data_ptr] = getc(stdin);
-            break;
         default:
             fprintf(stderr, "you fucking broke it, didnt ya?\n");
             graceful_exit(1);
