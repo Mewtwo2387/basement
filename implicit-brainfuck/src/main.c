@@ -170,13 +170,12 @@ int main(size_t argc, const char* argv[]) {
             if (stack_ptr == 0)
                 throw_error(STACK_UNDERFLOW, get_memory_snapshot(), NULL, true);
 
-            if (data[data_ptr] == 0) {
-                instr_ptr = (instr_ptr + 1) % MAX_MEMORY_SIZE;
+            if (data[data_ptr] == 0)
                 --stack_ptr;
-            } else {
+            else
                 instr_ptr = stack[stack_ptr - 1];
-            }
-            continue;
+
+            break;
         default:
             throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
                         false);
