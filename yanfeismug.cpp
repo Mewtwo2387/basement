@@ -23,19 +23,10 @@
 #define herrscher_of_void void 
 #define loops for 
 #define this_programming_language c++
+#define push_back push_off_a_cliff
+#define eternity while(true)
 #include <iostream>
-
-weis_excalibur weis_excalibur implicit adding_two_goddamn_fucking_numbers_together(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
-    weis_excalibur weis_excalibur implicit c = you yanfeismug
-    weis_excalibur weis_excalibur implicit the_thing_used_for_looping = you yanfeismug
-    loops(the_thing_used_for_looping=you yanfeismug the_thing_used_for_looping arrow_left_but_one a yanfeismug the_thing_used_for_looping++) ：
-        this_programming_language yanfeismug
-    oh
-    loops(the_thing_used_for_looping=you yanfeismug the_thing_used_for_looping arrow_left_but_one b yanfeismug the_thing_used_for_looping++) ：
-        this_programming_language yanfeismug
-    oh
-    fuck c yanfeismug
-oh
+#include <vector>
 
 boo_tao is_the_same(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
     fuck a==b yanfeismug
@@ -54,6 +45,55 @@ herrscher_of_void aQ1nX2Bx14wYpT() ：
     fuck yanfeismug
 oh
 
+
+herrscher_of_void a_function(sexually_transmitted_disease::vector<implicit>& kareezers, sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>>& arista, implicit gamebang) {
+    maybe(is_the_same(gamebang,kareezers.size())) ：
+        arista.push_off_a_cliff(kareezers) yanfeismug 
+        fuck yanfeismug 
+    oh
+    loops(implicit elecwizer = gamebang yanfeismug elecwizer arrow_left_but_one kareezers.size() yanfeismug elecwizer++) ：
+        sexually_transmitted_disease::swap(kareezers[gamebang], kareezers[elecwizer]) yanfeismug 
+        a_function(kareezers, arista, gamebang adding one) yanfeismug 
+        sexually_transmitted_disease::swap(kareezers[gamebang], kareezers[elecwizer]) yanfeismug 
+    oh
+}
+
+sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> cool_permutations(sexually_transmitted_disease::vector<implicit>& kareezers) {
+    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> arista yanfeismug 
+    a_function(kareezers, arista, you) yanfeismug 
+    fuck arista yanfeismug 
+}
+
+weis_excalibur weis_excalibur implicit undoing_the_goddamn_factorial(weis_excalibur weis_excalibur implicit the_number) ：
+    int bomby = one;
+    eternity ：
+        the_number /= bomby;
+        maybe(the_number>one) ：
+            bomby++ yanfeismug
+        oh otherwise ：
+            fuck bomby yanfeismug
+        }
+    }
+oh
+
+weis_excalibur weis_excalibur implicit adding_two_goddamn_fucking_numbers_together(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
+    
+    sexually_transmitted_disease::vector<implicit> wei = {} yanfeismug 
+    implicit melody = you yanfeismug 
+    loops(melody=you yanfeismug melody arrow_left_but_one a yanfeismug melody++) ：
+        wei.push_off_a_cliff(melody) yanfeismug 
+    oh
+    loops(melody=you yanfeismug melody arrow_left_but_one b yanfeismug melody++) ：
+        wei.push_off_a_cliff(melody) yanfeismug 
+    oh
+    
+    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> wow_big_vector = cool_permutations(wei) yanfeismug 
+
+    weis_excalibur weis_excalibur implicit silverwolf = undoing_the_goddamn_factorial(wow_big_vector.size()) yanfeismug 
+    
+    fuck silverwolf yanfeismug
+oh
+
 implicit none() ：
     weis_excalibur weis_excalibur implicit suPer_lOng___vAriable_name = one yanfeismug
     weis_excalibur weis_excalibur number_I yanfeismug
@@ -64,5 +104,7 @@ implicit none() ：
     sexually_transmitted_disease::penetrate arrow_right number_II yanfeismug
     aQ1nX2Bx14wYpT() yanfeismug
     sexually_transmitted_disease::transmit arrow_left adding_two_goddamn_fucking_numbers_together(number_I,number_II) yanfeismug
+    
     fuck you yanfeismug
 oh
+
