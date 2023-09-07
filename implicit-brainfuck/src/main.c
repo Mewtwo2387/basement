@@ -1,16 +1,24 @@
-/*
-    AUTHOR: ImplicitNull
+/******************************************************************************
+            Yet ANother brainFuck intErpreter! (YANFE!)
+                by: ImplicitNull (a.k.a. implicit none)
 
-    A Brainfuck implementation. I have set the memory size to 1024, but it
-    could be increased since the original description calls for "infinite"
-    memory.
+    A Brainfuck implementation. Pronounced as /yan.fei/. One thing to note here
+    is that I set the memory size to 2^16 instead of the more common 30,000 to
+    accomodate certain Brainfuck codes.
 
-    NOTE: THIS SHIT IS NOT YET TESTED. COMPILE AT YOUR RISK.
-            IF THIS BRICKS YOUR PC, THAT AINT MY FAULT.
-*/
+    Another version of YANFE! is in the works which uses dynamic arrays which
+    can allocate indefinite amount of memory in a futile attempt to mimic the
+    infinite memory of a Universal Turing Machine.
+
+    Thanks to `Ei`, a fellow contributor, its agreed upon name is
+
+        Yet ANother brainFuck intErpreter! - Super Memory Usage proGram
+    or
+        YANFE!SMUG
+
+*******************************************************************************/
 
 #include <stdio.h>
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
