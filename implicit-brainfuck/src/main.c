@@ -13,8 +13,12 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "string_type.h"
+#include "memory_type.h"
+#include "error.h"
 
 /* Pre-increment operator with wrap-around through modulo operation*/
 #define PRE_INC_MOD(n, max) (n + 1) % max
@@ -24,9 +28,9 @@
 
 const char *valid_char = "+-<>.,[]";
 
-unsigned char data[MAX_MEMORY_SIZE] = { '\0' };
+uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
 string_t instruction;
-size_t stack[MAX_STACK_SIZE] = { (size_t)0 };
+size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
 
 /* Pointers */
 size_t data_ptr  = 0;
@@ -38,9 +42,9 @@ const char *dmpmem_cmd_short = "-d";
 const char *dmpmem_cmd_long  = "--dump-mem";
 const char *data_dump_name   = "datadump";
 const char *stack_dump_name  = "stackdump";
-int to_dump_memory = 0;
+bool to_dump_memory_to_file = false;
 
-void dump_memory() {
+void dump_memory_to_file() {
     FILE *data_dump_fp, *stack_dump_fp;
     data_dump_fp = fopen(data_dump_name, "wb");
     stack_dump_fp = fopen(stack_dump_name, "wb");
@@ -52,18 +56,28 @@ void dump_memory() {
     fclose(stack_dump_fp);
 }
 
-void graceful_exit(int ret_code) {
-    free_string(&instruction);
-    if (to_dump_memory)
-        dump_memory();
-    exit(ret_code);
+struct memory get_memory_snapshot() {
+    struct memory memory_snapshot = {
+        .data=data,
+        .data_size=MAX_MEMORY_SIZE,
+        .data_ptr=data_ptr,
+
+        .instruction=(&instruction),
+        .instr_ptr=instr_ptr,
+
+        .stack=stack,
+        .stack_size=MAX_STACK_SIZE,
+        .stack_ptr=stack_ptr
+    };
+
+    return memory_snapshot;
 }
 
 int main(size_t argc, const char* argv[]) {
     if (argc == 1) {
         fprintf(
             stderr,
-            "no input file, dumbass\n\n"
+            "no input file\n\n"
             "USAGE: %s INPUT-FILE [-d/--dump-mem]\n\n"
             "OPTIONS:\n"
             "    INPUT-FILE\n"
@@ -78,10 +92,8 @@ int main(size_t argc, const char* argv[]) {
     }
 
     FILE *input_file_ptr = fopen(argv[1], "r");
-    if (input_file_ptr == NULL) {
-        fprintf(stderr, "cant read this shit: \"%s\"\n", argv[1]);
-        return 1;
-    }
+    if (input_file_ptr == NULL)
+        throw_error(FILE_READ_FAILED, (struct memory){ 0 }, NULL, false);
 
     if (   argc >= 3
         && (
@@ -89,7 +101,7 @@ int main(size_t argc, const char* argv[]) {
                 || !strcmp(argv[2], dmpmem_cmd_long)
            )
     ) {
-        to_dump_memory = 1;            
+        to_dump_memory_to_file = true;            
     }
 
     init_string(&instruction);
@@ -97,23 +109,18 @@ int main(size_t argc, const char* argv[]) {
     /* Read and filter out non-valid characters */
     char c;
     while ( fread(&c, 1, 1, input_file_ptr) ) {
-        if ( strchr(valid_char, c) != NULL ) {
+        if ( strchr(valid_char, c) != NULL )
             string_append(&instruction, c);
-        }
     }
 
     fclose(input_file_ptr);
 
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
-        if (instr_ptr >= instruction.len) {
-            fprintf(stderr, "(instruction) buffer overflow!\n");
-            graceful_exit(1);
-        }
-        if (data_ptr >= MAX_MEMORY_SIZE) {
-            fprintf(stderr, "(data) buffer overflow!\n");
-            graceful_exit(1);
-        }
+        if (instr_ptr >= instruction.len)
+            throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true);
+        if (data_ptr >= MAX_MEMORY_SIZE)
+            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true);
 
         switch ( (c = instruction.data[instr_ptr]) ) {
         case '+':
@@ -147,23 +154,22 @@ int main(size_t argc, const char* argv[]) {
                     c = instruction.data[instr_ptr];
                 }
 
-                if (instr_ptr == instruction.len && bracket_lvl > 0) {
-                    fprintf(stderr, "mismatched bracket pairs!\n");
-                    graceful_exit(1);
-                }
+                if (instr_ptr == instruction.len && bracket_lvl > 0)
+                    throw_error(SYNTAX_ERROR, get_memory_snapshot(),
+                                "Unbalanced brackets.", false);
+
             } else {
-                if (stack_ptr == MAX_STACK_SIZE) {
-                    fprintf(stderr, "stack overflow!\n");
-                    graceful_exit(1);
-                }
+                if (stack_ptr == MAX_STACK_SIZE)
+                    throw_error(STACK_OVERFLOW, get_memory_snapshot(), NULL,
+                                true);
+
                 stack[stack_ptr++] = instr_ptr;
             }
             break;
         case ']':
-            if (stack_ptr == 0) {
-                fprintf(stderr, "stack underflow!\n");
-                graceful_exit(1);
-            }
+            if (stack_ptr == 0)
+                throw_error(STACK_UNDERFLOW, get_memory_snapshot(), NULL, true);
+
             if (data[data_ptr] == 0) {
                 instr_ptr = (instr_ptr + 1) % MAX_MEMORY_SIZE;
                 --stack_ptr;
@@ -172,14 +178,16 @@ int main(size_t argc, const char* argv[]) {
             }
             continue;
         default:
-            fprintf(stderr, "you fucking broke it, didnt ya?\n");
-            graceful_exit(1);
+            throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
+                        false);
         }
         instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
     }
 
+    /* Wrap up */
     free_string(&instruction);
-    if (to_dump_memory)
-        dump_memory();
+    if (to_dump_memory_to_file)
+        dump_memory_to_file();
+
     return 0;
 }
