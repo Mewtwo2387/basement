@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include "safe_alloc.h"
 
-#define ALLOC_GUARD(ptr, name)               \
-    if (ptr == NULL) {                       \
-        fprintf(stderr, "%s failed.", name); \
-        exit(1);                             \
+#define ALLOC_GUARD(ptr, name)                                  \
+    if (ptr == NULL) {                                          \
+        fprintf(stderr, "<Internal error: %s failed>\n", name); \
+        exit(EXIT_FAILURE);                                     \
     }
 
 void *safe_malloc(size_t size) {
