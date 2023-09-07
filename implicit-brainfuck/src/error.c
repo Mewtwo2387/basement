@@ -90,12 +90,12 @@ void throw_error(
         exit(EXIT_FAILURE);
     
     /* Print the program data around the current data pointer */
-    fprintf(stderr, "%s\nData pointer @%ld\n", divider, mem_snapshot.data_ptr);
+    fprintf(stderr, "%s\nData pointer @%lu\n", divider, mem_snapshot.data_ptr);
     print_memory(mem_snapshot.data, mem_snapshot.data_size,
                  mem_snapshot.data_ptr, -8, 8, false);
 
     /* Print the instruction around the current instruction pointer */
-    fprintf(stderr, "%s\nInstruction pointer @%ld\n",
+    fprintf(stderr, "%s\nInstruction pointer @%lu\n",
             divider, mem_snapshot.instr_ptr);
     print_memory(mem_snapshot.instruction->data, mem_snapshot.instruction->len,
                  mem_snapshot.instr_ptr, -8, 8, true);
