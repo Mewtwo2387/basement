@@ -20,7 +20,7 @@
 #define PRE_INC_MOD(n, max) (n + 1) % max
 
 #define MAX_MEMORY_SIZE 65536
-#define MAX_STACK_SIZE 65536
+#define MAX_STACK_SIZE 1024
 
 const char *valid_char = "+-<>.,[]";
 
@@ -33,14 +33,47 @@ size_t data_ptr  = 0;
 size_t instr_ptr = 0;
 size_t stack_ptr = 0;
 
+/* Command Line Options */
+const char *dmpmem_cmd_short = "-d";
+const char *dmpmem_cmd_long  = "--dump-mem";
+const char *data_dump_name   = "datadump";
+const char *stack_dump_name  = "stackdump";
+int to_dump_memory = 0;
+
+void dump_memory() {
+    FILE *data_dump_fp, *stack_dump_fp;
+    data_dump_fp = fopen(data_dump_name, "wb");
+    stack_dump_fp = fopen(stack_dump_name, "wb");
+
+    fwrite(data, sizeof(*data), MAX_MEMORY_SIZE, data_dump_fp);
+    fwrite(stack, sizeof(*stack), MAX_STACK_SIZE, stack_dump_fp);
+
+    fclose(data_dump_fp);
+    fclose(stack_dump_fp);
+}
+
 void graceful_exit(int ret_code) {
     free_string(&instruction);
+    if (to_dump_memory)
+        dump_memory();
     exit(ret_code);
 }
 
 int main(size_t argc, const char* argv[]) {
     if (argc == 1) {
-        fprintf(stderr, "help yourself :yanfeismug:\n");
+        fprintf(
+            stderr,
+            "no input file, dumbass\n\n"
+            "USAGE: %s input-file [-d/--dump-mem]\n\n"
+            "OPTIONS:\n"
+            "    input-file\n"
+            "        Path to the input Brainfuck file.\n\n"
+            "    -d, --dump-mem\n"
+            "        Dump the contents of 'data' and 'stack' to "
+            "files '%s' and '%s' respectively in the current directory.\n"
+            "        By default, this is toggled off.\n",
+            argv[0], data_dump_name, stack_dump_name
+        );
         return 1;
     }
 
@@ -48,6 +81,15 @@ int main(size_t argc, const char* argv[]) {
     if (input_file_ptr == NULL) {
         fprintf(stderr, "cant read this shit: \"%s\"\n", argv[1]);
         return 1;
+    }
+
+    if (   argc >= 3
+        && (
+                   !strcmp(argv[2], dmpmem_cmd_short)
+                || !strcmp(argv[2], dmpmem_cmd_long)
+           )
+    ) {
+        to_dump_memory = 1;            
     }
 
     init_string(&instruction);
@@ -134,5 +176,7 @@ int main(size_t argc, const char* argv[]) {
     }
 
     free_string(&instruction);
+    if (to_dump_memory)
+        dump_memory();
     return 0;
 }
