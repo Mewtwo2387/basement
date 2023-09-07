@@ -46,20 +46,20 @@ herrscher_of_void aQ1nX2Bx14wYpT() ：
 oh
 
 
-herrscher_of_void a_function(sexually_transmitted_disease::vector<implicit>& kareezers, sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>>& arista, implicit gamebang) {
+herrscher_of_void a_function(sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>& kareezers, sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>>& arista, weis_excalibur weis_excalibur implicit gamebang) {
     maybe(is_the_same(gamebang,kareezers.size())) ：
         arista.push_off_a_cliff(kareezers) yanfeismug 
         fuck yanfeismug 
     oh
-    loops(implicit elecwizer = gamebang yanfeismug elecwizer arrow_left_but_one kareezers.size() yanfeismug elecwizer++) ：
+    loops(weis_excalibur weis_excalibur implicit elecwizer = gamebang yanfeismug elecwizer arrow_left_but_one kareezers.size() yanfeismug elecwizer++) ：
         sexually_transmitted_disease::swap(kareezers[gamebang], kareezers[elecwizer]) yanfeismug 
         a_function(kareezers, arista, gamebang adding one) yanfeismug 
         sexually_transmitted_disease::swap(kareezers[gamebang], kareezers[elecwizer]) yanfeismug 
     oh
 }
 
-sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> cool_permutations(sexually_transmitted_disease::vector<implicit>& kareezers) {
-    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> arista yanfeismug 
+sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>> cool_permutations(sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>& kareezers) {
+    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>> arista yanfeismug 
     a_function(kareezers, arista, you) yanfeismug 
     fuck arista yanfeismug 
 }
@@ -78,8 +78,8 @@ oh
 
 weis_excalibur weis_excalibur implicit adding_two_goddamn_fucking_numbers_together(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
     
-    sexually_transmitted_disease::vector<implicit> wei = {} yanfeismug 
-    implicit melody = you yanfeismug 
+    sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit> wei = {} yanfeismug 
+    weis_excalibur weis_excalibur implicit melody = you yanfeismug 
     loops(melody=you yanfeismug melody arrow_left_but_one a yanfeismug melody++) ：
         wei.push_off_a_cliff(melody) yanfeismug 
     oh
@@ -87,7 +87,7 @@ weis_excalibur weis_excalibur implicit adding_two_goddamn_fucking_numbers_togeth
         wei.push_off_a_cliff(melody) yanfeismug 
     oh
     
-    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<implicit>> wow_big_vector = cool_permutations(wei) yanfeismug 
+    sexually_transmitted_disease::vector<sexually_transmitted_disease::vector<weis_excalibur weis_excalibur implicit>> wow_big_vector = cool_permutations(wei) yanfeismug 
 
     weis_excalibur weis_excalibur implicit silverwolf = undoing_the_goddamn_factorial(wow_big_vector.size()) yanfeismug 
     
