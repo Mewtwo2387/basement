@@ -1,3 +1,7 @@
+# Makefile for C/C++ projects
+# Source: https://spin.atomicobject.com/2016/08/26/makefile-c-projects/
+#         (accessed 8 September 2023)
+
 TARGET_EXEC ?= brainfuck
 
 BUILD_DIR ?= ./obj
