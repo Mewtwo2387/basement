@@ -4,6 +4,7 @@
 #define transmit cout
 #define penetrate cin
 #define arrow_left <<
+#define arrow_left_but_one <
 #define arrow_right >>
 #define fuck return
 #define you 0
@@ -20,12 +21,20 @@
 #define unadding -
 #define kys endl
 #define herrscher_of_void void 
+#define loops for 
+#define this_programming_language c++
 #include <iostream>
 
 weis_excalibur weis_excalibur implicit adding_two_goddamn_fucking_numbers_together(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
     weis_excalibur weis_excalibur implicit c = you yanfeismug
-    c = a adding b unadding a adding b unadding b yanfeismug
-    fuck c adding a yanfeismug
+    weis_excalibur weis_excalibur implicit the_thing_used_for_looping = you yanfeismug
+    loops(the_thing_used_for_looping=you yanfeismug the_thing_used_for_looping arrow_left_but_one a yanfeismug the_thing_used_for_looping++) ：
+        this_programming_language yanfeismug
+    oh
+    loops(the_thing_used_for_looping=you yanfeismug the_thing_used_for_looping arrow_left_but_one b yanfeismug the_thing_used_for_looping++) ：
+        this_programming_language yanfeismug
+    oh
+    fuck c yanfeismug
 oh
 
 boo_tao is_the_same(weis_excalibur weis_excalibur implicit a, weis_excalibur weis_excalibur implicit b) ：
