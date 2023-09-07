@@ -64,9 +64,9 @@ int main(size_t argc, const char* argv[]) {
         fprintf(
             stderr,
             "no input file, dumbass\n\n"
-            "USAGE: %s input-file [-d/--dump-mem]\n\n"
+            "USAGE: %s INPUT-FILE [-d/--dump-mem]\n\n"
             "OPTIONS:\n"
-            "    input-file\n"
+            "    INPUT-FILE\n"
             "        Path to the input Brainfuck file.\n\n"
             "    -d, --dump-mem\n"
             "        Dump the contents of 'data' and 'stack' to "
