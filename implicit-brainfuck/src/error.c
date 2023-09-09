@@ -3,6 +3,13 @@
 #include <string.h>
 #include "error.h"
 
+/*  ANSI Color codes
+    Source:
+        https://gist.github.com/RabaDabaDoba/145049536f815903c79944599c6f952a
+*/ 
+#define ANSI_RED "\e[0;31m"
+#define COLOR_RESET "\e[0m"
+
 const char *divider = 
     "===================="
     "===================="
@@ -46,7 +53,7 @@ void throw_error(
     const char *add_msg,
     bool to_print_memory)
 {
-    fprintf(stderr, "ERROR: ");
+    fprintf(stderr, ANSI_RED "ERROR: ");
     switch (error_type) {
     case FILE_READ_FAILED:
         fprintf(stderr, "File read error\n");
@@ -88,6 +95,9 @@ void throw_error(
 
     if (add_msg != NULL && strlen(add_msg) > 0)
         fprintf(stderr, "%s\n", add_msg);
+    
+    // Reset color
+    fprintf(stderr, COLOR_RESET);
 
     if (!to_print_memory)
         exit(EXIT_FAILURE);
