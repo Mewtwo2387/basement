@@ -28,9 +28,6 @@
 #include "memory_type.h"
 #include "error.h"
 
-/* Pre-increment operator with wrap-around through modulo operation*/
-#define PRE_INC_MOD(n, max) (n + 1) % max
-
 #define MAX_MEMORY_SIZE 65536
 #define MAX_STACK_SIZE 1024
 
@@ -160,8 +157,7 @@ int main(size_t argc, const char* argv[]) {
                     if (c == '[') ++bracket_lvl;
                     if (c == ']') --bracket_lvl;
 
-                    instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
-                    c = instruction.data[instr_ptr];
+                    c = instruction.data[++instr_ptr];
                 }
 
                 if (instr_ptr == instruction.len && bracket_lvl > 0)
@@ -190,7 +186,7 @@ int main(size_t argc, const char* argv[]) {
             throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
                         false);
         }
-        instr_ptr = PRE_INC_MOD(instr_ptr, MAX_MEMORY_SIZE);
+        ++instr_ptr;
     }
 
     /* Wrap up */
