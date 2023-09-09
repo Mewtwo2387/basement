@@ -2,9 +2,7 @@
             Yet ANother brainFuck intErpreter! (YANFE!)
                 by: ImplicitNull (a.k.a. implicit none)
 
-    A Brainfuck implementation. Pronounced as /yan.fei/. One thing to note here
-    is that I set the memory size to 2^16 instead of the more common 30,000 to
-    accomodate certain Brainfuck codes.
+    A Brainfuck implementation. Pronounced as /yan.fei/.
 
     Another version of YANFE! is in the works which uses dynamic arrays which
     can allocate indefinite amount of memory in a futile attempt to mimic the
@@ -30,7 +28,7 @@
 #include "parse_arg.h"
 
 /* Memory */
-#define MAX_MEMORY_SIZE 65536
+#define MAX_MEMORY_SIZE 30000
 #define MAX_STACK_SIZE 1024
 
 uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
