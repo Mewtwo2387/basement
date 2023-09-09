@@ -7,8 +7,18 @@
     Source:
         https://gist.github.com/RabaDabaDoba/145049536f815903c79944599c6f952a
 */ 
-#define ANSI_RED "\e[0;31m"
-#define COLOR_RESET "\e[0m"
+#define ANSI_RED_BOLD    "\e[1;31m"
+#define ANSI_GRN         "\e[0;32m"
+#define ANSI_GRN_BOLD    "\e[1;32m"
+#define COLOR_RESET      "\e[0m"
+
+#define PRINT_COLORED_DESC(str)     \
+    fprintf(stderr, "%s" str "%s",  \
+            (colored_txt)? ANSI_GRN : "", (colored_txt)? COLOR_RESET : "")
+#define PRINT_DESC_VALUE(fmt, value)                   \
+    fprintf(stderr, "%s" fmt "%s",                     \
+            (colored_txt)? ANSI_GRN_BOLD : "", value, \
+            (colored_txt)? COLOR_RESET : "")
 
 const char *divider = 
     "===================="
@@ -104,7 +114,7 @@ void throw_error(
     bool to_print_memory,
     bool colored_txt)
 {
-    fprintf(stderr, "%sERROR: ", ((colored_txt)? ANSI_RED : ""));
+    fprintf(stderr, "%sERROR: ", ((colored_txt)? ANSI_RED_BOLD : ""));
 
     switch (error_type) {
     case FILE_READ_FAILED:
@@ -158,14 +168,21 @@ void throw_error(
         exit(EXIT_FAILURE);
     
     /* Print the program data around the current data pointer */
-    fprintf(stderr, "%s\nData pointer: @%lu\n", divider, mem_snapshot.data_ptr);
+    fprintf(stderr, "%s\n", divider);
+    PRINT_COLORED_DESC("Data pointer: ");
+    PRINT_DESC_VALUE("@%lu\n", mem_snapshot.data_ptr);
     print_memory(mem_snapshot.data, mem_snapshot.data_size,
                  mem_snapshot.data_ptr, -8, 8);
 
     /* Print the instruction around the current instruction pointer */
-    fprintf(stderr, "%s\nInstruction pointer: @%lu, "
-            "Number of instructions executed: %li\n", divider,
-            mem_snapshot.instr_ptr, mem_snapshot.instr_count);
+    // TODO: ADD COLORS TO THE DESCRIPTION
+    fprintf(stderr, "%s\n", divider);
+    PRINT_COLORED_DESC("Instruction pointer: ");
+    PRINT_DESC_VALUE("@%lu, ", mem_snapshot.instr_ptr);
+    PRINT_COLORED_DESC("Number of instructions executed: ");
+    PRINT_DESC_VALUE("%lu\n", mem_snapshot.instr_count);
+
+
     print_instruction(mem_snapshot.instruction,
                       mem_snapshot.instr_ptr, -8, 8);
 
