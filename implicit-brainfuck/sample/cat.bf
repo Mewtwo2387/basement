@@ -1,4 +1,6 @@
-[ nya~
+[ cat sauce: https://user.xmission.com/~emailbox/ascii_cats.htm
+
+    nya~
              _,'|             _.-''``-...___..--';)
            /_ \'.      __..-' ,      ,--...--'''
           <\    .`--'''       `     /'
