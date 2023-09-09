@@ -38,9 +38,9 @@ string_t instruction;
 size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
 
 /* Pointers */
-size_t data_ptr  = 0;
-size_t instr_ptr = 0;
-size_t stack_ptr = 0;
+size_t data_ptr;
+size_t instr_ptr;
+size_t stack_ptr;
 
 /* Command Line Options */
 const char *dmpmem_cmd_short = "-d";
@@ -127,9 +127,6 @@ int main(size_t argc, const char* argv[]) {
 
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
-        if (instr_ptr >= instruction.len)
-            throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true);
-
         switch ( (c = instruction.data[instr_ptr]) ) {
         case '+':
             ++data[data_ptr];
@@ -196,6 +193,9 @@ int main(size_t argc, const char* argv[]) {
         
         ++instr_ptr;
     }
+
+    if (instr_ptr > instruction.len)
+        throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true);
 
     /* Wrap up */
     free_string(&instruction);
