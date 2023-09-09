@@ -124,10 +124,6 @@ int main(size_t argc, const char* argv[]) {
     while ( instr_ptr < instruction.len ) {
         if (instr_ptr >= instruction.len)
             throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true);
-        if (data_ptr == SIZE_MAX)
-            throw_error(DATA_UNDERFLOW, get_memory_snapshot(), NULL, true);
-        if (data_ptr >= MAX_MEMORY_SIZE)
-            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true);
 
         switch ( (c = instruction.data[instr_ptr]) ) {
         case '+':
@@ -186,6 +182,13 @@ int main(size_t argc, const char* argv[]) {
             throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
                         false);
         }
+
+        // Check for invalid data pointer values
+        if (data_ptr == SIZE_MAX)
+            throw_error(DATA_UNDERFLOW, get_memory_snapshot(), NULL, true);
+        if (data_ptr >= MAX_MEMORY_SIZE)
+            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true);
+        
         ++instr_ptr;
     }
 
