@@ -12,6 +12,7 @@ struct memory {
 
     string_t *instruction;
     size_t instr_ptr;
+    size_t instr_count;
 
     size_t *stack;
     size_t stack_size;

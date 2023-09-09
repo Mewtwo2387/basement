@@ -18,7 +18,8 @@ const char *divider =
 
 
 static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
-        int roffset, bool datum_as_char) {
+                         int roffset)
+{
     /* Print the data sequence */
     for (int i = loffset; i < roffset; ++i) {
         /* NOTE: Very hacky. Instead of checking whether substracting `pos`
@@ -27,25 +28,74 @@ static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
                  the array size.
         */ 
         if ((pos + i) < size)
-            fprintf(stderr, (datum_as_char)? "%c " : "%3.3i ", arr[pos + i]);
-        else if (!datum_as_char)
+            fprintf(stderr, "%3.3i ", arr[pos + i]);
+        else
             fprintf(stderr, "??? ");
     }
     fprintf(stderr, "\n");
 
-    /* Print the position indicator */
+    /* Print the position indicator and ruler pointers*/
     for (int i = loffset; i < roffset; ++i) {
-        if (i == 0) {
-            fprintf(stderr, (datum_as_char)? "^ " : "^^^ ");
-        } else {
-            if ((pos + i) < size)
-                fprintf(stderr, (datum_as_char)? "  " : "    ");
-            else if (!datum_as_char)
-                fprintf(stderr, "    ");
-        }
+        if ( (i == loffset && i != 0) || (i == (roffset - 1)) )
+            fprintf(stderr, "|   ");
+        else if (i == 0)
+            fprintf(stderr, "^^^ ");
+        else
+            fprintf(stderr, "    ");    // 4 spaces
+    }
+    fprintf(stderr, "\n");
+
+    /* Print a ruler */
+    for (int i = loffset; i < roffset; ++i) {
+        if (i == loffset)
+            fprintf(stderr, "@%-5i", (int32_t)(pos + i));
+        else if (i == (roffset - 1))
+            fprintf(stderr, "@%-5i", (int32_t)(pos + i));
+        else if (i == (loffset + 1))
+            fprintf(stderr, "  ");   // 2 spaces
+        else
+            fprintf(stderr, "    ");    // 4 spaces
     }
     fprintf(stderr, "\n");
 }
+
+static void print_instruction(string_t *instruction, size_t pos, int loffset,
+                              int roffset)
+{
+    int32_t lbound = pos + loffset;
+    int32_t ubound = pos + roffset + 1;
+
+    if (lbound < 0)
+        lbound = 0;
+    if (ubound > instruction->len)
+        ubound = instruction->len;
+
+    /* Print the instructions */
+    for (int32_t i = lbound; i < ubound; ++i)
+        fprintf(stderr, "%c", instruction->data[i]);
+    fprintf(stderr, "\n");
+
+    /* Print the position indicator and ruler pointers*/
+    for (int32_t i = lbound; i < ubound; ++i) {
+        if ( (i == lbound || i == (ubound - 1)) && i != pos)
+            fprintf(stderr, "|");
+        else if (i == pos)
+            fprintf(stderr, "^");
+        else
+            fprintf(stderr, " ");
+    }
+    fprintf(stderr, "\n");
+
+    /* Print the ruler */
+    for (int32_t i = lbound; i < ubound; ++i) {
+        if (i == lbound || i == (ubound - 1))
+            fprintf(stderr, "@%-4i", i);
+        else if (i > (lbound + 4))
+            fprintf(stderr, " ");
+    }
+    fprintf(stderr, "\n");
+}
+
 
 void throw_error(
     enum ERROR_TYPE error_type,
@@ -108,15 +158,16 @@ void throw_error(
         exit(EXIT_FAILURE);
     
     /* Print the program data around the current data pointer */
-    fprintf(stderr, "%s\nData pointer @%lu\n", divider, mem_snapshot.data_ptr);
+    fprintf(stderr, "%s\nData pointer: @%lu\n", divider, mem_snapshot.data_ptr);
     print_memory(mem_snapshot.data, mem_snapshot.data_size,
-                 mem_snapshot.data_ptr, -8, 8, false);
+                 mem_snapshot.data_ptr, -8, 8);
 
     /* Print the instruction around the current instruction pointer */
-    fprintf(stderr, "%s\nInstruction pointer @%lu\n",
-            divider, mem_snapshot.instr_ptr);
-    print_memory(mem_snapshot.instruction->data, mem_snapshot.instruction->len,
-                 mem_snapshot.instr_ptr, -8, 8, true);
+    fprintf(stderr, "%s\nInstruction pointer: @%lu, "
+            "Number of instructions executed: %li\n", divider,
+            mem_snapshot.instr_ptr, mem_snapshot.instr_count);
+    print_instruction(mem_snapshot.instruction,
+                      mem_snapshot.instr_ptr, -8, 8);
 
     /* Print the stack */
     fprintf(stderr, "%s\nStack:\n", divider);

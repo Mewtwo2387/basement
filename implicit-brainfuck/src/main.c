@@ -57,7 +57,7 @@ void dump_memory_to_file() {
 }
 
 struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
-        size_t stack_ptr)
+        size_t instr_count, size_t stack_ptr)
 {
     struct memory memory_snapshot = {
         .data=data,
@@ -66,6 +66,7 @@ struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
 
         .instruction=(&instruction),
         .instr_ptr=instr_ptr,
+        .instr_count=instr_count,
 
         .stack=stack,
         .stack_size=MAX_STACK_SIZE,
@@ -138,30 +139,31 @@ int main(size_t argc, char* const argv[]) {
                 }
 
                 if (instr_ptr == instruction.len && bracket_lvl > 0)
-                    throw_error(
-                        SYNTAX_ERROR,
-                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
-                        "Unbalanced brackets.", false, opt_colored_output
-                    );
+                    throw_error(SYNTAX_ERROR,
+                                get_memory_snapshot(
+                                    data_ptr, instr_ptr, instr_count, stack_ptr
+                                ),
+                               "Unbalanced brackets.", 
+                               false, opt_colored_output);
 
             } else {
                 if (stack_ptr == MAX_STACK_SIZE)
-                    throw_error(
-                        STACK_OVERFLOW,
-                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
-                        NULL, true, opt_colored_output
-                    );
+                    throw_error(STACK_OVERFLOW,
+                                get_memory_snapshot(
+                                    data_ptr, instr_ptr, instr_count, stack_ptr
+                                ),
+                                NULL, true, opt_colored_output);
 
                 stack[stack_ptr++] = instr_ptr;
             }
             break;
         case ']':
             if (stack_ptr == 0)
-                throw_error(
-                    STACK_UNDERFLOW,
-                    get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
-                    NULL, true, opt_colored_output
-                );
+                throw_error(STACK_UNDERFLOW,
+                            get_memory_snapshot(
+                                data_ptr, instr_ptr, instr_count, stack_ptr
+                            ),
+                            NULL, true, opt_colored_output);
 
             if (data[data_ptr] == 0)
                 --stack_ptr;
@@ -177,11 +179,15 @@ int main(size_t argc, char* const argv[]) {
         // Check for invalid data pointer values
         if (data_ptr == SIZE_MAX)
             throw_error(DATA_UNDERFLOW,
-                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        get_memory_snapshot(
+                            data_ptr, instr_ptr, instr_count, stack_ptr
+                        ),
                         NULL, true, opt_colored_output);
         if (data_ptr >= MAX_MEMORY_SIZE)
             throw_error(DATA_OVERFLOW,
-                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        get_memory_snapshot(
+                            data_ptr, instr_ptr, instr_count, stack_ptr
+                        ),
                         NULL, true, opt_colored_output);
         
         ++instr_ptr;
@@ -190,7 +196,9 @@ int main(size_t argc, char* const argv[]) {
 
     if (instr_ptr > instruction.len)
         throw_error(INSTR_OVERFLOW,
-                    get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                    get_memory_snapshot(
+                        data_ptr, instr_ptr, instr_count, stack_ptr
+                    ),
                     NULL, true, opt_colored_output);
     
     if (opt_verbose_output)
