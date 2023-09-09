@@ -114,6 +114,9 @@ void throw_error(
     bool to_print_memory,
     bool colored_txt)
 {
+    /* Flush stdout for any queued texts */
+    fflush(stdout);
+
     fprintf(stderr, "%sERROR: ", ((colored_txt)? ANSI_RED_BOLD : ""));
 
     switch (error_type) {
