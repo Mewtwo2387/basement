@@ -120,6 +120,11 @@ int main(size_t argc, const char* argv[]) {
 
     fclose(input_file_ptr);
 
+    /* Initialize */
+    data_ptr  = 0;
+    instr_ptr = 0;
+    stack_ptr = 0;
+
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
         if (instr_ptr >= instruction.len)
