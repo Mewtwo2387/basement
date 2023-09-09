@@ -37,16 +37,12 @@ uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
 string_t instruction;
 size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
 
-/* Pointers */
-size_t data_ptr;
-size_t instr_ptr;
-size_t stack_ptr;
-
 /* Dump file names */
 const char *data_dump_name   = "datadump";
 const char *stack_dump_name  = "stackdump";
 
 #define VALID_BF_CHAR "+-<>.,[]"
+#define DIVIDER "----------------------------------------"
 
 void dump_memory_to_file() {
     FILE *data_dump_fp, *stack_dump_fp;
@@ -60,7 +56,9 @@ void dump_memory_to_file() {
     fclose(stack_dump_fp);
 }
 
-struct memory get_memory_snapshot() {
+struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
+        size_t stack_ptr)
+{
     struct memory memory_snapshot = {
         .data=data,
         .data_size=MAX_MEMORY_SIZE,
@@ -80,17 +78,7 @@ struct memory get_memory_snapshot() {
 int main(size_t argc, char* const argv[]) {
     parse_cli_args(argc, argv);
 
-    if (opt_verbose_output) {
-        if (opt_colored_output)
-            printf("\e[0;33m");   // Changes the text color to yellow
-
-        printf("[NOTE: The verbose '-v' option has not yet been implemented. "
-               "Sorry for that m(_ _)m]\n\n");
-
-        if (opt_colored_output)
-            printf("\e[0m");   // Resets the color
-    }
-
+    /* Read the input file */
     FILE *input_file_ptr = fopen(opt_input_file_path, "r");
     if (input_file_ptr == NULL) {
         char *add_err_msg = calloc(strlen(opt_input_file_path) + 15,
@@ -100,9 +88,8 @@ int main(size_t argc, char* const argv[]) {
                     opt_colored_output);
     }
 
+    /* Load and filter out non-valid characters */
     init_string(&instruction);
-
-    /* Read and filter out non-valid characters */
     char c;
     while ( fread(&c, 1, 1, input_file_ptr) ) {
         if ( strchr(VALID_BF_CHAR, c) != NULL )
@@ -111,10 +98,11 @@ int main(size_t argc, char* const argv[]) {
 
     fclose(input_file_ptr);
 
-    /* Initialize */
-    data_ptr  = 0;
-    instr_ptr = 0;
-    stack_ptr = 0;
+    /* Initialize pointers and counters */
+    size_t data_ptr  = 0;
+    size_t instr_ptr = 0;
+    size_t stack_ptr = 0;
+    size_t instr_count = 0;   // Count of all executed instructions
 
     /* Evaluate the program */
     while ( instr_ptr < instruction.len ) {
@@ -150,21 +138,30 @@ int main(size_t argc, char* const argv[]) {
                 }
 
                 if (instr_ptr == instruction.len && bracket_lvl > 0)
-                    throw_error(SYNTAX_ERROR, get_memory_snapshot(),
-                                "Unbalanced brackets.", false, opt_colored_output);
+                    throw_error(
+                        SYNTAX_ERROR,
+                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        "Unbalanced brackets.", false, opt_colored_output
+                    );
 
             } else {
                 if (stack_ptr == MAX_STACK_SIZE)
-                    throw_error(STACK_OVERFLOW, get_memory_snapshot(), NULL,
-                                true, opt_colored_output);
+                    throw_error(
+                        STACK_OVERFLOW,
+                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        NULL, true, opt_colored_output
+                    );
 
                 stack[stack_ptr++] = instr_ptr;
             }
             break;
         case ']':
             if (stack_ptr == 0)
-                throw_error(STACK_UNDERFLOW, get_memory_snapshot(), NULL, true,
-                            opt_colored_output);
+                throw_error(
+                    STACK_UNDERFLOW,
+                    get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                    NULL, true, opt_colored_output
+                );
 
             if (data[data_ptr] == 0)
                 --stack_ptr;
@@ -179,18 +176,26 @@ int main(size_t argc, char* const argv[]) {
 
         // Check for invalid data pointer values
         if (data_ptr == SIZE_MAX)
-            throw_error(DATA_UNDERFLOW, get_memory_snapshot(), NULL, true,
-                        opt_colored_output);
+            throw_error(DATA_UNDERFLOW,
+                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        NULL, true, opt_colored_output);
         if (data_ptr >= MAX_MEMORY_SIZE)
-            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true,
-                        opt_colored_output);
+            throw_error(DATA_OVERFLOW,
+                        get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                        NULL, true, opt_colored_output);
         
         ++instr_ptr;
+        ++instr_count;
     }
 
     if (instr_ptr > instruction.len)
-        throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true,
-                    opt_colored_output);
+        throw_error(INSTR_OVERFLOW,
+                    get_memory_snapshot(data_ptr, instr_ptr, stack_ptr),
+                    NULL, true, opt_colored_output);
+    
+    if (opt_verbose_output)
+        printf("\n%s\nStats\n * Number of instructions executed: %li\n", 
+               DIVIDER, instr_count);
 
     /* Wrap up */
     free_string(&instruction);
