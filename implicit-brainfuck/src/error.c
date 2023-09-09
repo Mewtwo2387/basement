@@ -50,10 +50,12 @@ static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
 void throw_error(
     enum ERROR_TYPE error_type,
     struct memory mem_snapshot,
-    const char *add_msg,
-    bool to_print_memory)
+    char *add_msg,
+    bool to_print_memory,
+    bool colored_txt)
 {
-    fprintf(stderr, ANSI_RED "ERROR: ");
+    fprintf(stderr, "%sERROR: ", ((colored_txt)? ANSI_RED : ""));
+
     switch (error_type) {
     case FILE_READ_FAILED:
         fprintf(stderr, "File read error\n");
@@ -87,17 +89,20 @@ void throw_error(
             fprintf(stderr, "<Internal error: custom error unspecified>");
             exit(EXIT_FAILURE);
         }
+        fprintf(stderr, "%s\n", add_msg);
         break;
     default:
         fprintf(stderr, "<Internal error: Unknown error type>\n");
         exit(EXIT_FAILURE);
     }
-
-    if (add_msg != NULL && strlen(add_msg) > 0)
-        fprintf(stderr, "%s\n", add_msg);
     
-    // Reset color
-    fprintf(stderr, COLOR_RESET);
+    /* Reset color */  
+    if (colored_txt)
+        fprintf(stderr, COLOR_RESET);
+
+    /* Print the additional error message */
+    if (error_type != CUSTOM && add_msg != NULL && strlen(add_msg) > 0)
+        fprintf(stderr, "%s\n", add_msg);
 
     if (!to_print_memory)
         exit(EXIT_FAILURE);

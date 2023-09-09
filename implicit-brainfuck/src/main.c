@@ -27,11 +27,11 @@
 #include "string_type.h"
 #include "memory_type.h"
 #include "error.h"
+#include "parse_arg.h"
 
+/* Memory */
 #define MAX_MEMORY_SIZE 65536
 #define MAX_STACK_SIZE 1024
-
-const char *valid_char = "+-<>.,[]";
 
 uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
 string_t instruction;
@@ -42,12 +42,11 @@ size_t data_ptr;
 size_t instr_ptr;
 size_t stack_ptr;
 
-/* Command Line Options */
-const char *dmpmem_cmd_short = "-d";
-const char *dmpmem_cmd_long  = "--dump-mem";
+/* Dump file names */
 const char *data_dump_name   = "datadump";
 const char *stack_dump_name  = "stackdump";
-bool to_dump_memory_to_file = false;
+
+#define VALID_BF_CHAR "+-<>.,[]"
 
 void dump_memory_to_file() {
     FILE *data_dump_fp, *stack_dump_fp;
@@ -78,35 +77,27 @@ struct memory get_memory_snapshot() {
     return memory_snapshot;
 }
 
-int main(size_t argc, const char* argv[]) {
-    if (argc == 1) {
-        fprintf(
-            stderr,
-            "no input file\n\n"
-            "USAGE: %s INPUT-FILE [-d/--dump-mem]\n\n"
-            "OPTIONS:\n"
-            "    INPUT-FILE\n"
-            "        Path to the input Brainfuck file.\n\n"
-            "    -d, --dump-mem\n"
-            "        Dump the contents of 'data' and 'stack' to "
-            "files '%s' and '%s' respectively in the current directory.\n"
-            "        By default, this is toggled off.\n",
-            argv[0], data_dump_name, stack_dump_name
-        );
-        return 1;
+int main(size_t argc, char* const argv[]) {
+    parse_cli_args(argc, argv);
+
+    if (opt_verbose_output) {
+        if (opt_colored_output)
+            printf("\e[0;33m");   // Changes the text color to yellow
+
+        printf("[NOTE: The verbose '-v' option has not yet been implemented. "
+               "Sorry for that m(_ _)m]\n\n");
+
+        if (opt_colored_output)
+            printf("\e[0m");   // Resets the color
     }
 
-    FILE *input_file_ptr = fopen(argv[1], "r");
-    if (input_file_ptr == NULL)
-        throw_error(FILE_READ_FAILED, (struct memory){ 0 }, NULL, false);
-
-    if (   argc >= 3
-        && (
-                   !strcmp(argv[2], dmpmem_cmd_short)
-                || !strcmp(argv[2], dmpmem_cmd_long)
-           )
-    ) {
-        to_dump_memory_to_file = true;            
+    FILE *input_file_ptr = fopen(opt_input_file_path, "r");
+    if (input_file_ptr == NULL) {
+        char *add_err_msg = calloc(strlen(opt_input_file_path) + 15,
+                                   sizeof(*add_err_msg));
+        sprintf(add_err_msg, "Cannot read '%s'", opt_input_file_path);
+        throw_error(FILE_READ_FAILED, (struct memory){ 0 }, add_err_msg, false,
+                    opt_colored_output);
     }
 
     init_string(&instruction);
@@ -114,7 +105,7 @@ int main(size_t argc, const char* argv[]) {
     /* Read and filter out non-valid characters */
     char c;
     while ( fread(&c, 1, 1, input_file_ptr) ) {
-        if ( strchr(valid_char, c) != NULL )
+        if ( strchr(VALID_BF_CHAR, c) != NULL )
             string_append(&instruction, c);
     }
 
@@ -160,19 +151,20 @@ int main(size_t argc, const char* argv[]) {
 
                 if (instr_ptr == instruction.len && bracket_lvl > 0)
                     throw_error(SYNTAX_ERROR, get_memory_snapshot(),
-                                "Unbalanced brackets.", false);
+                                "Unbalanced brackets.", false, opt_colored_output);
 
             } else {
                 if (stack_ptr == MAX_STACK_SIZE)
                     throw_error(STACK_OVERFLOW, get_memory_snapshot(), NULL,
-                                true);
+                                true, opt_colored_output);
 
                 stack[stack_ptr++] = instr_ptr;
             }
             break;
         case ']':
             if (stack_ptr == 0)
-                throw_error(STACK_UNDERFLOW, get_memory_snapshot(), NULL, true);
+                throw_error(STACK_UNDERFLOW, get_memory_snapshot(), NULL, true,
+                            opt_colored_output);
 
             if (data[data_ptr] == 0)
                 --stack_ptr;
@@ -182,24 +174,27 @@ int main(size_t argc, const char* argv[]) {
             break;
         default:
             throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
-                        false);
+                        false, opt_colored_output);
         }
 
         // Check for invalid data pointer values
         if (data_ptr == SIZE_MAX)
-            throw_error(DATA_UNDERFLOW, get_memory_snapshot(), NULL, true);
+            throw_error(DATA_UNDERFLOW, get_memory_snapshot(), NULL, true,
+                        opt_colored_output);
         if (data_ptr >= MAX_MEMORY_SIZE)
-            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true);
+            throw_error(DATA_OVERFLOW, get_memory_snapshot(), NULL, true,
+                        opt_colored_output);
         
         ++instr_ptr;
     }
 
     if (instr_ptr > instruction.len)
-        throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true);
+        throw_error(INSTR_OVERFLOW, get_memory_snapshot(), NULL, true,
+                    opt_colored_output);
 
     /* Wrap up */
     free_string(&instruction);
-    if (to_dump_memory_to_file)
+    if (opt_dump_memory)
         dump_memory_to_file();
 
     return 0;

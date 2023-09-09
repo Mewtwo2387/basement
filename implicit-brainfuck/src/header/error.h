@@ -19,6 +19,6 @@ enum ERROR_TYPE {
 };
 
 void throw_error(enum ERROR_TYPE error_type, struct memory mem_snapshot,
-                 const char *add_msg, bool to_print_memory);
+                 char *add_msg, bool to_print_memory, bool colored_txt);
 
 #endif
