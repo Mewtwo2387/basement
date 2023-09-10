@@ -173,8 +173,12 @@ int main(size_t argc, char* const argv[]) {
 
             break;
         default:
-            throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
-                        false);
+            char *error_msg = calloc(40, sizeof(*error_msg));
+            if (c == '\0')
+                sprintf(error_msg, "Offending instruction: NULL byte");
+            else
+                sprintf(error_msg, "Offending instruction: '%c'", c);
+            throw_error(UNKNOWN_INSTR, (struct memory){ 0 }, error_msg, false);
         }
 
         // Check for invalid data pointer values
