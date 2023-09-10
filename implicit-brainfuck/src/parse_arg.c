@@ -11,28 +11,28 @@
 
 const char *arg_options = "dcvh";
 
-/* CLI option values */
-bool opt_dump_memory = false;
-bool opt_colored_output = false;
-bool opt_verbose_output = false;
-const char *opt_input_file_path = NULL;
-
-
 void print_help_msg(FILE *fp, const char *prog_name);
 
-void parse_cli_args(size_t argc, char *const argv[]) {
+struct cli_options parse_cli_args(size_t argc, char *const argv[]) {
+    struct  cli_options output = { 
+        .dump_mem    = OPT_DUMP_MEM,
+        .colored_txt = OPT_CLRD_TXT,
+        .verbose_txt = OPT_VERB_TXT,
+        .input_path  = NULL
+    };
+
     opterr = 0;   // Custom error handling.
     char c;
     while ( (c = getopt(argc, argv, arg_options)) != -1 ) {
         switch (c) {
         case 'd':
-            opt_dump_memory = true;
+            output.dump_mem = true;
             break;
         case 'c':
-            opt_colored_output = true;
+            output.colored_txt = true;
             break;
         case 'v':
-            opt_verbose_output = true;
+            output.verbose_txt = true;
             break;
         case 'h':
             print_help_msg(stdout, argv[0]);
@@ -55,7 +55,9 @@ void parse_cli_args(size_t argc, char *const argv[]) {
     }
 
     /* Assume that the non-option argument is the file path. */
-    opt_input_file_path = argv[optind];
+    output.input_path = argv[optind];
+
+    return output;
 }
 
 void print_help_msg(FILE *fp, const char *prog_name) {

@@ -22,11 +22,18 @@
 extern const char *arg_options;
 
 /* CLI argument options */
-extern bool opt_dump_memory;
-extern bool opt_colored_output;
-extern bool opt_verbose_output;
-extern const char *opt_input_file_path;
+struct cli_options {
+    bool dump_mem;
+    bool colored_txt;
+    bool verbose_txt;
+    const char *input_path;
+};
 
-void parse_cli_args(size_t argc, char *const argv[]);
+/* CLI argument default values */
+#define OPT_DUMP_MEM false
+#define OPT_CLRD_TXT false
+#define OPT_VERB_TXT false
+
+struct cli_options parse_cli_args(size_t argc, char *const argv[]);
 
 #endif
