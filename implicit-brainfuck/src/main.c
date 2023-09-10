@@ -63,7 +63,8 @@ struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
         .data_size=MAX_MEMORY_SIZE,
         .data_ptr=data_ptr,
 
-        .instruction=(&instruction),
+        .instruction=instruction.data,
+        .instr_size=instruction.len,
         .instr_ptr=instr_ptr,
         .instr_count=instr_count,
 

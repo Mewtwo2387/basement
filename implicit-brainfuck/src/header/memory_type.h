@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "string_type.h"
 
 struct memory {
     uint8_t *data;
     size_t data_size;
     size_t data_ptr;
 
-    string_t *instruction;
+    char *instruction;
+    size_t instr_size;
     size_t instr_ptr;
     size_t instr_count;
 

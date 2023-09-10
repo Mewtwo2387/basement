@@ -74,20 +74,20 @@ static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
     fprintf(stderr, "\n");
 }
 
-static void print_instruction(string_t *instruction, size_t pos, int loffset,
-                              int roffset)
+static void print_instruction(char *instruction, size_t instr_size, size_t pos,
+                              int loffset, int roffset)
 {
     int32_t lbound = pos + loffset;
     int32_t ubound = pos + roffset + 1;
 
     if (lbound < 0)
         lbound = 0;
-    if (ubound > instruction->len)
-        ubound = instruction->len;
+    if (ubound > instr_size)
+        ubound = instr_size;
 
     /* Print the instructions */
     for (int32_t i = lbound; i < ubound; ++i)
-        fprintf(stderr, "%c", instruction->data[i]);
+        fprintf(stderr, "%c", instruction[i]);
     fprintf(stderr, "\n");
 
     /* Print the position indicator and ruler pointers*/
@@ -190,7 +190,7 @@ void throw_error(
     PRINT_DESC_VALUE("%lu\n", mem_snapshot.instr_count);
 
 
-    print_instruction(mem_snapshot.instruction,
+    print_instruction(mem_snapshot.instruction, mem_snapshot.instr_size,
                       mem_snapshot.instr_ptr, -8, 8);
 
     /* Print the stack */
@@ -202,7 +202,5 @@ void throw_error(
         }
     }
 
-    // Take care of the "instruction" string JUST to be sure.
-    free_string(mem_snapshot.instruction);
     exit(EXIT_FAILURE);
 }
