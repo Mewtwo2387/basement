@@ -27,10 +27,11 @@
 #include "error.h"
 #include "parse_arg.h"
 
-/* Memory */
+/* Memory size */
 #define MAX_MEMORY_SIZE 30000
 #define MAX_STACK_SIZE 1024
 
+/* Memory */
 uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
 string_t instruction;
 size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
@@ -39,8 +40,8 @@ size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
 const char *data_dump_name   = "datadump";
 const char *stack_dump_name  = "stackdump";
 
-#define VALID_BF_CHAR "+-<>.,[]"
-#define DIVIDER "----------------------------------------"
+const char *valid_bf_char = "+-<>.,[]";
+
 
 void dump_memory_to_file() {
     FILE *data_dump_fp, *stack_dump_fp;
@@ -91,7 +92,7 @@ int main(size_t argc, char* const argv[]) {
     init_string(&instruction);
     char c;
     while ( fread(&c, 1, 1, input_file_ptr) ) {
-        if ( strchr(VALID_BF_CHAR, c) != NULL )
+        if ( strchr(valid_bf_char, c) != NULL )
             string_append(&instruction, c);
     }
 
@@ -200,8 +201,10 @@ int main(size_t argc, char* const argv[]) {
                     NULL, true, options.colored_txt);
     
     if (options.verbose_txt)
-        printf("\n%s\nStats\n * Number of instructions executed: %li\n", 
-               DIVIDER, instr_count);
+        printf("\n------------------------------\n"
+               "Stats\n"
+               "* Number of instructions executed: %li\n", 
+               instr_count);
 
     /* Wrap up */
     free_string(&instruction);
