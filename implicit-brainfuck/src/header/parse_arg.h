@@ -10,7 +10,7 @@
             Path to the input file.
     OPTIONS:
         -m VALUE
-            Data memory size in KiB. See NOTES below for the available options.
+            Data memory size in bytes. See NOTES below for the available options
         -d
             Dump the data and stack to 'datadump' and 'stackdump' in the
             current directory.
@@ -24,7 +24,7 @@
     
     NOTES:
         Positive integer arguments for `-m` denotes the maximum data memory size
-        in KiB (kibibytes). A value of 1 KiB is equal to 1024 or 2^10 bytes.
+        in bytes.
 
         A value of 0 for `-m` allocates the original data memory size of vanilla
         Brainfuck interpreters which is 30,000 bytes. This is also the default
