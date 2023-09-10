@@ -18,6 +18,8 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -O3 -std=c11
 
+out: $(TARGET_EXEC)
+
 $(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) -O3 -std=c11
 
@@ -37,7 +39,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 
-.PHONY: clean
+.PHONY: clean, out
 
 clean:
 	$(RM) -r $(BUILD_DIR)
