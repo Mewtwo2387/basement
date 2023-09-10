@@ -7,9 +7,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <stdint.h>
 #include "parse_arg.h"
 
 const char *arg_options = CLI_ARG_OPTIONS;
+
+#define HELP_SUGGESTION_STR "Try running '%s -h' for more information\n"
 
 void print_help_msg(FILE *fp, const char *prog_name);
 
@@ -22,14 +27,43 @@ struct cli_options parse_cli_args(size_t argc, char *const argv[]) {
         .input_path  = NULL
     };
 
-    char *memsize_input = NULL;
-
     opterr = 0;   // Custom error handling.
+    errno = 0;
     char c;
     while ( (c = getopt(argc, argv, arg_options)) != -1 ) {
         switch (c) {
         case 'm':
-            memsize_input = optarg;
+            char *end_ptr;
+            long int m_opt_arg = strtol(optarg, &end_ptr, 10);
+
+            if (strlen(end_ptr) > 0) {
+                fprintf(stderr,
+                        "'%s' is invalid argument for '-m'. "
+                        "Must be a base-10 integer\n"
+                        HELP_SUGGESTION_STR,
+                        optarg, argv[0]);
+                exit(EXIT_FAILURE);
+            }
+            if (errno == ERANGE) {
+                fprintf(stderr,
+                        "'%s' exceeds the 32 bit signed integer limit", optarg);
+                exit(EXIT_FAILURE);
+            }
+
+            /* Convert the passed argument to the corresponding memory size */
+            if (m_opt_arg == 0) {
+                output.mem_size = OPT_MEM_SIZE;
+            } else if (m_opt_arg == -1) {
+                output.mem_size = 0;   // The client function will handle this
+            } else if (m_opt_arg > 0) {
+                output.mem_size = m_opt_arg;
+            } else {
+                fprintf(stderr,
+                        "'%ld' is an invalid argument for '-m'. Must be >= -1\n"
+                        HELP_SUGGESTION_STR,
+                        m_opt_arg, argv[0]);
+                exit(EXIT_FAILURE);
+            }
             break;
         case 'd':
             output.dump_mem = true;
@@ -48,12 +82,12 @@ struct cli_options parse_cli_args(size_t argc, char *const argv[]) {
             if (c == 'm') {
                 fprintf(stderr,
                         "Missing argument for option '-m'\n"
-                        "Try running '%s -h' for more information\n",
+                        HELP_SUGGESTION_STR,
                         argv[0]);
             } else {
                 fprintf(stderr,
                         "Unknown option '-%c'\n"
-                        "Try running '%s -h' for more information\n",
+                        HELP_SUGGESTION_STR,
                         optopt, argv[0]);
             }
             exit(EXIT_FAILURE);

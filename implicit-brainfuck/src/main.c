@@ -1,14 +1,11 @@
 /******************************************************************************
             Yet ANother brainFuck intErpreter! (YANFE!)
-                by: ImplicitNull (a.k.a. implicit none)
+                by: ImplicitNull/implicit none
 
     A Brainfuck implementation. Pronounced as /yan.fei/.
 
-    Another version of YANFE! is in the works which uses dynamic arrays which
-    can allocate indefinite amount of memory in a futile attempt to mimic the
-    infinite memory of a Universal Turing Machine.
-
-    Thanks to `Ei`, a fellow contributor, its agreed upon name is
+    Enabling indefinite data memory size turns this interpreter into the
+    so called:
 
         Yet ANother brainFuck intErpreter! - Super Memory Usage proGram
     or
@@ -24,16 +21,16 @@
 
 #include "byte_array.h"
 #include "memory_type.h"
-#include "error.h"
 #include "parse_arg.h"
+#include "yanfeismug.h"
+#include "error.h"
 
-/* Memory size */
-#define MAX_MEMORY_SIZE 30000
+
 #define MAX_STACK_SIZE 1024
 
 /* Memory */
-uint8_t  data[MAX_MEMORY_SIZE] = { '\0' };
-string_t instruction;
+byte_arr_t data;
+byte_arr_t instruction;
 size_t   stack[MAX_STACK_SIZE] = { (size_t)0 };
 
 /* Dump file names */
@@ -43,12 +40,12 @@ const char *stack_dump_name  = "stackdump";
 const char *valid_bf_char = "+-<>.,[]";
 
 
-void dump_memory_to_file() {
+void dump_memory_to_file(void) {
     FILE *data_dump_fp, *stack_dump_fp;
     data_dump_fp = fopen(data_dump_name, "wb");
     stack_dump_fp = fopen(stack_dump_name, "wb");
 
-    fwrite(data, sizeof(*data), MAX_MEMORY_SIZE, data_dump_fp);
+    fwrite(data.data, sizeof( *(data.data) ), data.len, data_dump_fp);
     fwrite(stack, sizeof(*stack), MAX_STACK_SIZE, stack_dump_fp);
 
     fclose(data_dump_fp);
@@ -59,8 +56,8 @@ struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
         size_t instr_count, size_t stack_ptr)
 {
     struct memory memory_snapshot = {
-        .data=data,
-        .data_size=MAX_MEMORY_SIZE,
+        .data=data.data,
+        .data_size=data.len,
         .data_ptr=data_ptr,
 
         .instruction=instruction.data,
@@ -79,7 +76,11 @@ struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
 int main(size_t argc, char* const argv[]) {
     struct cli_options options = parse_cli_args(argc, argv);
 
-    /* Set the color status */
+    /* Print a yanfeismug ASCII art to signal that this is now YANFE!SMUG*/
+    if (options.mem_size == 0)
+        print_yanfeismug();
+
+    /* Set the colored output status */
     colored_error_msg = options.colored_txt;
 
     /* Read the input file */
@@ -92,14 +93,25 @@ int main(size_t argc, char* const argv[]) {
     }
 
     /* Load and filter out non-valid characters */
-    init_string(&instruction);
     char c;
+    size_t instr_idx = 0;
+
+    init_byte_arr(&instruction, 1, true);
     while ( fread(&c, 1, 1, input_file_ptr) ) {
         if ( strchr(valid_bf_char, c) != NULL )
-            string_append(&instruction, c);
+            byte_arr_set(&instruction, instr_idx++, c);
     }
-
     fclose(input_file_ptr);
+
+    /* Cut off the excess allocated memory in instruction */
+    byte_arr_resize(&instruction, instr_idx);
+    instruction.is_dynamic = false;    // Freeze the instruction size.
+
+    /* Initialize the data memory */
+    if (options.mem_size == 0)
+        init_byte_arr(&data, OPT_MEM_SIZE * sizeof(*(data.data)), true);
+    else
+        init_byte_arr(&data, options.mem_size * sizeof(*(data.data)), false);
 
     /* Initialize pointers and counters */
     size_t data_ptr  = 0;
@@ -107,14 +119,18 @@ int main(size_t argc, char* const argv[]) {
     size_t stack_ptr = 0;
     size_t instr_count = 0;   // Count of all executed instructions
 
-    /* Evaluate the program */
+    /* 
+        Evaluate the program 
+        NOTE: The `get` and `set` routines of the byte array `instruction` are 
+              not used here due to performance overhead. Risky but necessary.
+    */
     while ( instr_ptr < instruction.len ) {
         switch ( (c = instruction.data[instr_ptr]) ) {
         case '+':
-            ++data[data_ptr];
-            break;
         case '-':
-            --data[data_ptr];
+            char old_val = byte_arr_get(&data, data_ptr);
+            char new_val = (c == '+')? old_val + 1 : old_val - 1;
+            byte_arr_set(&data, data_ptr, new_val);
             break;
         case '>':
             ++data_ptr;
@@ -123,13 +139,13 @@ int main(size_t argc, char* const argv[]) {
             --data_ptr;
             break;
         case '.':
-            putc(data[data_ptr], stdout);
+            putc(byte_arr_get(&data, data_ptr), stdout);
             break;
         case ',':
-            data[data_ptr] = getc(stdin);
+            byte_arr_set(&data, data_ptr, getc(stdin));
             break;
         case '[':
-            if (data[data_ptr] == 0) {
+            if ( byte_arr_get(&data, data_ptr) == 0 ) {
                 // Skip the entire loop if 0
                 int bracket_lvl = 0;
                 
@@ -158,6 +174,7 @@ int main(size_t argc, char* const argv[]) {
                 stack[stack_ptr++] = instr_ptr;
             }
             break;
+
         case ']':
             if (stack_ptr == 0)
                 throw_error(STACK_UNDERFLOW,
@@ -166,7 +183,7 @@ int main(size_t argc, char* const argv[]) {
                             ),
                             NULL, true);
 
-            if (data[data_ptr] == 0)
+            if ( byte_arr_get(&data, data_ptr) == 0 )
                 --stack_ptr;
             else
                 instr_ptr = stack[stack_ptr - 1];
@@ -188,7 +205,7 @@ int main(size_t argc, char* const argv[]) {
                             data_ptr, instr_ptr, instr_count, stack_ptr
                         ),
                         NULL, true);
-        if (data_ptr >= MAX_MEMORY_SIZE)
+        if ( (data_ptr >= data.len) && !data.is_dynamic )
             throw_error(DATA_OVERFLOW,
                         get_memory_snapshot(
                             data_ptr, instr_ptr, instr_count, stack_ptr
@@ -213,7 +230,8 @@ int main(size_t argc, char* const argv[]) {
                instr_count);
 
     /* Wrap up */
-    free_string(&instruction);
+    free_byte_arr(&data);
+    free_byte_arr(&instruction);
     if (options.dump_mem)
         dump_memory_to_file();
 

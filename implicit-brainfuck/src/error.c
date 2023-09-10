@@ -148,8 +148,8 @@ void throw_error(
     case SYNTAX_ERROR:
         fprintf(stderr, "Syntax error\n");
         break;
-    case UNKNOWN:
-        fprintf(stderr, "Unknown error\n");
+    case UNKNOWN_INSTR:
+        fprintf(stderr, "Unknown instruction\n");
         break;
     case CUSTOM:
         if (add_msg == NULL) {
