@@ -12,19 +12,24 @@
 #define ANSI_GRN_BOLD    "\e[1;32m"
 #define COLOR_RESET      "\e[0m"
 
-#define PRINT_COLORED_DESC(str)     \
-    fprintf(stderr, "%s" str "%s",  \
-            (colored_txt)? ANSI_GRN : "", (colored_txt)? COLOR_RESET : "")
-#define PRINT_DESC_VALUE(fmt, value)                   \
-    fprintf(stderr, "%s" fmt "%s",                     \
-            (colored_txt)? ANSI_GRN_BOLD : "", value, \
-            (colored_txt)? COLOR_RESET : "")
+#define PRINT_COLORED_DESC(str)                 \
+    fprintf(stderr, "%s" str "%s",              \
+            (colored_error_msg)? ANSI_GRN : "", \
+            (colored_error_msg)? COLOR_RESET : "")
+
+#define PRINT_DESC_VALUE(fmt, value)                        \
+    fprintf(stderr, "%s" fmt "%s",                          \
+            (colored_error_msg)? ANSI_GRN_BOLD : "", value, \
+            (colored_error_msg)? COLOR_RESET : "")
 
 const char *divider = 
     "===================="
     "===================="
     "===================="
     "====================";
+
+/* Flag for colored messages. The client will have to set this. */
+bool colored_error_msg = false;
 
 
 static void print_memory(uint8_t *arr, size_t size, size_t pos, int loffset,
@@ -111,13 +116,12 @@ void throw_error(
     enum ERROR_TYPE error_type,
     struct memory mem_snapshot,
     char *add_msg,
-    bool to_print_memory,
-    bool colored_txt)
+    bool to_print_memory)
 {
     /* Flush stdout for any queued texts */
     fflush(stdout);
 
-    fprintf(stderr, "%sERROR: ", ((colored_txt)? ANSI_RED_BOLD : ""));
+    fprintf(stderr, "%sERROR: ", ((colored_error_msg)? ANSI_RED_BOLD : ""));
 
     switch (error_type) {
     case FILE_READ_FAILED:
@@ -160,7 +164,7 @@ void throw_error(
     }
     
     /* Reset color */  
-    if (colored_txt)
+    if (colored_error_msg)
         fprintf(stderr, COLOR_RESET);
 
     /* Print the additional error message */

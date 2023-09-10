@@ -18,7 +18,9 @@ enum ERROR_TYPE {
     CUSTOM
 };
 
+extern bool colored_error_msg;
+
 void throw_error(enum ERROR_TYPE error_type, struct memory mem_snapshot,
-                 char *add_msg, bool to_print_memory, bool colored_txt);
+                 char *add_msg, bool to_print_memory);
 
 #endif

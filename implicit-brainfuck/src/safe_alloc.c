@@ -7,7 +7,7 @@
 #define ALLOC_GUARD(ptr, name)                                    \
     if (ptr == NULL)                                              \
         throw_error(CUSTOM, (struct memory){ 0 }, name " failed", \
-                    false, false);                                \
+                    false);                                       \
 
 void *safe_malloc(size_t size) {
     void *ptr = malloc(size);

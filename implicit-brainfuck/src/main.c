@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "string_type.h"
+#include "byte_array.h"
 #include "memory_type.h"
 #include "error.h"
 #include "parse_arg.h"
@@ -78,14 +78,16 @@ struct memory get_memory_snapshot(size_t data_ptr, size_t instr_ptr,
 int main(size_t argc, char* const argv[]) {
     struct cli_options options = parse_cli_args(argc, argv);
 
+    /* Set the color status */
+    colored_error_msg = options.colored_txt;
+
     /* Read the input file */
     FILE *input_file_ptr = fopen(options.input_path, "r");
     if (input_file_ptr == NULL) {
         char *add_err_msg = calloc(strlen(options.input_path) + 15,
                                    sizeof(*add_err_msg));
         sprintf(add_err_msg, "Cannot read '%s'", options.input_path);
-        throw_error(FILE_READ_FAILED, (struct memory){ 0 }, add_err_msg, false,
-                    options.colored_txt);
+        throw_error(FILE_READ_FAILED, (struct memory){ 0 }, add_err_msg, false);
     }
 
     /* Load and filter out non-valid characters */
@@ -142,8 +144,7 @@ int main(size_t argc, char* const argv[]) {
                                 get_memory_snapshot(
                                     data_ptr, instr_ptr, instr_count, stack_ptr
                                 ),
-                               "Unbalanced brackets.", 
-                               false, options.colored_txt);
+                               "Unbalanced brackets.", false);
 
             } else {
                 if (stack_ptr == MAX_STACK_SIZE)
@@ -151,7 +152,7 @@ int main(size_t argc, char* const argv[]) {
                                 get_memory_snapshot(
                                     data_ptr, instr_ptr, instr_count, stack_ptr
                                 ),
-                                NULL, true, options.colored_txt);
+                                NULL, true);
 
                 stack[stack_ptr++] = instr_ptr;
             }
@@ -162,7 +163,7 @@ int main(size_t argc, char* const argv[]) {
                             get_memory_snapshot(
                                 data_ptr, instr_ptr, instr_count, stack_ptr
                             ),
-                            NULL, true, options.colored_txt);
+                            NULL, true);
 
             if (data[data_ptr] == 0)
                 --stack_ptr;
@@ -172,7 +173,7 @@ int main(size_t argc, char* const argv[]) {
             break;
         default:
             throw_error(UNKNOWN, (struct memory){ 0 }, "Unknown instruction",
-                        false, options.colored_txt);
+                        false);
         }
 
         // Check for invalid data pointer values
@@ -181,13 +182,13 @@ int main(size_t argc, char* const argv[]) {
                         get_memory_snapshot(
                             data_ptr, instr_ptr, instr_count, stack_ptr
                         ),
-                        NULL, true, options.colored_txt);
+                        NULL, true);
         if (data_ptr >= MAX_MEMORY_SIZE)
             throw_error(DATA_OVERFLOW,
                         get_memory_snapshot(
                             data_ptr, instr_ptr, instr_count, stack_ptr
                         ),
-                        NULL, true, options.colored_txt);
+                        NULL, true);
         
         ++instr_ptr;
         ++instr_count;
@@ -198,7 +199,7 @@ int main(size_t argc, char* const argv[]) {
                     get_memory_snapshot(
                         data_ptr, instr_ptr, instr_count, stack_ptr
                     ),
-                    NULL, true, options.colored_txt);
+                    NULL, true);
     
     if (options.verbose_txt)
         printf("\n------------------------------\n"
