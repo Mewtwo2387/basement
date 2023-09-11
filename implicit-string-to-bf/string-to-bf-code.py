@@ -27,10 +27,15 @@ def parse_cli_arguments():
     parser = argparse.ArgumentParser(
         description="Generate Brainfuck code that prints a specified text"
     )
-    parser.add_argument("text",
-                        help="The text the brainfuck code is to print")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("-i", "--input", action="store",
+                             help="Input file containing the text to be "
+                                  "converted")
+    input_group.add_argument("-t", "--text", action="store",
+                             help="Convert the input text to brainfuck code")
+
     parser.add_argument("-o", "--output", action="store", default="output.bf",
-                        help="File to write the code to")
+                             help="Path to the file to write the code to")
     parser.add_argument("-n", "--new-line", action="store_true",
                         help="Add a trailing new line")
     return parser.parse_args()
@@ -38,7 +43,14 @@ def parse_cli_arguments():
 
 def main():
     args = parse_cli_arguments()
-    string = args.text + ("\n" if (args.new_line) else "")
+
+    if (args.input is None):
+        string = args.text + ("\n" if (args.new_line) else "")
+    else:
+        string = ""
+        with open(args.input, "r") as file:
+            string = file.read()
+
 
     diff = relative_pos(string)
     bf_code = "".join([
