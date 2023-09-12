@@ -1,0 +1,285 @@
+/* PFP */
+#pfpDisplay{
+    position:absolute;
+    top:10px;
+    left:10px;
+    width:100px;
+    height:100px;
+    border-radius:50px;
+    border: 10px solid #8844BB;
+    box-shadow: 5px 5px #662299;
+    background-size:100px;
+    background-image:url(../assets/images/characters/akagi.png);
+    z-index:0;
+}
+#levelDisplay{
+    position:absolute;
+    top:100px;
+    left:10px;
+    width:20px;
+    height:20px;
+    border-radius:10px;
+    border: 2px solid #AA66DD;
+    box-shadow: 2px 2px #662299;
+    background-color:#440077;
+    text-align:center;
+    z-index:1;
+}
+
+
+/* Power */
+#powerDisplayShadow{
+    position:absolute;
+    top:25px;
+    left:105px;
+	border-top: 70px solid #440077;
+	border-right: 15px solid transparent;
+	height: 0;
+	width: 250px;
+    z-index:-3;
+}
+#powerDisplayOuter{
+    position:absolute;
+    top:20px;
+    left:100px;
+	border-top: 70px solid #662299;
+	border-right: 15px solid transparent;
+	height: 0;
+	width: 250px;
+    z-index:-2;
+}
+#powerDisplayInner{
+    position:absolute;
+    top:30px;
+    left:90px;
+	border-top: 50px solid #440077;
+	border-right: 11px solid transparent;
+	height: 0;
+	width: 250px;
+    z-index:-1;
+}
+#powerLabelText{
+    position:absolute;
+    top:40px;
+    left:140px;
+    padding-top:2px;
+    z-index: 0;
+}
+#powerLabel{
+    position:absolute;
+    top:40px;
+    left:210px;
+    z-index: 0;
+}
+
+
+/* XP */
+#xpDisplayShadow{
+    position:absolute;
+    top:95px;
+    left:102px;
+	border-top: 28px solid #555555;
+	border-right: 15px solid transparent;
+	height: 0;
+	width: 300px;
+    z-index:-13;
+}
+#xpDisplayOuter{
+    position:absolute;
+    top:93px;
+    left:100px;
+	border-top: 28px solid #888888;
+	border-right: 15px solid transparent;
+	height: 0;
+	width: 300px;
+    z-index:-12;
+}
+#xpDisplayInner{
+    position:absolute;
+    top:97px;
+    left:96px;
+	border-top: 20px solid #555555;
+	border-right: 11px solid transparent;
+	height: 0;
+	width: 300px;
+    z-index:-11;
+}
+#xpLabelText{
+    position:absolute;
+    top:100px;
+    left:140px;
+}
+#xpLabel{
+    position:absolute;
+    top:100px;
+    left:275px;
+}
+#xpBarInner{
+    position:absolute;
+    top:102px;
+    left:165px;
+    height:8px;
+    width:100px;
+    background-color:#4488bb;
+    border-radius: 4px;
+    transition: width 1s;
+    z-index:0;
+}
+#xpBarOuter{
+    position:absolute;
+    top:102px;
+    left:165px;
+    height:8px;
+    width:100px;
+    background-color:grey;
+    border-radius: 4px;
+    z-index:-1;
+}
+
+/* stuff on the right (sotr) */
+#coinDisplay, #energyDisplay, #plutoniumDisplay{
+    position:absolute;
+    top:40px;
+    width: 200px;
+    height:30px;
+    background-color: #AA66DD;
+    border:5px solid #8844BB;
+    border-radius:15px;
+    box-shadow: 3px 3px #662299;
+    z-index:0;
+    display: flex;
+    align-items: center;
+}
+#energyDisplay{ right: 50px;}
+#plutoniumDisplay{ right: 300px;}
+#coinDisplay{ right: 550px;}
+#coinLabel, #energyLabel, #plutoniumLabel{
+    padding-left:30px;
+}
+#energyBarOuter{
+    position:absolute;
+    top:78px;
+    right:48px;
+    height:8px;
+    width:150px;
+    background-color:#772222;
+    border-radius: 4px;
+    z-index:1;
+    border:2px solid #770077;
+}
+#energyBarInner{
+    position:absolute;
+    top:80px;
+    right:50px;
+    height:8px;
+    width:150px;
+    background-color:#CC0000;
+    border-radius: 4px;
+    transition: width 1s;
+    z-index:2;
+}
+#sotrDisplayOuter{
+    position:absolute;
+    top:20px;
+    right:30px;
+    width:800px;
+    border-top:50px solid #662299;
+    border-left:20px solid transparent;
+    z-index: -2;
+}
+#sotrDisplayInner{
+    position:absolute;
+    top:25px;
+    right:35px;
+    width:790px;
+    border-top:40px solid #440077;
+    border-left:20px solid transparent;
+    z-index: -1;
+}
+#coinImg, #energyImg, #plutoniumImg{
+    position:absolute;
+    top:30px;
+}
+#coinImg{ right:725px;}
+#plutoniumImg{ right:475px;}
+#energyImg{ right:225px;}
+
+/* stuff below the pfp */
+#profileButton, #settingsButton, #mailButton{
+    position: absolute;
+    top:150px;
+    height:40px;
+    width:90px;
+    border-radius:10px;
+    border:0px;
+}
+#profileButton{
+    left:30px;
+    background:linear-gradient(#00AADD,#0077AA);
+    box-shadow:2px 2px #004488;
+}
+#settingsButton{
+    left:130px;
+    background:linear-gradient(#777777,#444444);
+    box-shadow:2px 2px #111111;
+}
+#mailButton{
+    left:230px;
+    background:linear-gradient(#AA4444,#772222);
+    box-shadow:2px 2px #440000;
+}
+
+/* the big things */
+#charactersButton, #itemsButton, #expeditionButton{
+    position: absolute;
+    height:320px;
+    width:256px;
+    border: 0px;
+}
+#charactersButton{
+    right:100px;
+    top:120px;
+    background:url(../assets/images/icons-main/characters-temp.png)
+}
+#expeditionButton{
+    right:356px;
+    top:280px;
+    background:url(../assets/images/icons-main/expedition.png)
+}
+#itemsButton{
+    right:100px;
+    top:440px;
+    background:url(../assets/images/icons-main/items.png)
+}
+#chat{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    width:400px;
+    height:50%;
+    background-color:rgba(0,0,0,0.5);
+    border-radius:10px;
+}
+#chatButton{
+    position:absolute;
+    bottom:10px;
+    right:20px;
+    width:50px;
+    height:20px;
+}
+#chatBar{
+    position:absolute;
+    width:300px;
+    height:20px;
+    bottom:10px;
+    left:20px;
+    border-radius:5px;
+    background-color:#AA66DD;
+}
+#chatMessages{
+    position:absolute;
+    width:100%;
+    top:30px;
+    bottom:30px;
+    overflow-y:scroll;
+}

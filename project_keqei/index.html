@@ -1,0 +1,361 @@
+<html>
+<head>
+    <!-- AAAAAAAA VIEWPORT AAAAAAAAAA THE GAME DOESNT WORK ON MOBILE AAAAAAAA -->
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">-->
+    <meta name="viewport" content="width=1920;height=1080">
+    <title id="title">Project: Keq-Ei</title>
+    <link rel="icon" href="assets/images/icons-main/4.webp">
+    <script src="js/external/jquery.js"></script>
+    <script src="js/characters/akagi.js"></script>
+    <script src="js/main/animations.js"></script>
+    <script src="js/main/main.js"></script>
+    <script src="js/main/math.js"></script>
+    <script src="js/main/start.js"></script>
+    <script src="js/main/websocket.js"></script>
+    <link rel="stylesheet" href="css/main.css" type="text/css">
+    <link rel="stylesheet" href="css/animations.css" type="text/css">
+    <link rel="stylesheet" href="css/arena.css" type="text/css">
+    <link rel="stylesheet" href="css/menuScreen.css" type="text/css">
+    <link rel="stylesheet" href="css/loginScreen.css" type="text/css">
+    <link rel="stylesheet" href="css/charactersScreen.css" type="text/css">
+</head>
+<body id="body">
+    <!-- AUDIO -->
+    <iframe src="assets/music/quick_ost_idea.mp3" allow="autoplay" style="display:none" id="iframeAudio"></iframe> 
+
+    <!-- POPUP TGP/RE:PLACE LOGO SCREEN -->
+    <div class="mainDisplay" style="background-color:black; z-index:999; align-items: center; transition: opacity 3s" id="logoScreen">
+        <img class="tgpLogoImg" src="assets/images/main/grplogo1.png">
+        <h1 class="tgpLogoText">Degenerates save the world</h1>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div class="mainDisplay" id="loginScreen">
+        <img class="logoImg" src="assets/images/main/logo.png">
+        <div id="noticeDisplay">
+            <h2>NOTICES</h2>
+            There is nothing that can stop the development of this game<br>
+            Even if keq x ei is no more, this game still continues<br><br>
+            Anyways, hey guys did you know that...<br> Akagi is an IJN aircraft carrier disguised as a genderbent human being. Despite being an aircraft carrier, her iconic quote is "I am not an aircraft carrier".
+        </div>
+        <div id="loginDisplay">
+            <h1 class="loginLabel" style="top:10%">LOGIN</h1>
+            <h4 class="loginLabel" id="loginError" style="top:20%;color:red">if you can see this something is wrong</h1>
+            <h2 class="loginLabel" style="top:28%">Username:</h2>
+            <input class="loginInput" id="usernameInput" style="top:35%"type="text"pattern='[A-Za-z1-9]'>
+            <h2 class="loginLabel" style="top:48%">Password:</h2>
+            <input class="loginInput" id="passwordInput" style="top:55%"type="password"pattern='[A-Za-z1-9]'>
+            <button id="loginButton" onclick="login();">Login</button>
+            <h4 class="loginLabel" id="switchButton1" onclick="switchlogin()"style="top:85%">Don't have an account? Click here to sign up for a free cookie (moldy, doesn't count as welkin cookies)</h4>
+        </div>
+        <div id="signupDisplay" style="display:none">
+            <h1 class="loginLabel" style="top:5%">SIGN UP</h1>
+            <h4 class="loginLabel" id="signupError" style="top:12%;color:red">if you can see this something is wrong</h1>
+            <h2 class="loginLabel" style="top:20%">Username:</h2>
+            <input class="loginInput" id="usernameInputS" style="top:26%"type="text"pattern='[A-Za-z1-9]'>
+            <h2 class="loginLabel" style="top:35%">Password:</h2>
+            <input class="loginInput" id="passwordInputS" style="top:41%"type="password"pattern='[A-Za-z1-9]'>
+            <h2 class="loginLabel" style="top:50%">Confirm Password:</h2>
+            <input class="loginInput" id="repasswordInputS" style="top:56%"type="password"pattern='[A-Za-z1-9]'>
+            <button id="loginButton" onclick="signup();" style="bottom:25%">Sign Up</button>
+            <h4 class="loginLabel" style="top:77%;color:red">PLEASE DO NOT USE YOUR REGULAR PASSWORD HERE. IT IS VERY INSECURE AND I'M TOO LAZY TO DO THE ENCRYPTION</h1>
+            <h4 class="loginLabel" id="switchButton2" onclick="switchlogin()" style="top:90%">Already have an account? Why are you here, click here to login, alts are for akagi and qm7 only</h4>
+        </div>
+        <p id="version">PreAlpha-220727-03</p>
+    </div>
+    <p id="ping"></p>
+    <!-- MENU SCREEN -->
+    <div class="mainDisplay" id="menuScreen">
+        <div id="pfpDisplay"></div>
+        <div id="levelDisplay">15</div>
+        <div id="powerDisplayShadow"></div>
+        <div id="powerDisplayInner"></div>
+        <div id="powerDisplayOuter"></div>
+        <h3 id="powerLabelText">Power</h3>
+        <h2 id="powerLabel">69.420T</h2>
+        <div id="xpDisplayShadow"></div>
+        <div id="xpDisplayInner"></div>
+        <div id="xpDisplayOuter"></div>
+        <div id="xpBarOuter"></div>
+        <div id="xpBarInner" style="width:20.6px"></div>
+        <p id="xpLabelText">XP</p>
+        <p id="xpLabel">69696/337500</p>
+        <button id="profileButton">Profile</button>
+        <button id="settingsButton">Settings</button>
+        <button id="mailButton">Mail</button>
+        <div id="coinDisplay"><h2 id="coinLabel">100000</h2></div>
+        <div id="plutoniumDisplay"><h2 id="plutoniumLabel">250</h2></div>
+        <div id="energyDisplay"><h2 id="energyLabel">160/160</h2></div>
+        <div id="sotrDisplayOuter"></div>
+        <div id="sotrDisplayInner"></div>
+        <div id="sotrDisplayShadow"></div>
+        <img id="coinImg" class="img50" src='assets/images/icons-main/coin.png'>
+        <img id="plutoniumImg" class="img50" src='assets/images/icons-main/plutonium.png'>
+        <img id="energyImg" class="img50" src='assets/images/icons-main/energy.png'>
+        <div id="energyBarInner"></div>
+        <div id="energyBarOuter"></div>
+        <button id="charactersButton" onclick="openScreen('charactersScreen')"></button>
+        <button id="itemsButton" onclick="openScreen('itemsScreen')"></button>
+        <button id="expeditionButton" onclick="openScreen('expeditionScreen')"></button>
+        <div id="chat">
+            <h2>CHAT</h2>
+            <div id="chatMessages"></div>
+            <div style="position:absolute;width:100%;bottom:0px;">
+                <button id="chatButton" onclick="chat()">SEND</button>
+                <input type="text" id="chatBar">
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTERS TAB -->
+    <div class="mainDisplay" id="charactersScreen" style="display:none">
+        <div id="leftDisplayInnerC"></div>
+        <div id="leftDisplayOuterC"></div>
+        <h1 id="leftDisplayLabelC">Characters</h1>
+        <div id="coinDisplayC"><h2 id="coinLabelC">100000</h2></div>
+        <div id="plutoniumDisplayC"><h2 id="plutoniumLabelC">250</h2></div>
+        <div id="rainbowOrbDisplay"><h2 id="rainbowOrbLabel">999</h2></div>
+        <div id="sotrDisplayOuterC"></div>
+        <div id="sotrDisplayInnerC"></div>
+        <div id="sotrDisplayShadowC"></div>
+        <img id="coinImgC" class="img50" src='assets/images/icons-main/coin.png'>
+        <img id="plutoniumImgC" class="img50" src='assets/images/icons-main/plutonium.png'>
+        <img id="rainbowOrbImg" class="img50" src='assets/images/icons-main/rainbowOrb.png'>
+        <div id="teamDisplayInner"></div>
+        <div id="teamDisplayOuter"></div>
+        <div id="team">
+            <div class="icon-div" id="t0" onclick="loadchar(0)">
+                <img class="s6 icon-img" src="assets/images/characters/mystic.png">
+                <p class="icon-text">Lv23</p>
+            </div>
+            <div class="icon-div" id="t1" onclick="loadchar(1)">
+                <img class="s5 icon-img" src="assets/images/icons-main/smilingPotato.png">
+                <p class="icon-text">Lv13</p>
+            </div>
+            <div class="icon-div" id="t2" onclick="loadchar(2)">
+                <img class="s4 icon-img" src="assets/images/icons-main/bakedPotato.png">
+                <p class="icon-text">Lv9</p>
+            </div>
+            <div class="icon-div" id="t3" onclick="loadchar(3)">
+                <img class="s5 icon-img" src="assets/images/characters/akagi.png">
+                <p class="icon-text">Lv20</p>
+            </div>
+            <div class="icon-div" id="t4" onclick="loadchar(4)">
+                <img class="s5 icon-img" src="assets/images/characters/akagi.png">
+                <p class="icon-text">Lv20</p>
+            </div>
+            <div class="icon-div" id="t5" onclick="loadchar(5)">
+                <img class="s5 icon-img" src="assets/images/characters/akagi.png">
+                <p class="icon-text">Lv20</p>
+            </div>
+        </div>
+        <div id="charactersScreenMain">
+            <div id="tabsButtonDisplay">
+                <button id="infoButton" onclick="switchTab('info')">Info</button>
+                <button id="loreButton" onclick="switchTab('lore')">Lore</button>
+                <button id="upgradeButton" onclick="switchTab('upgrade')">Upgrade</button>
+                <button id="ascendButton" onclick="switchTab('ascend')">Ascend</button>
+                <button id="trainingButton" onclick="switchTab('training')">Training</button>
+                <button id="degenerationButton" onclick="switchTab('degeneration')">Degeneration</button>
+            </div>
+            <div id="charactersScreenMainLeft">
+                <h2 id="characterName">Character:Null</h2>
+                <div class="characterTopDiv" style="left:0px;">
+                    <h4>Type</h4>
+                    <p id="characterType">Abyssmal</p>
+                </div>
+                <div class="characterTopDiv" style="right:0px;">
+                    <h4>Rarity</h4>
+                    <p id="characterRarity">6 stars</p>
+                </div>
+                <img id="characterImg" src="assets/images/characters/placeholder.png">
+                <div class="icon-div" id="a1" style="position:absolute; top:90px; right:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div class="icon-div" id="a3" style="position:absolute; top:180px; right:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div class="icon-div" id="a5" style="position:absolute; top:270px; right:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div class="icon-div" id="a0" style="position:absolute; top:90px; left:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div class="icon-div" id="a2" style="position:absolute; top:180px; left:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div class="icon-div" id="a4" style="position:absolute; top:270px; left:0px">
+                    <img class="s5 icon-img" src="assets/images/icons-main/placeholder.png">
+                    <p class="icon-text">Lv5</p>
+                </div>
+                <div style="position:absolute;top:360px;left:50%;transform:translateX(-50%)">
+                    <h2 style="color: rgb(175, 255, 255);display:inline-block;">Power</h2>
+                    <h2 style="display:inline-block; padding-left:10px;" id="characterPower">5,908,977</h2>
+                </div>
+                <div class="characterBottomDiv" style="width:33%;left:34%;background-color: #FF4422;">
+                    <h4>ATK</h4>
+                    <p id="characterATK">177,013</p>
+                </div>
+                <div class="characterBottomDiv" style="width:34%;left:0px;border-bottom-left-radius: 15px;border-top-left-radius: 15px;background-color: #22AA22;">
+                    <h4>HP</h4>
+                    <p id="characterHP">228,922</p>
+                </div>
+                <div class="characterBottomDiv" style="width:34%;right:0px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;background-color: #2244FF;">
+                    <h4>DEF</h4>
+                    <p id="characterDEF">228,922</p>
+                </div>
+            </div>
+            <div id="info" class="charactersScreenMainRight" style="display:block;">
+                <h3 style="color:#004477">Resonance</h3>
+                <p id="res1">[Glitched] Paired with MissingEi for +20% ATK</p>
+                <p id="res2">[Abyssmal] Paired with HoH Ei for +20% ATK</p>
+                <p id="res3">[???] Paired with ??? for +??% ??? and +??% ??? !@#$%!?</p>
+                <br>
+                <h3 style="color:#004477">Attacks</h3>
+                <div id="attackEDisplay">
+                    <h4 id="attackETitle">Nullify</h4>
+                    <p style="color:#666666">Normal Attack</p>
+                    <p id="attackEDesc">This non-existent character casts this non-existent attack, nullifying and blackening out 3 random characters. It deals 35% ATK as damage and temporarily lowers ATK of the affected characters by 20% - except that I haven't coded attacks to affect stats, so this non-existent attack will probably not gonna exist until 2023.</p>
+                    <br>
+                    <div id="attackEInfo">
+                        <img src="a">
+                        <p id="attackEType">Random 3</p>
+                        <img src="a">
+                        <p id="attackEAcc">100%</p>
+                        <img src="a">
+                        <p id="attackEAtk">35%</p>
+                        <img src="a">
+                        <p id="attackECrate">5%</p>
+                        <img src="a">
+                        <p id="attackECdmg">15%</p>
+                    </div>
+                </div>
+                <div id="attackQDisplay">
+                    <h4 id="attackQTitle">x@!#$</h4>
+                    <p style="color:#666666">Charged Attack</p>
+                    <p id="attackQDesc">Glitches out the game, damaging all 6 opponent characters. 01100001 01100001 01100001 01100001 01100001 01100001 01100001 01100001 01100001 01100001 01100001 01100001 00100000 00101000 01101110 01101111 01110100 00100000 01110110 01100101 01101110 01100110 01100101 01101001 00101001. It deals 55% ATK to all opponents. And yea this attack doesn't exist.</p>
+                    <br>
+                    <div id="attackQInfo">
+                        <img src="a">
+                        <p id="attackQType">All 6</p>
+                        <img src="a">
+                        <p id="attackQAcc">100%</p>
+                        <img src="a">
+                        <p id="attackQAtk">55%</p>
+                        <img src="a">
+                        <p id="attackQCrate">5%</p>
+                        <img src="a">
+                        <p id="attackQCdmg">15%</p>
+                    </div>
+                </div>
+            </div>
+            <div id="lore" class="charactersScreenMainRight" style="display:none">This character does not exist, and if you are seeing this, either the game glitched, or you are a horny keq simp developing this game. Or the horny keq simp posted some images of the game. Anyways, lore goes here. Hey guys did you know that...<br> Akagi is an IJN aircraft carrier disguised as a genderbent human being. Despite being an aircraft carrier, her iconic quote is "I am not an aircraft carrier".<br><br>She lives in the pier to the north of Bread Valley, with Fit, the pilot of the aircrafts.</div>
+            <div id="upgrade" class="charactersScreenMainRight" style="display:none">
+                
+            </div>
+            <div id="ascend" class="charactersScreenMainRight" style="display:none"></div>
+            <div id="training" class="charactersScreenMainRight" style="display:none"></div>
+            <div id="degeneration" class="charactersScreenMainRight" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- ITEMS TAB -->
+    <div class="mainDisplay" id="itemsScreen" style="display:none">
+
+    </div>
+
+    <!-- EXPEDITION TAB -->
+    <div class="mainDisplay" id="expeditionScreen" style="display:none">
+
+    </div>
+
+
+    <!-- BATTLE -->
+    <!------------------------------------------------>
+    <div class="testingArena" style="display:none">
+        <div class="characterWrapper">
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+        </div>
+        <div class="characterWrapper">
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/akagi.png">
+                <h1 style="color:#CCCCCC;margin:0px">akagi</h1>
+                <div class="hpOuter"><div class="hpInner"></div></div>
+            </div>
+        </div>
+        <div class="characterWrapper"></div>
+        <div class="characterWrapper">
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c1"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c2"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c3"></div></div>
+            </div>
+        </div>
+        <div class="characterWrapper">
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c4"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c5"></div></div>
+            </div>
+            <div class="characterDiv">
+                <img class="characterImg" src="assets/images/characters/mystic.png">
+                <h1 style="color:#CCCCCC;margin:0px">mystic</h1>
+                <div class="hpOuter"><div class="hpInner" id="c6"></div></div>
+            </div>
+        </div>
+    </div>
+    <!------------------------------->
+
+    <!-- TEMPLATES -->
+    <template id="animatedImg">
+        <img class="animatedImg" src="assets/images/plane.png">
+    </template>
+    <template id="animatedDamage">
+        <h1 class="animatedDamage">99999</h1>
+    </template>
+</body>
+</html>

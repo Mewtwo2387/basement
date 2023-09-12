@@ -1,0 +1,89 @@
+@font-face {
+    font-family: Genshin;
+    src: url(../assets/fonts/Genshin_Impact_Font.woff);
+}
+body{
+    background:linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),url("../assets/images/main/keqei.jpg");
+    margin: 0px;
+    position: absolute;
+    top:0px; bottom:0px; left:0px; right:0px;
+    overflow: hidden;
+    z-index: -99999;
+}
+.mainDisplay{
+    position:absolute;
+    width:100%;
+    height:100%;
+    z-index:-9999;
+}
+h1, h2, p, div, h3, button, input, h4{
+    font-family: Genshin;
+    padding:0px;
+    margin:0px;
+}
+h1, h2, p, div{
+    color: white;
+}
+h3, h4{
+    color: rgb(175, 255, 255);
+}
+.img50{
+    height:50px;
+    width:50px;
+    margin:0px;
+    padding:0px;
+}
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; 
+}
+.icon-div{
+    height:70px;
+    width:70px;
+    display:inline-block;
+    margin:5px;
+    padding:0px;
+    position: relative;
+}
+.icon-img{
+    height:60px;
+    width:60px;
+    border-radius:10px;
+    margin:0px;
+    padding:0px;
+}
+.icon-text{
+    position:absolute;
+    bottom:0px;
+    right:0px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4));
+}
+.s1{
+    border:5px solid #888888;
+    background-color:#BBBBBB;
+}
+.s2{
+    border:5px solid #008800;
+    background-color:#88BB88;
+}
+.s3{
+    border:5px solid #004488;
+    background-color:#4488BB;
+}
+.s4{
+    border:5px solid #662299;
+    background-color:#AA66DD;
+}
+.s5{
+    border:5px solid #AA4400;
+    background-color:#DD8844;
+}
+.s6{
+    border:5px solid #DDAA00;
+    background-color:#FFDD22;
+}
+#ping{
+    right:0px;
+    bottom:0px;
+    position:absolute;
+}

@@ -1,0 +1,40 @@
+.testingArena{
+    position:absolute;
+    display:flex;
+    left:10%;
+    right:10%;
+    top:10%;
+    bottom:10%;
+    background:rgba(30,30,30,0.69)
+}
+.characterWrapper{
+    display:flex;
+    flex-direction: column;
+    flex-grow:1;
+}
+.characterDiv{
+    flex-direction: row;
+    flex-grow:1;
+    text-align:center;
+}
+.characterImg{
+    display: block;
+    margin: auto;
+    width:50%;
+}
+.hpInner{
+    display: block;
+    height:5px;
+    width:100%;
+    background-color:red;
+    border-radius: 2px;
+    transition: width 1s;
+}
+.hpOuter{
+    display: block;
+    margin: auto;
+    height:5px;
+    width:50%;
+    background-color:grey;
+    border-radius: 2px;
+}

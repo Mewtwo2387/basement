@@ -1,0 +1,215 @@
+/* left */
+#leftDisplayInnerC{
+    position:absolute;
+    top:20px;
+    left:30px;
+    width:250px;
+    border-top:50px solid #006699;
+    border-right:20px solid transparent;
+    z-index: -2;
+}
+#leftDisplayOuterC{
+    position:absolute;
+    top:25px;
+    left:35px;
+    width:240px;
+    border-top:40px solid #004477;
+    border-right:19px solid transparent;
+    z-index: -1;
+}
+#leftDisplayLabelC{
+    position: absolute;
+    top:25px;
+    left:40px;
+}
+
+/* stuff on the right (sotr) */#coinDisplayC, #rainbowOrbDisplay, #plutoniumDisplayC{
+    position:absolute;
+    top:40px;
+    width: 200px;
+    height:30px;
+    background-color: #00AADD;
+    border:5px solid #0088BB;
+    border-radius:15px;
+    box-shadow: 3px 3px #006699;
+    z-index:0;
+    display: flex;
+    align-items: center;
+}
+#rainbowOrbDisplay{ right: 50px;}
+#plutoniumDisplayC{ right: 300px;}
+#coinDisplayC{ right: 550px;}
+#coinLabelC, #rainbowOrbLabel, #plutoniumLabelC{
+    padding-left:30px;
+}
+#sotrDisplayOuterC{
+    position:absolute;
+    top:20px;
+    right:30px;
+    width:800px;
+    border-top:50px solid #006699;
+    border-left:20px solid transparent;
+    z-index: -2;
+}
+#sotrDisplayInnerC{
+    position:absolute;
+    top:25px;
+    right:35px;
+    width:790px;
+    border-top:40px solid #004477;
+    border-left:20px solid transparent;
+    z-index: -1;
+}
+#coinImgC, #rainbowOrbImg, #plutoniumImgC{
+    position:absolute;
+    top:30px;
+}
+#coinImgC{ right:725px;}
+#plutoniumImgC{ right:475px;}
+#rainbowOrbImg{ right:225px;}
+
+
+/*top of the main stuff*/
+#team{
+    position:absolute;
+    top:125px;
+    left:50px;
+}
+#teamDisplayInner{
+    position:absolute;
+    top:115px;
+    left:20px;
+    width:600px;
+    border-top:100px solid #006699;
+    border-right:50px solid transparent;
+    z-index: -2;
+}
+#teamDisplayOuter{
+    position:absolute;
+    top:120px;
+    left:25px;
+    width:590px;
+    border-top:90px solid #004477;
+    border-right:48px solid transparent;
+    z-index: -1;
+}
+#tabsButtonDisplay{
+    position:absolute;
+    display:flex;
+    top:-10px;
+    width:54%;
+    right:3%
+}
+#tabsButtonDisplay button{
+    height:30px;
+    border:5px solid #0088BB;
+    background-color: #00AADD;
+    color: white;
+    border-radius:10px;
+    flex-direction:row;
+    flex-grow:1;
+    flex-basis:0;
+    text-align:center;
+    line-height:20px;
+    margin-left:1px;
+    margin-right:1px;
+}
+
+
+/* main stuff */
+#charactersScreenMain{
+    position: absolute;
+    top:150px;
+    bottom:20px;
+    left:30px;
+    right:30px;
+    background: linear-gradient(90deg,#88DDFF 38%, #44BBEE 40%);
+    border-radius: 20px;
+    border:4px solid #00AADD;
+    z-index:-99;
+}
+#charactersScreenMainLeft{
+    position:absolute;
+    top:80px;
+    bottom:3%;
+    width:32%;
+    left:3%;
+}
+.charactersScreenMainRight{
+    position:absolute;
+    top:30px;
+    bottom:3%;
+    width:54%;
+    right:3%;
+    overflow-y: scroll;
+}
+#characterImg{
+    position:absolute;
+    left: 20%;
+    right: 20%;
+    top: 90px;
+    width: 60%;
+    z-index:-1;
+}
+#characterName{
+    width:100%;
+    text-align:center;
+}
+.characterTopDiv{
+    position: absolute;
+    width:40%;
+    height:30px;
+    top: 40px;
+    background-color:grey;
+    border-radius:15px;
+    border:2px solid #AAAAAA;
+}
+.characterTopDiv h4, .characterBottomDiv h4{
+    padding-left:10px;
+    line-height:30px;
+    height:30px;
+    display:inline-block;
+}
+.characterTopDiv p, .characterBottomDiv p{
+    padding-left:10px;
+    display:inline-block;
+}
+.characterBottomDiv{
+    position:absolute;
+    top:400px;
+    height: 30px;
+}
+/* info */
+#attackEDisplay, #attackQDisplay{
+    width:95%;
+    margin-top:5px;
+    margin-bottom:5px;
+    background-color: #00AADD;
+    border:5px solid #0088BB;
+    border-radius:20px;
+}
+#attackETitle, #attackQTitle{
+    margin:2px;
+    color:#444444;
+}
+#attackEInfo, #attackQInfo{
+    display: flex;
+    height:32px;
+    width:100%;
+}
+#attackEInfo p, #attackQInfo p{
+    display: flex;
+    flex-direction:row;
+    flex-grow:2;
+    flex-basis:0;
+    height: 32px;
+    line-height: 32px;
+}
+#attackEInfo img, #attackQInfo img{
+    display: flex;
+    flex-direction:row;
+    flex-grow:1;
+    flex-basis:0;
+    height:32px;
+    width:32px;
+}

@@ -1,0 +1,79 @@
+.tgpLogoImg{
+    width: 50%;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation:unfade 3s
+}
+.tgpLogoText{
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation:unfade 3s;
+    font-size: 36px;
+}
+.logoImg{
+    width: 40%;
+    position: absolute;
+    top: 0%;
+    left: 0%;
+}
+#noticeDisplay{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    width:40%;
+    height:50%;
+    background-color:rgba(0,0,0,0.69);
+    border-radius:10px;
+}
+#loginDisplay, #signupDisplay{
+    position:absolute;
+    right:10%;
+    width:40%;
+    background-color:rgba(50,25,75,0.69);
+    border-radius:10px;
+}
+#loginDisplay{
+    top:15%;
+    bottom:15%;
+}
+#signupDisplay{
+    top:5%;
+    bottom:5%;
+}
+.loginLabel{
+    position:absolute;
+    left:50%;
+    transform: translateX(-50%);
+    color:#AA66DD;
+}
+#loginButton, #signupButton{
+    position:absolute;
+    bottom:20%;
+    left:20%;
+    right:20%;
+    height:50px;
+    text-align:center;
+    font-size:1.5em;
+    background-color:#662299;
+    color:#AA66DD;
+    border-radius:10px;
+}
+.loginInput{
+    position:absolute;
+    left:20%;
+    right:20%;
+    height:40px;
+    text-align:center;
+    font-size:1.5em;
+    background-color:#CC88FF;
+    border-radius:10px;
+}
+#version{
+    left:0px;
+    bottom:0px;
+    position:absolute;
+}
