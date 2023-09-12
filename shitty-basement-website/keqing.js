@@ -59,16 +59,20 @@ class item{
     totalSpinPerSec = 0
     totalCost = 0
 
-    constructor(name,rawSpinPerSec,rawCost){
+    constructor(name,rawSpinPerSec,rawCost,id){
         this.rawSpinPerSec = rawSpinPerSec
         this.rawCost = rawCost
         this.name = name
+        this.id = id
     }
 
     update(){
         this.eachSpinPerSec = this.rawSpinPerSec * this.multi * spinPerSecMulti
         this.totalSpinPerSec = this.eachSpinPerSec * this.amount
         this.totalCost = this.rawCost * (1.2**this.amount)
+        d(`c${this.id}`).innerHTML = `Cost: ${toText(this.totalCost,false)}`
+        d(`sps${this.id}`).innerHTML = `Spins Per Second: ${toText(this.eachSpinPerSec,false)}`
+        d(`tsps${this.id}`).innerHTML = `Total Spins Per Second: ${toText(this.totalSpinPerSec,false)}`
     }
 
     buy(){
@@ -82,6 +86,6 @@ class item{
     }
 }
 
-items = [new item('yanfei',0.1,1), new item('herta',1,10), new item('motor',8,120)]
+items = [new item('yanfei',0.1,1,0), new item('herta',1,10,1), new item('motor',8,120,2)]
 
 setInterval(tick,100)

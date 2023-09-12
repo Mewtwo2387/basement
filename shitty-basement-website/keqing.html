@@ -14,9 +14,26 @@
             <h2 id="smugPerSpinCount"></h2>
             <h2 id="smugCount"></h2>
         
-            <button onclick="items[0].buy()">yanfei</button>
-            <button onclick="items[1].buy()">herta</button>
-            <button onclick="items[2].buy()">motor</button>
+            <div style="width: 100%; display: flex;">
+                <div style="flex-grow: 1;">
+                    <button class='itemButton' onclick="items[0].buy()">yanfei</button>
+                    <p id="c0">Cost:</p>
+                    <p id="sps0">Spins Per Second:</p>
+                    <p id="tsps0">Total Spins Per Second:</p>
+                </div>
+                <div style="flex-grow: 1;">
+                    <button class='itemButton' onclick="items[1].buy()">herta</button>
+                    <p id="c1">Cost:</p>
+                    <p id="sps1">Spins Per Second:</p>
+                    <p id="tsps1">Total Spins Per Second:</p>
+                </div>
+                <div style="flex-grow: 1;"> 
+                    <button class='itemButton' onclick="items[2].buy()">motor</button>
+                    <p id="c2">Cost:</p>
+                    <p id="sps2">Spins Per Second:</p>
+                    <p id="tsps2">Total Spins Per Second:</p>
+                </div>
+            </div>
         </div>
     </body>
 </html>
