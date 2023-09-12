@@ -86,6 +86,6 @@ class item{
     }
 }
 
-items = [new item('yanfei',0.1,1,0), new item('herta',1,10,1), new item('motor',8,120,2)]
+items = [new item('yanfei',0.1,1,0), new item('herta',1,10,1), new item('motor',8,120,2), new item('turbine',32,1600,3), new item('typhoon',128,24000,4)]
 
 setInterval(tick,100)
