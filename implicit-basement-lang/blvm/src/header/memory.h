@@ -1,18 +1,18 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include "datasize.h"
 
 typedef struct {
-    uint8_t *memory;
-    size_t capacity;
+    data_t *memory;
+    addr_t capacity;
 } RAM_t;
 
-uint8_t RAM_getter(void *ram, size_t index);
-void    RAM_setter(void *ram, size_t index, uint8_t value);
+data_t RAM_getter(void *ram, addr_t addr);
+void   RAM_setter(void *ram, addr_t addr, data_t value);
+void   RAM_free(void *ram);
 
-#define RAM_UPPER_MEM_LIM 0x3000   // Placeholder value
-#define RAM_LOWER_MEM_LIM 0x8000   // Placeholder value
+#define RAM_UPPER_ADDR_LIM 0x3000   // Placeholder value
+#define RAM_LOWER_ADDR_LIM 0x8000   // Placeholder value
 
 #endif
