@@ -4,10 +4,11 @@
 #include "datasize.h"
 
 typedef struct {
-    addr_t screen_size;
+    word1_t *screen_buffer;
+    word2_t  screen_size;
 } Screen_t;
 
-void screen_setter(void *screen, addr_t addr, data_t value);
+void screen_setter(void *screen, word2_t addr, word8_t value);
 void screen_free(void *screen);
 
 #endif

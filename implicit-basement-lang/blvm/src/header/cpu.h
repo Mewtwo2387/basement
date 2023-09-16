@@ -7,12 +7,12 @@
 
 typedef struct  {
     /* Instruction pointer */
-    word_t *ip;
+    word1_t *ip;
 
     /* Data stack pointer */
-    data_t *data_sp;
+    word8_t *data_sp;
     /* Return stack pointer */
-    data_t *ret_sp;
+    word8_t *ret_sp;
 
     /* Memory mapper which includes the RAM, the stacks and the I/O interface */
     MemoryMapper_t *MM;
@@ -31,7 +31,7 @@ typedef enum {
     // TODO: Add the rest of the opcodes
 } opcode;
 
-void cpu_load_program(CPU_t *cpu, data_t *program, size_t program_size);
+void cpu_load_program(CPU_t *cpu, word8_t *program, size_t program_size);
 vm_result cpu_run(CPU_t *cpu);
 void free_cpu(CPU_t *cpu);
 

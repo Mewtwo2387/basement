@@ -4,10 +4,11 @@
 #include "datasize.h"
 
 typedef struct {
-    addr_t keyboard_size;
+    word1_t *keyboard_buffer;
+    word2_t  keyboard_size;
 } Keyboard_t;
 
-data_t keyboard_getter(void *keyboard, addr_t addr);
-void   keyboard_free(void *keyboard);
+word8_t keyboard_getter(void *keyboard, word2_t addr);
+void    keyboard_free(void *keyboard);
 
 #endif
