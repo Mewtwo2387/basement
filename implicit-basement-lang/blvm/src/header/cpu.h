@@ -10,9 +10,9 @@ typedef struct  {
     word1_t *ip;
 
     /* Data stack pointer */
-    word8_t *data_sp;
-    /* Return stack pointer */
-    word8_t *ret_sp;
+    word8_t *sp;
+    /* (Call) frame stack pointer */
+    word8_t *fp;
 
     /* Memory mapper which includes the RAM, the stacks and the I/O interface */
     MemoryMapper_t *MM;
