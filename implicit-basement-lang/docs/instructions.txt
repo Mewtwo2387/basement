@@ -1,29 +1,34 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 1]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 2]
 --------------------------------------------------------------------------------
+
+Instruction operands
+    - <LITERAL>
+        A constant value supplied by the user in the code.
+        By convention, this is 64 bits or 8 words in size.
+        [NOTE: A single word amounts to 8 bits or 1 byte.]
+    - <ADDRESS>
+        Memory address. By convention, this is 16 bits or 2 words in size.
+
 
 Data stack manipulation instructions
     PUSH_X instructions:
-        - PUSH_LIT
-            (src: lit<-instruction)
-            Push a literal value to the data stack.
-        - PUSH_ADDR
-            (src: addr<-instruction)
-            Push a value from the specified memory address to the data stack.
+        - PUSH_LIT, <LITERAL>
+            Push a literal argument to the data stack.
+        - PUSH_ADDR, <ADDRESS>
+            Push the value pointed by the address argument to the data stack.
     POP_X instructions:
-        - POP / DISCARD
+        - POP
             Discard the TOS (top of the data stack) value.
-        - POP_ADDR
-            (src: lit<-instruction; addr<-data_stack)
-            Pop TOS & use it as the address to write a literal value to memory.
-        - POP_LIT
-            (src: lit<-data_stack; addr<-instruction)
-            Pop TOS & write it to memory as specified by an address.
+        - POP_ADDR, <LITERAL>
+            Pop TOS & use it as the address to write the literal argument
+            to memory.
+        - POP_LIT, <ADDRESS>
+            Pop TOS & write it to memory as specified by the address argument.
         - POP_ADDRLIT
-            (src: lit<-data_stack; addr<-data_stack)
-            Pop an address and a literal value to use to write to memory.
+            Pop an address and a literal, and write the literal to memory.
         - POP_RES
-            Pop TOS and present it as the result of the program.
+            Pop TOS and set it as the result of the program.
     Miscellaneous:
         - DUP
             Duplicate the TOS value and push it to the data stack.
@@ -32,14 +37,16 @@ Data stack manipulation instructions
 
 
 Subroutine instructions:
-    - CALL
+    - CALL, <ADDRESS>
         Jump to the subroutine as specified by the address in the instruction.
         Push a call frame to the data stack which includes the return address
         and a precomputed space for local variables.
-    - RET
+    - RET, <ADDRESS>
+    - RET, <LITERAL>
         Pop the call frame on top of the data stack and set the instruction
-        pointer to the return address. The return value is to be pushed to the
-        data stack.
+        pointer to the return address. The return value (which can be either the
+        value of a local variable as specified by an address argument, or
+        a literal argument) is to be pushed to the data stack.
 
 
 Arithmetic/Bitwise logical operation instructions
@@ -53,10 +60,8 @@ Arithmetic/Bitwise logical operation instructions
     In-place binary operations:
         - ADDI
             Pop TOS and add it to the next value on the stack.
-        - ADDI_ADDR
-            (src: addr<-instruction)
-            Get the memory address from the instruction and add its pointed
-            value to TOS.
+        - ADDI_ADDR, <ADDRESS>
+            Get the value from the address argument and add it to the TOS value.
 
 
 Bitwise logical operation instructions
@@ -70,6 +75,8 @@ Bitwise logical operation instructions
         - LSH  (bitwise left-shift)
         - RSH  (bitwise right-shift)
     Unary operations:
+        Pop one value from the stack and do the unary operation on it.
+        The result is to be pushed to the stack.
         - NOT  (bitwise NOT)
 
 
@@ -86,26 +93,29 @@ Comparison operation instructions:
 
 
 Jump instructions:
-    - JUMP:
-        Unconditional jump to the address from the instruction.
-    - JUMP_IF_FALSE:
+    - JUMP, <ADDRESS>
+        Unconditional jump to the address provided as an argument.
+    - JUMP_IF_FALSE
         Jump to the address from the instruction if TOS is false (i.e. 0)
-    - JUMP_IF_TRUE:
+    - JUMP_IF_TRUE
         Jump to the address from the instruction if TOS is true (i.e. not 0)
 
 
 CPU state instructions:
-    - ABORT:
+    - ABORT
         Stop the code execution, and set the VM result as "FAILED"
-    - DONE:
+    - DONE
         Stop the code execution, and set the VM result as "SUCCESS"
 
 
 Debugging instructions
-    - PRINT:
-        Print the value of the address argument, i.e. from the instruction.
+    - PRINT <ADDRESS>
+        Print the value of the address argument.
+
 
 --------------------------------------------------------------------------------
 NOTES:
     1.) The debugging instructions are subject to change. They may be removed in
         the future revisions.
+    2.) I am considering adding I/O instructions, though this must require the
+        CPU to know the memory space for the I/O beforehand.
