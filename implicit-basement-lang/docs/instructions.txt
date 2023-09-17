@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [1ST DRAFT]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 1]
 --------------------------------------------------------------------------------
 
 Data stack manipulation instructions
@@ -32,15 +32,14 @@ Data stack manipulation instructions
 
 
 Subroutine instructions:
-    - CALL:
-        Jump the execution to the subroutine as specified by the address in
-        the instruction. Push a call frame which includes the return address and
-        the current state of the data stack to the return stack.
-        [See NOTES: 1 for some details]
-    - RET:
-        Pop the call frame on top of the return stack, go to the return address
-        and revert the previous state of the data stack.
-        [See NOTES: 1 for some details]
+    - CALL
+        Jump to the subroutine as specified by the address in the instruction.
+        Push a call frame to the data stack which includes the return address
+        and a precomputed space for local variables.
+    - RET
+        Pop the call frame on top of the data stack and set the instruction
+        pointer to the return address. The return value is to be pushed to the
+        data stack.
 
 
 Arithmetic/Bitwise logical operation instructions
@@ -108,13 +107,5 @@ Debugging instructions
 
 --------------------------------------------------------------------------------
 NOTES:
-    1.) The exact details of the subroutine CALL and RET instructions are still
-        being discussed.
-        The current concerns are as follows:
-        (a) Should the state saving of the data stack be copying the ENTIRE
-            data stack and including it in the call frame?
-        (b) Are there any alternatives so that we could have local variables
-            within subroutines?
-
-    2.) The debugging instructions are subject to change. It may be removed in
+    1.) The debugging instructions are subject to change. They may be removed in
         the future revisions.
