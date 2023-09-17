@@ -8,7 +8,7 @@ typedef struct {
     word2_t  screen_size;
 } Screen_t;
 
-void screen_setter(void *screen, word2_t addr, word8_t value);
+void screen_setter(void *screen, word2_t addr, word1_t value);
 void screen_free(void *screen);
 
 #endif

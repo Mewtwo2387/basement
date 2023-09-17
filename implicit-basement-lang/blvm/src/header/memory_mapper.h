@@ -17,7 +17,7 @@ void    memory_mapper_map_device(MemoryMapper_t *MM, void *device,
                                  word2_t lower_addr_lim,
                                  word2_t upper_addr_lim);
 word1_t memory_map_get(MemoryMapper_t *MM, word2_t addr);
-void    memory_map_set(MemoryMapper_t *MM, word2_t addr, word8_t value);
+void    memory_map_set(MemoryMapper_t *MM, word2_t addr, word1_t value);
 void    memory_map_free_devices(MemoryMapper_t *MM);
 
 #endif

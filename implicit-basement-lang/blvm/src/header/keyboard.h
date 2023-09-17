@@ -8,7 +8,7 @@ typedef struct {
     word2_t  keyboard_size;
 } Keyboard_t;
 
-word8_t keyboard_getter(void *keyboard, word2_t addr);
+word1_t keyboard_getter(void *keyboard, word2_t addr);
 void    keyboard_free(void *keyboard);
 
 #endif

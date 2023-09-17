@@ -8,8 +8,8 @@ typedef struct {
     word2_t  capacity;
 } RAM_t;
 
-word8_t RAM_getter(void *ram, word2_t addr);
-void    RAM_setter(void *ram, word2_t addr, word8_t value);
+word1_t RAM_getter_w1(void *ram, word2_t addr);
+void    RAM_setter(void *ram, word2_t addr, word1_t value);
 void    RAM_free(void *ram);
 
 #define RAM_UPPER_ADDR_LIM 0x3000   // Placeholder value
