@@ -1,0 +1,120 @@
+--------------------------------------------------------------------------------
+Instruction Set of the Virtual Machine of `basement-lang` [1ST DRAFT]
+--------------------------------------------------------------------------------
+
+Data stack manipulation instructions
+    PUSH_X instructions:
+        - PUSH_LIT
+            (src: lit<-instruction)
+            Push a literal value to the data stack.
+        - PUSH_ADDR
+            (src: addr<-instruction)
+            Push a value from the specified memory address to the data stack.
+    POP_X instructions:
+        - POP / DISCARD
+            Discard the TOS (top of the data stack) value.
+        - POP_ADDR
+            (src: lit<-instruction; addr<-data_stack)
+            Pop TOS & use it as the address to write a literal value to memory.
+        - POP_LIT
+            (src: lit<-data_stack; addr<-instruction)
+            Pop TOS & write it to memory as specified by an address.
+        - POP_ADDRLIT
+            (src: lit<-data_stack; addr<-data_stack)
+            Pop an address and a literal value to use to write to memory.
+        - POP_RES
+            Pop TOS and present it as the result of the program.
+    Miscellaneous:
+        - DUP
+            Duplicate the TOS value and push it to the data stack.
+        - SWAP
+            Swap the two topmost values on the data stack.
+
+
+Subroutine instructions:
+    - CALL:
+        Jump the execution to the subroutine as specified by the address in
+        the instruction. Push a call frame which includes the return address and
+        the current state of the data stack to the return stack.
+        [See NOTES: 1 for some details]
+    - RET:
+        Pop the call frame on top of the return stack, go to the return address
+        and revert the previous state of the data stack.
+        [See NOTES: 1 for some details]
+
+
+Arithmetic/Bitwise logical operation instructions
+    Binary operations:
+        Pop two values from the data stack, perform the binary operation,
+        and push the result to the data stack.
+        - ADD  (addition)
+        - SUB  (subtraction)
+        - MUL  (multiplication)
+        - DIV  (integer division)
+    In-place binary operations:
+        - ADDI
+            Pop TOS and add it to the next value on the stack.
+        - ADDI_ADDR
+            (src: addr<-instruction)
+            Get the memory address from the instruction and add its pointed
+            value to TOS.
+
+
+Bitwise logical operation instructions
+    Binary operations:
+        (Same case as the arithmetic binary operations)
+        - OR   (bitwise inclusive OR)
+        - AND  (bitwise AND)
+        - NOR  (bitwise not OR)
+        - NAND (bitwise not AND)
+        - XOR  (bitwise exclusive OR)
+        - LSH  (bitwise left-shift)
+        - RSH  (bitwise right-shift)
+    Unary operations:
+        - NOT  (bitwise NOT)
+
+
+Comparison operation instructions:
+    Binary operations:
+        (Same case as the arithmetic/bitwise logical binary operations)
+        If the result is true, the pushed value is 1, and if it is false,
+        the pushed value is 0.
+        - EQUAL
+        - LESS
+        - LESS_OR_EQUAL
+        - GREATER
+        - GREATER_OR_EQUAL
+
+
+Jump instructions:
+    - JUMP:
+        Unconditional jump to the address from the instruction.
+    - JUMP_IF_FALSE:
+        Jump to the address from the instruction if TOS is false (i.e. 0)
+    - JUMP_IF_TRUE:
+        Jump to the address from the instruction if TOS is true (i.e. not 0)
+
+
+CPU state instructions:
+    - ABORT:
+        Stop the code execution, and set the VM result as "FAILED"
+    - DONE:
+        Stop the code execution, and set the VM result as "SUCCESS"
+
+
+Debugging instructions
+    - PRINT:
+        Print the value of the address argument, i.e. from the instruction.
+
+--------------------------------------------------------------------------------
+NOTES:
+    1.) The exact details of the subroutine CALL and RET instructions are still
+        being discussed.
+        The current concerns are as follows:
+        (a) Should the state saving of the data stack be copying the ENTIRE
+            data stack and including it in the call frame?
+        (b) Are there any alternatives so that we could have local variables
+            within subroutines?
+
+    2.) The debugging instructions are subject to change. It may be removed in
+        the future revisions.
