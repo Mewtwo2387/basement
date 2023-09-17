@@ -8,7 +8,7 @@ typedef struct {
     word2_t  capacity;
 } RAM_t;
 
-word1_t RAM_getter_w1(void *ram, word2_t addr);
+word1_t RAM_getter(void *ram, word2_t addr);
 void    RAM_setter(void *ram, word2_t addr, word1_t value);
 void    RAM_free(void *ram);
 

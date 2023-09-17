@@ -31,7 +31,7 @@ typedef enum {
     // TODO: Add the rest of the opcodes
 } opcode;
 
-void cpu_load_program(CPU_t *cpu, word8_t *program, size_t program_size);
+void cpu_load_program(CPU_t *cpu, word1_t *program, size_t program_size);
 vm_result cpu_run(CPU_t *cpu);
 void free_cpu(CPU_t *cpu);
 
