@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 2]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 3]
 --------------------------------------------------------------------------------
 
 Instruction operands
@@ -12,47 +12,57 @@ Instruction operands
 
 
 Data stack manipulation instructions
-    PUSH_X instructions:
-        - PUSH_LIT, <LITERAL>
-            Push a literal argument to the data stack.
-        - PUSH_ADDR, <ADDRESS>
-            Push the value pointed by the address argument to the data stack.
-    POP_X instructions:
-        - POP
-            Discard the TOS (top of the data stack) value.
-        - POP_ADDR, <LITERAL>
-            Pop TOS & use it as the address to write the literal argument
-            to memory.
-        - POP_LIT, <ADDRESS>
-            Pop TOS & write it to memory as specified by the address argument.
-        - POP_ADDRLIT
-            Pop an address and a literal, and write the literal to memory.
+    PUSH & POP instructions:
+        - PUSHI, <LITERAL>
+            Push the immediate argument to the stack.
+        - LOADI, <ADDRESS>
+            Push the value pointed by the immediate argument as the address to
+            the stack.
+        - STOREI, <ADDRESS>
+            Pop TOS and store it to memory with the immediate argument as the
+            address.
+        - LOAD
+            POP an address and push the value with the popped address to the
+            stack.
+        - STORE
+            POP an address and a literal value. And use them to write to memory.
         - POP_RES
             Pop TOS and set it as the result of the program.
     Miscellaneous:
+        - DISCARD
+            Remove TOS.
         - DUP
-            Duplicate the TOS value and push it to the data stack.
-        - SWAP
-            Swap the two topmost values on the data stack.
+            Duplicate the TOS value and push it to the stack.
+        - SWAP_TOP
+            Swap the two topmost values on the stack.
+        - SWAP, <LITERAL>
+            Swap the TOS value with the another stack element with the immediate
+            argument as the offset from the TOS.
 
 
 Subroutine instructions:
     - CALL, <ADDRESS>
-        Jump to the subroutine as specified by the address in the instruction.
-        Push a call frame to the data stack which includes the return address
-        and a precomputed space for local variables.
-    - RET, <ADDRESS>
-    - RET, <LITERAL>
-        Pop the call frame on top of the data stack and set the instruction
-        pointer to the return address. The return value (which can be either the
-        value of a local variable as specified by an address argument, or
-        a literal argument) is to be pushed to the data stack.
+        Push a call frame to the stack which includes: an empty slot for the
+        return value, the size of the return value, the arguments of the
+        subroutine, the size of the arguments and the return address for the
+        instruction pointer. Then change the instruction pointer to the address
+        supplied by the immediate argument.
+        The frame pointer moves to the NEW TOS pointing to the return address.
+    - RET
+        Change the instruction pointer to the return address accessed through
+        the frame pointer, swap the return value slot with the value on TOS,
+        decrement the stack pointer as specified by the argument size
+        (+ 1 for the return value size).
+        The stack pointer SHOULD be pointing at the return value, the first
+        element that is pushed when the CALL instruction was executed.
+        The frame pointer then moves to the NEW TOS.
+        [See NOTES (3) for the more information]
 
 
 Arithmetic/Bitwise logical operation instructions
     Binary operations:
-        Pop two values from the data stack, perform the binary operation,
-        and push the result to the data stack.
+        Pop two values from the stack, perform the binary operation,
+        and push the result to the stack.
         - ADD  (addition)
         - SUB  (subtraction)
         - MUL  (multiplication)
@@ -61,7 +71,8 @@ Arithmetic/Bitwise logical operation instructions
         - ADDI
             Pop TOS and add it to the next value on the stack.
         - ADDI_ADDR, <ADDRESS>
-            Get the value from the address argument and add it to the TOS value.
+            Get the value from memory with the immediate argument as the address
+            and add it to the TOS value.
 
 
 Bitwise logical operation instructions
@@ -119,3 +130,10 @@ NOTES:
         the future revisions.
     2.) I am considering adding I/O instructions, though this must require the
         CPU to know the memory space for the I/O beforehand.
+    3.) There SHOULD be a value on top of the return address as the result
+        for the computations done within the subroutine. Subroutines with no
+        instructions, no computations, done whatsoever would then somehow pull
+        value from the portion of the call frame itself or even beyond JUST to
+        satisfy having a return value.
+        THIS IS NOT IDEAL. In further discussions, we try to address this edge
+        case.
