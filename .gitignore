@@ -3,3 +3,6 @@ implicit-brainfuck/obj/
 implicit-brainfuck/brainfuck
 project_keqei/js/node_modules
 incursion/.venv
+implicit-basement-lang/blvm/obj/
+implicit-basement-lang/blvm/blvm
+project_keqei/js/node_modules

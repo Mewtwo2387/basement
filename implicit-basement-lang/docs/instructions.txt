@@ -1,0 +1,139 @@
+--------------------------------------------------------------------------------
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 3]
+--------------------------------------------------------------------------------
+
+Instruction operands
+    - <LITERAL>
+        A constant value supplied by the user in the code.
+        By convention, this is 64 bits or 8 words in size.
+        [NOTE: A single word amounts to 8 bits or 1 byte.]
+    - <ADDRESS>
+        Memory address. By convention, this is 16 bits or 2 words in size.
+
+
+Data stack manipulation instructions
+    PUSH & POP instructions:
+        - PUSHI, <LITERAL>
+            Push the immediate argument to the stack.
+        - LOADI, <ADDRESS>
+            Push the value pointed by the immediate argument as the address to
+            the stack.
+        - STOREI, <ADDRESS>
+            Pop TOS and store it to memory with the immediate argument as the
+            address.
+        - LOAD
+            POP an address and push the value with the popped address to the
+            stack.
+        - STORE
+            POP an address and a literal value. And use them to write to memory.
+        - POP_RES
+            Pop TOS and set it as the result of the program.
+    Miscellaneous:
+        - DISCARD
+            Remove TOS.
+        - DUP
+            Duplicate the TOS value and push it to the stack.
+        - SWAP_TOP
+            Swap the two topmost values on the stack.
+        - SWAP, <LITERAL>
+            Swap the TOS value with the another stack element with the immediate
+            argument as the offset from the TOS.
+
+
+Subroutine instructions:
+    - CALL, <ADDRESS>
+        Push a call frame to the stack which includes: an empty slot for the
+        return value, the size of the return value, the arguments of the
+        subroutine, the size of the arguments and the return address for the
+        instruction pointer. Then change the instruction pointer to the address
+        supplied by the immediate argument.
+        The frame pointer moves to the NEW TOS pointing to the return address.
+    - RET
+        Change the instruction pointer to the return address accessed through
+        the frame pointer, swap the return value slot with the value on TOS,
+        decrement the stack pointer as specified by the argument size
+        (+ 1 for the return value size).
+        The stack pointer SHOULD be pointing at the return value, the first
+        element that is pushed when the CALL instruction was executed.
+        The frame pointer then moves to the NEW TOS.
+        [See NOTES (3) for the more information]
+
+
+Arithmetic/Bitwise logical operation instructions
+    Binary operations:
+        Pop two values from the stack, perform the binary operation,
+        and push the result to the stack.
+        - ADD  (addition)
+        - SUB  (subtraction)
+        - MUL  (multiplication)
+        - DIV  (integer division)
+    In-place binary operations:
+        - ADDI
+            Pop TOS and add it to the next value on the stack.
+        - ADDI_ADDR, <ADDRESS>
+            Get the value from memory with the immediate argument as the address
+            and add it to the TOS value.
+
+
+Bitwise logical operation instructions
+    Binary operations:
+        (Same case as the arithmetic binary operations)
+        - OR   (bitwise inclusive OR)
+        - AND  (bitwise AND)
+        - NOR  (bitwise not OR)
+        - NAND (bitwise not AND)
+        - XOR  (bitwise exclusive OR)
+        - LSH  (bitwise left-shift)
+        - RSH  (bitwise right-shift)
+    Unary operations:
+        Pop one value from the stack and do the unary operation on it.
+        The result is to be pushed to the stack.
+        - NOT  (bitwise NOT)
+
+
+Comparison operation instructions:
+    Binary operations:
+        (Same case as the arithmetic/bitwise logical binary operations)
+        If the result is true, the pushed value is 1, and if it is false,
+        the pushed value is 0.
+        - EQUAL
+        - LESS
+        - LESS_OR_EQUAL
+        - GREATER
+        - GREATER_OR_EQUAL
+
+
+Jump instructions:
+    - JUMP, <ADDRESS>
+        Unconditional jump to the address provided as an argument.
+    - JUMP_IF_FALSE
+        Jump to the address from the instruction if TOS is false (i.e. 0)
+    - JUMP_IF_TRUE
+        Jump to the address from the instruction if TOS is true (i.e. not 0)
+
+
+CPU state instructions:
+    - ABORT
+        Stop the code execution, and set the VM result as "FAILED"
+    - DONE
+        Stop the code execution, and set the VM result as "SUCCESS"
+
+
+Debugging instructions
+    - PRINT <ADDRESS>
+        Print the value of the address argument.
+
+
+--------------------------------------------------------------------------------
+NOTES:
+    1.) The debugging instructions are subject to change. They may be removed in
+        the future revisions.
+    2.) I am considering adding I/O instructions, though this must require the
+        CPU to know the memory space for the I/O beforehand.
+    3.) There SHOULD be a value on top of the return address as the result
+        for the computations done within the subroutine. Subroutines with no
+        instructions, no computations, done whatsoever would then somehow pull
+        value from the portion of the call frame itself or even beyond JUST to
+        satisfy having a return value.
+        THIS IS NOT IDEAL. In further discussions, we try to address this edge
+        case.
