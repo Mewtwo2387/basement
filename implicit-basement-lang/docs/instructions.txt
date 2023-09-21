@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 5.2]
+Instruction Set of the Virtual Machine of `basement-lang`
+[DRAFT. REVISION 5.2.1]
 --------------------------------------------------------------------------------
 
 Immediate operands for instructions
@@ -119,10 +120,12 @@ Input/Output instructions:
 Jump instructions:
     - JUMP, <ADDRESS>
         Unconditional jump to the address provided as an argument.
-    - JUMP_IF_FALSE
-        Jump to the address from the instruction if TOS is false (i.e. 0)
-    - JUMP_IF_TRUE
-        Jump to the address from the instruction if TOS is true (i.e. not 0)
+    - JUMP_IF_FALSE, <ADDRESS>
+        Jump to the address supplied by the immediate argument if TOS is false
+        (i.e. 0)
+    - JUMP_IF_TRUE, <ADDRESS>
+        Jump to the address supplied by the immediate argument if TOS is true
+        (i.e. not 0)
 
 
 CPU state instructions:
