@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 5]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 5.1]
 --------------------------------------------------------------------------------
 
-Instruction operands
+Immediate operands for instructions
     - <LITERAL>
         A constant value supplied by the user in the code.
     - <ADDRESS>
@@ -40,21 +40,23 @@ Data stack manipulation instructions
 
 Subroutine instructions:
     - CALL, <ADDRESS>
-        Push a call frame to the stack which includes: an empty slot for the
-        return value, the size of the return value, the arguments of the
-        subroutine, the size of the arguments and the return address for the
-        instruction pointer. Then change the instruction pointer to the address
-        supplied by the immediate argument.
-        The frame pointer moves to the NEW TOS pointing to the return address.
+        Push a "call frame" to the stack which includes: an empty slot for the
+        return value, the arguments of the subroutine, the number of the
+        arguments and the return address which at this point must still be the
+        current address the instruction pointer points to.
+        Then change the instruction pointer to the address supplied by the
+        immediate argument.
+        The frame pointer moves to the top of the stack.
     - RET
         Change the instruction pointer to the return address accessed through
         the frame pointer, swap the return value slot with the value on TOS,
-        decrement the stack pointer as specified by the argument size
-        (+ 1 for the return value size).
-        The stack pointer SHOULD be pointing at the return value, the first
+        decrement the stack pointer as specified by the argument size.
+        If everything went right with the CALL instruction, the distance from
+        the the return address to the return value is `(N + 1) * W` bits where
+        `N` is the number of arguments and `W` is the word size in bits.
+        The stack pointer SHOULD then be pointing at the return value, the first
         element that is pushed when the CALL instruction was executed.
-        The frame pointer then moves to the NEW TOS.
-        [See NOTES (3) for the more information]
+        The frame pointer then moves to the new top of the stack.
 
 
 Arithmetic/Bitwise logical operation instructions
