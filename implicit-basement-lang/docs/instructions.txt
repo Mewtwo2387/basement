@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 3]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 4]
 --------------------------------------------------------------------------------
 
 Instruction operands
@@ -103,6 +103,19 @@ Comparison operation instructions:
         - GREATER_OR_EQUAL
 
 
+Input/Output instructions:
+    IN:
+        Get a value from the stdin and push it to the stack.
+    OUT:
+        Pop a value from the stack and print it to stdout as an ASCII character.
+    OUT_NUM:
+        Pop a value from the stack and print it to stdout as a decimal number.
+    OUT_IP:
+        Print the current instruction pointer.
+    OUT_ADDR, <ADDRESS>:
+        Print the value address by the immediate argument.
+
+
 Jump instructions:
     - JUMP, <ADDRESS>
         Unconditional jump to the address provided as an argument.
@@ -119,21 +132,13 @@ CPU state instructions:
         Stop the code execution, and set the VM result as "SUCCESS"
 
 
-Debugging instructions
-    - PRINT <ADDRESS>
-        Print the value of the address argument.
-
-
 --------------------------------------------------------------------------------
 NOTES:
-    1.) The debugging instructions are subject to change. They may be removed in
-        the future revisions.
-    2.) I am considering adding I/O instructions, though this must require the
-        CPU to know the memory space for the I/O beforehand.
-    3.) There SHOULD be a value on top of the return address as the result
+    1.) There SHOULD be a value on top of the return address as the result
         for the computations done within the subroutine. Subroutines with no
         instructions, no computations, done whatsoever would then somehow pull
         value from the portion of the call frame itself or even beyond JUST to
         satisfy having a return value.
         THIS IS NOT IDEAL. In further discussions, we try to address this edge
         case.
+    2.) The I/O instructions are still subject to change.
