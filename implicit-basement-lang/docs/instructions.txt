@@ -1,14 +1,12 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 4]
+Instruction Set of the Virtual Machine of `basement-lang` [DRAFT. REVISION 5]
 --------------------------------------------------------------------------------
 
 Instruction operands
     - <LITERAL>
         A constant value supplied by the user in the code.
-        By convention, this is 64 bits or 8 words in size.
-        [NOTE: A single word amounts to 8 bits or 1 byte.]
     - <ADDRESS>
-        Memory address. By convention, this is 16 bits or 2 words in size.
+        Memory address.
 
 
 Data stack manipulation instructions
@@ -142,3 +140,10 @@ NOTES:
         THIS IS NOT IDEAL. In further discussions, we try to address this edge
         case.
     2.) The I/O instructions are still subject to change.
+        An idea is that the IN, OUT & OUT_X instructions are non-primitive
+        instructions and are basically just LOAD and STORE instructions to and
+        from the memory space allocated for I/O.
+    3.) To simplify further the VM implementation, all data including the memory
+        addresses will have the same size: 64 bits.
+        That is to say, we abandon the original word size of 1 byte.
+        However, the opcodes will still be 1 byte long.
