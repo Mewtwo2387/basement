@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-[DRAFT. REVISION 5.2.1]
+[DRAFT. REVISION 5.2.2]
 --------------------------------------------------------------------------------
 
 Immediate operands for instructions
@@ -69,8 +69,8 @@ Arithmetic/Bitwise logical operation instructions
         - MUL  (multiplication)
         - DIV  (integer division)
     In-place binary operations:
-        - ADDI
-            Pop TOS and add it to the next value on the stack.
+        - ADDI, <LITERAL>
+            Add the immediate argument with the TOS value.
         - ADDI_ADDR, <ADDRESS>
             Get the value from memory with the immediate argument as the address
             and add it to the TOS value.
