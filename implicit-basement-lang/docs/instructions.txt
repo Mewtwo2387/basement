@@ -74,6 +74,11 @@ Arithmetic/Bitwise logical operation instructions
         - ADDI_ADDR, <ADDRESS>
             Get the value from memory with the immediate argument as the address
             and add it to the TOS value.
+        - SUBI, <LITERAL>
+            Subtract the TOS value with the the immediate argument.
+        - SUBI_ADDR, <ADDRESS>
+            Subtract the TOS value with the value the immediate argument address
+            points to.
 
 
 Bitwise logical operation instructions
