@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-[DRAFT. REVISION 6]
+[DRAFT. REVISION 6.1]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -99,7 +99,7 @@ Subroutine instructions:
            This action effectively pops off the call frame from the stack.
 
 
-Arithmetic/Bitwise logical operation instructions
+Arithmetic logical operation instructions
     Binary operations:
         Pop two values from the stack, perform the binary operation,
         and push the result to the stack.
@@ -152,11 +152,11 @@ Comparison operation instructions:
         (Same case as the arithmetic/bitwise logical binary operations)
         If the result is true, the pushed value is 1, and if it is false,
         the pushed value is 0.
-        - EQUAL
-        - LESS
-        - LESS_OR_EQUAL
-        - GREATER
-        - GREATER_OR_EQUAL
+        - EQ  (Equal)
+        - LT  (Less than)
+        - LEQ (Less than or equal to)
+        - GT  (Greater than)
+        - GEQ (Greater than or equal to)
 
 
 Input/Output instructions:
