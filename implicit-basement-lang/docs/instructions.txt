@@ -1,16 +1,16 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-[DRAFT. REVISION 6.1]
+[DRAFT. REVISION 6.2]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
 
 Virtual Machine states
     The state of the virtual machine can be the following:
-    - UNINITIALIZED (value: -2)
-    - RUNNING       (value: -1)
-    - SUCCESS       (value:  0)
-    - FAILURE       (value:  1)
+    - SUCCESS       (value: 0)
+    - FAILURE       (value: 1)
+    - RUNNING       (value: 2)
+    - UNINITIALIZED (value: 3)
     Upon halting, these states are usually accompanied by a message string which
     can be printed onto either STDOUT or STDERR.
 

@@ -1,6 +1,6 @@
 
 ; We want to translate the following pseudocode to an equivalent code with the
-; `basement-lang` VM instructions [REVISION 6.1]:
+; `basement-lang` VM instructions [REVISION 6.2]:
 ; 
 ; print(int *string) {
 ;   int *c = *string;
