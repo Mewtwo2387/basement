@@ -1,63 +1,102 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-[DRAFT. REVISION 5.2.2]
+[DRAFT. REVISION 6]
 --------------------------------------------------------------------------------
+PRELIMINARIES
+-------------
 
-Immediate operands for instructions
+Virtual Machine states
+    The state of the virtual machine can be the following:
+    - UNINITIALIZED (value: -2)
+    - RUNNING       (value: -1)
+    - SUCCESS       (value:  0)
+    - FAILURE       (value:  1)
+    Upon halting, these states are usually accompanied by a message string which
+    can be printed onto either STDOUT or STDERR.
+
+
+Word data
+    In this virtual machine, a "word" has the size of 64 bits or 8 bytes.
+    From hereon, the size of a word in bytes shall be referred to as `W`.
+
+
+Immediate arguments for instructions
     - <LITERAL>
-        A constant value supplied by the user in the code.
+        A constant value of size `W` bytes supplied by the user in the code.
     - <ADDRESS>
-        Memory address.
+        Memory address of size `W` bytes.
 
 
-Data stack manipulation instructions
+--------------------------------------------------------------------------------
+INSTRUCTIONS
+------------
+
+Stack manipulation instructions
     PUSH & POP instructions:
-        - PUSHI, <LITERAL>
+        - LOAD_CONST, <LITERAL>
             Push the immediate argument to the stack.
-        - LOADI, <ADDRESS>
-            Push the value pointed by the immediate argument as the address to
-            the stack.
-        - STOREI, <ADDRESS>
-            Pop TOS and store it to memory with the immediate argument as the
-            address.
+        - LOAD_ADDR, <ADDRESS>
+            Push the value addressed by the immediate argument to the stack.
+        - STORE_ADDR, <ADDRESS>
+            Pop the top element of the stack and store it to memory addressed by
+            the immediate argument.
         - LOAD
-            POP an address and push the value with the popped address to the
-            stack.
+            Pop an address from the stack and push the value the address points
+            to to the stack.
         - STORE
-            POP an address and a literal value. And use them to write to memory.
+            Pop an address and a literal value. And use them to write to memory.
         - POP_RES
-            Pop TOS and set it as the result of the program.
+            Pop the top element of the stack and set it as the VM result.
     Miscellaneous:
         - DISCARD
-            Remove TOS.
+            Remove the top element of the stack.
         - DUP
-            Duplicate the TOS value and push it to the stack.
+            Duplicate the top element of the stack.
         - SWAP_TOP
-            Swap the two topmost values on the stack.
+            Swap the two topmost elements on the stack.
         - SWAP, <LITERAL>
-            Swap the TOS value with the another stack element with the immediate
-            argument as the offset from the TOS.
+            Swap the top element of the stack with another element in the stack
+            with the immediate argument as the offset from the top.
+            NOTE: Since the stack grows downwards, the offset value is positive.
 
 
 Subroutine instructions:
     - CALL, <ADDRESS>
-        Push a "call frame" to the stack which includes: an empty slot for the
-        return value, the arguments of the subroutine, the number of the
-        arguments and the return address which at this point must still be the
-        current address the instruction pointer points to.
-        Then change the instruction pointer to the address supplied by the
-        immediate argument.
-        The frame pointer moves to the top of the stack.
+        Jump the execution to the address of the subroutine. Prior to this,
+        several instructions are to be done:
+            1. Push a reserved return value.
+            2. Push the subroutine arguments.
+            3. Push the number of arguments.
+            4. Push the return address which at this point should be the current
+               instruction pointer.
+        The sequence of data that is pushed to the stack shall be referred to as
+        the "call frame".
+        After the jump has been executed, the frame pointer moves to the top of
+        the stack, which should have the return address.
     - RET
-        Change the instruction pointer to the return address accessed through
-        the frame pointer, swap the return value slot with the value on TOS,
-        decrement the stack pointer as specified by the argument size.
-        If everything went right with the CALL instruction, the distance from
-        the the return address to the return value is `(N + 1) * W` bits where
-        `N` is the number of arguments and `W` is the word size in bits.
-        The stack pointer SHOULD then be pointing at the return value, the first
-        element that is pushed when the CALL instruction was executed.
-        The frame pointer then moves to the new top of the stack.
+        Return the execution from the subroutine. This instruction execute the
+        following instructions:
+
+        1. Swap the top element of the stack with the reserved return value at
+           the bottom of the topmost call frame. The return value is accessed
+           through the frame pointer by calculating its address:
+
+                    `FP + (N + 1)*W`
+
+           where `N` is the number of arguments and `FP` is the frame pointer.
+           (Note that the stack grows downwards so a "decrement" amounts to
+            adding an offset to the address.)
+
+           If the stack pointer is the same as the frame pointer, i.e. the
+           execution of the subroutine resulted to no value,
+           no swapping is done.
+
+        2. The stack pointer is decremented by `(N + 1)*W` such that it points
+           to the return value.
+        3. Then the instruction pointer is set as the return address, acccessed
+           through the frame pointer.
+        4. The frame pointer is then set to equal to the stack pointer.
+           This action effectively pops off the call frame from the stack.
 
 
 Arithmetic/Bitwise logical operation instructions
@@ -69,16 +108,27 @@ Arithmetic/Bitwise logical operation instructions
         - MUL  (multiplication)
         - DIV  (integer division)
     In-place binary operations:
-        - ADDI, <LITERAL>
-            Add the immediate argument with the TOS value.
-        - ADDI_ADDR, <ADDRESS>
-            Get the value from memory with the immediate argument as the address
-            and add it to the TOS value.
-        - SUBI, <LITERAL>
-            Subtract the TOS value with the the immediate argument.
-        - SUBI_ADDR, <ADDRESS>
-            Subtract the TOS value with the value the immediate argument address
-            points to.
+        - ADD_CONST, <LITERAL>
+            Add the immediate argument with the top element of the stack.
+        - ADD_ADDR, <ADDRESS>
+            Get the value addressed by the immediate argument and add it to the
+            top element of the stack.
+        - SUB_CONST, <LITERAL>
+            Subtract the immediate argument with the top element of the stack.
+        - SUB_ADDR, <ADDRESS>
+            Get the value addressed by the immediate argument and subtract it to
+            the top element of the stack.
+    Unary operations
+        Pop one value from the stack and do the unary operation on it.
+        The result is then pushed to the stack.
+        - UN_POSITIVE
+            Does not do anything to the number. Akin to NOP.
+        - UN_NEGATIVE
+            "Negate" the value on top of the stack. This is equivalent to the
+            following bitwise operation:    
+                `~n + 1`
+            where `~` is the bitwise NOT operation and `n` is the operand to be
+            negated.
 
 
 Bitwise logical operation instructions
@@ -111,59 +161,49 @@ Comparison operation instructions:
 
 Input/Output instructions:
     IN:
-        Get a value from the stdin and push it to the stack.
-    OUT:
-        Pop a value from the stack and print it to stdout as an ASCII character.
+        Get a value from the STDIN and push it to the stack.
+    OUT_CHAR:
+        Pop a value from the stack and print it to STDOUT as an ASCII character.
     OUT_NUM:
-        Pop a value from the stack and print it to stdout as a decimal number.
+        Pop a value from the stack and print it to STDOUT as a base-16 integer.
     OUT_IP:
-        Print the current instruction pointer.
+        Print the instruction pointer as a base-16 integer.
+    OUT_SP:
+        Print the stack pointer as a base-16 integer.
     OUT_ADDR, <ADDRESS>:
-        Print the value address by the immediate argument.
+        Print the value addressed by the immediate argument as a base-16 integer
 
 
 Jump instructions:
     - JUMP, <ADDRESS>
-        Unconditional jump to the address provided as an argument.
-    - JUMP_IF_FALSE, <ADDRESS>
-        Jump to the address supplied by the immediate argument if TOS is false
-        (i.e. 0)
-    - JUMP_IF_TRUE, <ADDRESS>
-        Jump to the address supplied by the immediate argument if TOS is true
-        (i.e. not 0)
+        Unconditional jump to the address supplied by the immediate argument.
+    - JMPZ, <ADDRESS>
+        Jump to the address supplied by the immediate argument if the top
+        element of the stack is 0 (i.e. if it is false)
+    - JMPNZ, <ADDRESS>
+        Jump to the address supplied by the immediate argument if the top
+        element of the stack is NOT 0 (i.e. if it is true)
 
 
 CPU state instructions:
     - ABORT
-        Stop the code execution, and set the VM result as "FAILED"
+        Fatally stop the code execution. Usually executed under unexpected or
+        abnormal circumstances (e.g. IP going out of bounds).
+        The end state of the VM will always be FAILURE.
     - DONE
-        Stop the code execution, and set the VM result as "SUCCESS"
+        Stop the code execution. Usually executed under normal circumstances.
+        The end state of the VM is determined by a default value or by the code,
+        usually by the `POP_RES` instruction.
+        By default, the end state is SUCCESS which has the value of 0.
 
+
+Miscellaneous:
+    - NOP
+        No operation. The execution proceeds to the next instruction.
 
 --------------------------------------------------------------------------------
 NOTES:
-    1.) There SHOULD be a value on top of the return address as the result
-        for the computations done within the subroutine. Subroutines with no
-        instructions, no computations, done whatsoever would then somehow pull
-        value from the portion of the call frame itself or even beyond JUST to
-        satisfy having a return value.
-        THIS IS NOT IDEAL. In further discussions, we try to address this edge
-        case.
-    2.) The I/O instructions are still subject to change.
-        An idea is that the IN, OUT & OUT_X instructions are non-primitive
-        instructions and are basically just LOAD and STORE instructions to and
-        from the memory space allocated for I/O.
-    3.) To simplify further the VM implementation, all data including the memory
-        addresses will have the same size: 64 bits (See NOTES: 4)
+    1.) To simplify further the VM implementation, all data including the memory
+        addresses will have the same size: 64 bits.
         That is to say, we abandon the original word size of 1 byte.
         However, the opcodes will still be 1 byte long.
-    4.) We might have to revise the new word size (64 bits). We could dial it
-        down to 32 bits, add "wide" instructions specifically for handling
-        64 bit data, add add several instructions for converting between the
-        "normal" data and "wide" data.
-        The latter option would introduce more complexity to the code in
-        exchange for less memory consumption.
-        As it currently stands, I am in support of the former option, i.e. all
-        data have 64 bits, since it simplifies a lot of operations at the
-        expense of worse memory consumption. But memory is usually not a major
-        concern with modern computers usually having at least 8 GB of RAM.

@@ -1,17 +1,20 @@
 
 ; We want to translate the following pseudocode to an equivalent code with the
-; `basement-lang` VM instructions [REVISION 5.2.2]:
+; `basement-lang` VM instructions [REVISION 6]:
 ; 
-; print(int8 *string) {
-;   int8 *c = *string;
-;   while (*word) {     // strings in this language is null byte delimited.   
-;       putc(*word);
+; print(int *string) {
+;   int *c = *string;
+;   while (*word) {     // strings in this language is null byte delimited.
+;       out(*word);     // Print an ASCII character to STDOUT.
 ;       word++;
 ;   }
 ;   return 0;
 ; }
 ; 
-; print("Hello, World!");
+; main () {
+;     print("Hello, World!");
+;     return 0;
+; }
 ;
 
 
@@ -24,40 +27,52 @@
 
 PRINT_FUNC:
     ;; Initialize the local variable `c`, a pointer to an 8 bit integer.
-    ;; NOTE: the variable `c` has the address `FP + W` and shall be called
-    ;;       `C_PTR`.
-    LOADI STR_ARG_ADDR ; Push the string argument address which should have the
-                       ; value `FP - 2*W`. We refer to it as `STR_ARG_ADDR`.
+    ;; NOTE: the variable `c` has the address `FP - W` and shall be called
+    ;;       `C_PTR`. Again, "incrementing" stack pointers is subtraction!
+    LOAD_ADDR  STR_ARG_ADDR  ; Push the string argument address which should
+                             ; HAVE the value `FP + 2*W`. We refer to it as
+                             ; `STR_ARG_ADDR`.
 
     PRINT_LOOP:
         ;; Turn word (W) sized data to 1 byte sized data, and push it to stack.
         ;; NOTE: This could be either an instruction or a stdlib function.
-        LOADI C_PTR ; Load the value to be cast to 1 byte from W bytes.
-        PUSHI  0xFF ; Push the bit mask
-        AND         ; Extract the ASCII character which is 1 byte long
+        LOAD_ADDR   C_PTR  ; Load the value to be cast to 1 byte from `W` bytes.
+        LOAD_CONST  0xFF   ; Push the bit mask.
+        AND                ; Extract the ASCII character which is 1 byte long.
 
-        ;; If a null byte (value of 0) is encountered, end the print loop
-        JUMP_IF_FALSE STR_END
+        ;; If a null byte (a zero value) is encountered, end the print loop
+        JMPZ  STR_END
         ;; Alternatively, print the TOS value to STDOUT, which shall then be
         ;; popped off the stack.
         OUT
 
         ;; Increment the pointer to the string.
-        ADDI  0x1  ; Increment pointer which should be on the top of the stack
-                   ; by 1
+        ADD_CONST  0x1  ; Increment the `c` pointer which should be on the top
+                        ; of the stack by 1
 
         ;; Repeat the print loop
         JUMP PRINT_LOOP
-STR_END:
-    PUSHI 0x0  ; Push a "SUCCESS" return value.
-    RET        ; Return from the execution.
-               ; NOTE: IP is automatically incremented after executing `RET`.
+    STR_END:
+    LOAD_CONST  0x0  ; Push a "SUCCESS" return value.
+    RET              ; Return from the execution.
+;; ---- End of `PRINT_FUNC` ----
 
 
-;; Call the function "print"
-PUSHI               0x0   ; Push the reserved return value
-PUSHI  HELLO_WORLD_ADDR   ; Push the address to the "Hello, World!" constant
-PUSHI               0x1   ; Push the number of argument
-PUSHI                IP   ; Push the return address
-CALL         PRINT_FUNC   ; Call the print function
-DONE                      ; Halt the VM and set the final state to SUCCESS.
+MAIN_FUNC
+    ;; Call the function "print"
+    LOAD_CONST               0x0   ; Push the reserved return value.
+    LOAD_CONST  HELLO_WORLD_ADDR   ; Push the address to "Hello, World!" string.
+    LOAD_CONST               0x1   ; Push the number of arguments.
+    LOAD_CONST                IP   ; Push the return address.
+    CALL              PRINT_FUNC   ; Call the print function.
+    LOAD_CONST               0x0   ; Push the return value to the stack.
+    RET
+;; ---- End of `MAIN_FUNC` --------
+
+
+LOAD_CONST        0x0  ; Push the reserved return value.
+LOAD_CONST        0x0  ; Push the number of arguments.
+CALL        MAIN_FUNC  ; Run the code.
+POP_RES                ; Assign the final state of the VM: the return value
+                       ; of MAIN_FUNC.
+DONE                   ; Halt the VM.
