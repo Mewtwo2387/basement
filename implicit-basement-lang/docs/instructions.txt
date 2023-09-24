@@ -1,6 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang`
-[DRAFT. REVISION 6.2]
+Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.1]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
