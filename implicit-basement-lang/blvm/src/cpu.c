@@ -349,6 +349,8 @@ void cpu_clear_memory(CPU_t *cpu) {
 }
 
 void free_cpu(CPU_t *cpu) {
+    free(cpu->state_msg);
+    free(cpu->memory);
     *cpu = (CPU_t){
             .state=UNINITIALIZED,
             .mem_size=0,
@@ -358,6 +360,4 @@ void free_cpu(CPU_t *cpu) {
             .sp=NULL,
             .fp=NULL
         };
-    free(cpu->state_msg);
-    free(cpu->memory);
 }
