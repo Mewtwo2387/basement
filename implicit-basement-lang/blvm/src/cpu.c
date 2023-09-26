@@ -261,15 +261,15 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_OUT_NUM:
             output = POP_WORD_FROM_STACK();
             if (instr == OP_OUT_CHAR)
-                printf("%c", output & 0xFF);
+                printf("%c", (char)(output & 0xFF));
             else
                 printf("0x%lx", output);
             break;
         case OP_OUT_IP:
-            printf("IP: 0x%16.16lx", cpu->ip);
+            printf("IP: %p", cpu->ip);
             break;
         case OP_OUT_SP:
-            printf("SP: 0x%16.16lx", cpu->sp);
+            printf("SP: %p", cpu->sp);
             break;
         case OP_OUT_ADDR:
             mem_addr = GET_IMMEDIATE_ARG();
@@ -280,7 +280,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
         /* Jump instructions */
         case OP_JUMP:
             mem_addr = GET_IMMEDIATE_ARG();
-            cpu->ip = mem_addr;  // NOTE: (≖_≖ ) this looks sus. Take caution
+            cpu->ip = (void *)mem_addr;  // NOTE: (≖_≖ ) this looks sus
             break;
         case OP_JMPZ:
         case OP_JMPNZ:
@@ -288,7 +288,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
             tos_val = bytes_to_word(PEEK_TOS_PTR());
             if (   (tos_val == 0 && instr == OP_JMPZ )
                 || (tos_val != 0 && instr == OP_JMPNZ) )
-                cpu->ip = mem_addr;  // NOTE: (≖_≖ ) again very sus
+                cpu->ip = (void *)mem_addr;  // NOTE: (≖_≖ ) again very sus
             break;
         
 
@@ -297,14 +297,14 @@ CPUState_t cpu_run(CPU_t *cpu) {
             // Get the subroutine address
             mem_addr = GET_IMMEDIATE_ARG();
 
-            cpu->ip = mem_addr;
+            cpu->ip = (void *)mem_addr;
             cpu->fp = cpu->sp;
             break;
         case OP_RET: {
             /* Decrement the frame pointer to access the return address */
             DECREMENT_STACK_PTR(cpu->fp);
             /* Set the instruction pointer to the return address */
-            cpu->ip = bytes_to_word(cpu->fp);
+            cpu->ip = (void *)bytes_to_word(cpu->fp);
 
             /* Decrement frame pointer to point to the number of args */
             DECREMENT_STACK_PTR(cpu->fp);
