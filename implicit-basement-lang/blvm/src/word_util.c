@@ -4,7 +4,7 @@
 
 #include "word_util.h"
 
-static union word_bytes {
+union word_bytes {
     word_t word;
     uint8_t bytes[sizeof(word_t)];
 };
