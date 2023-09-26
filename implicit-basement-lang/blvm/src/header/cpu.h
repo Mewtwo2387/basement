@@ -37,10 +37,15 @@ typedef struct {
 } CPU_t;
 
 
+/* Initialize the virtual machine (VM) */
 void init_cpu(CPU_t *cpu, size_t memory_size);
+/* Load the progam in bytecodes to memory */
 void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size);
+/* Run loaded program in the memory of the VM */
 CPUState_t cpu_run(CPU_t *cpu);
+/* Clear the VM memory */
 void cpu_clear_memory(CPU_t *cpu);
+/* Free allocated memory in VM */
 void free_cpu(CPU_t *cpu);
 
 #endif

@@ -11,31 +11,42 @@
 /* NOTE: Incrementing the stack pointer: cpu->sp -= N
          Decrementing the stack pointer: cpu->sp += N */
 
-#define INCREMENT_STACK_POINTER() cpu->sp -= sizeof(word_t)
-#define DECREMENT_STACK_POINTER() cpu->sp += sizeof(word_t)
+#define INCREMENT_STACK_PTR(stack_ptr) stack_ptr -= sizeof(word_t)
+#define DECREMENT_STACK_PTR(stack_ptr) stack_ptr += sizeof(word_t)
 
 #define GET_IMMEDIATE_ARG() \
     ( cpu->ip += sizeof(word_t), bytes_to_word(cpu->ip - sizeof(word_t)) )
 #define POP_WORD_FROM_STACK() \
     ( cpu->sp += sizeof(word_t), bytes_to_word(cpu->sp - sizeof(word_t)) )
-#define PEEK_TOS_WORD() \
-    bytes_to_word(cpu->sp + sizeof(word_t))
+
+/* Get the pointer to the top element of the stack */
+#define PEEK_TOS_PTR() \
+    cpu->sp + sizeof(word_t)
+/* Get the pointer to the stack element `offset` away from the top */
+#define PEEK_STACK_ELEM_PTR(offset) \
+    cpu->sp + ((offset + 1) * sizeof(word_t))
+
+/* Get data from memory as a word sized integer */
 #define GET_MEMORY(addr) \
     bytes_to_word(cpu->memory + addr)
 
-#define PUSH_WORD_TO_STACK(word) {             \
+/* Push a word sized integer to stack */
+#define PUSH_WORD_TO_STACK(word) {                   \
         word_to_bytes(temp_bytes, word);             \
         memcpy(cpu->sp, temp_bytes, sizeof(word_t)); \
         cpu->sp -= sizeof(word_t);                   \
     }
 
+/* Push the immediate argument from the program to stack */
 #define IMMEDIATE_ARG_TO_STACK()                \
     ( memcpy(cpu->sp, cpu->ip, sizeof(word_t)), \
       cpu->ip += sizeof(word_t),                \
       cpu->sp -= sizeof(word_t) )
+/* Push a value from the memory to the stack */
 #define MEMORY_TO_STACK(addr)                               \
     ( memcpy(cpu->sp, cpu->memory + addr, sizeof(word_t)),  \
       cpu->sp -= sizeof(word_t) )
+/* Pop a value from the stack and set it to memory */
 #define STACK_TO_MEMORY(addr)                              \
     ( memcpy(cpu->memory + addr, cpu->sp, sizeof(word_t)), \
       cpu->sp += sizeof(word_t) )
@@ -133,11 +144,11 @@ CPUState_t cpu_run(CPU_t *cpu) {
                 cpu->state = tos_val;
             break;
         case OP_DISCARD:
-            DECREMENT_STACK_POINTER();
+            DECREMENT_STACK_PTR(cpu->sp);
             break;
         case OP_DUP:
             memcpy(cpu->sp + sizeof(word_t), cpu->sp, sizeof(word_t));
-            INCREMENT_STACK_POINTER();
+            INCREMENT_STACK_PTR(cpu->sp);
             break;
         case OP_SWAP_TOP:
         case OP_SWAP: {
@@ -148,11 +159,11 @@ CPUState_t cpu_run(CPU_t *cpu) {
                 offset = GET_IMMEDIATE_ARG();
             
             /* Copy the top element to a temporary storage */
-            memcpy(temp_bytes, cpu->sp - 1, sizeof(word_t));
+            memcpy(temp_bytes, PEEK_TOS_PTR(), sizeof(word_t));
 
             /* Swap the two elements */
-            memcpy(cpu->sp + 1, cpu->sp + 1 + offset, sizeof(word_t));
-            memcpy(cpu->sp + 1 + offset, temp_bytes, sizeof(word_t));
+            memcpy(PEEK_TOS_PTR(), PEEK_STACK_ELEM_PTR(offset), sizeof(word_t));
+            memcpy(PEEK_STACK_ELEM_PTR(offset), temp_bytes, sizeof(word_t));
         }
         break;
 
@@ -274,7 +285,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_JMPZ:
         case OP_JMPNZ:
             mem_addr = GET_IMMEDIATE_ARG();
-            tos_val = PEEK_TOS_WORD();
+            tos_val = bytes_to_word(PEEK_TOS_PTR());
             if (   (tos_val == 0 && instr == OP_JMPZ )
                 || (tos_val != 0 && instr == OP_JMPNZ) )
                 cpu->ip = mem_addr;  // NOTE: (≖_≖ ) again very sus
@@ -289,8 +300,32 @@ CPUState_t cpu_run(CPU_t *cpu) {
             cpu->ip = mem_addr;
             cpu->fp = cpu->sp;
             break;
-        case OP_RET:
-            // TODO
+        case OP_RET: {
+            /* Decrement the frame pointer to access the return address */
+            DECREMENT_STACK_PTR(cpu->fp);
+            /* Set the instruction pointer to the return address */
+            cpu->ip = bytes_to_word(cpu->fp);
+
+            /* Decrement frame pointer to point to the number of args */
+            DECREMENT_STACK_PTR(cpu->fp);
+            /* Get the number of function arguments */
+            word_t arg_num = bytes_to_word(cpu->fp);
+
+            /* Pop off the arguments such that the frame pointer points to the
+               return value.
+               NOTE: "Decrementing stack pointers" is adding the offset to the
+                     stack pointers. */
+            cpu->fp += (arg_num + 1) * sizeof(word_t);
+
+            /* Set the return value as the CURRENT top value of the stack */
+            memcpy(cpu->fp, cpu->sp, sizeof(word_t));
+
+            /* Move down the stack pointer effectively popping off the
+               call frame.
+               The top of the stack should be the return value of the
+               subroutine */
+            cpu->sp = cpu->sp;
+        }
             break;
         default:
             cpu->state = HALT_FAILED;
