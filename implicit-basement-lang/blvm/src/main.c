@@ -24,7 +24,7 @@ int main(void) {
         LOAD_CONST 0x2
         ADD
         OUT_NUM
-        LOAD_CONST 0x10   ; New line character
+        LOAD_CONST 0x0A   ; New line character
         OUT_CHAR
         DONE
     */
