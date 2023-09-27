@@ -4,6 +4,11 @@
 
 #include "word_util.h"
 
+/* Result from `sizeof(word_t)`, where `word_t` is a typedef of `uint64_t`
+   This is to avoid using `sizeof` in macros.
+*/
+const size_t WORD_SIZE = 8;
+
 union word_bytes {
     word_t word;
     uint8_t bytes[sizeof(word_t)];
