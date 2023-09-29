@@ -148,12 +148,12 @@ typedef enum {
        of the stack is not 0. */
     OP_JMPNZ,
     
-    /* Subroutine instructions */
+    /* Function instructions */
 
-    /* Jump the execution to the address of the subroutine. Prior to this,
+    /* Jump the execution to the address of the function. Prior to this,
         several instructions are to be done:
             1. Push a reserved return value.
-            2. Push the subroutine arguments.
+            2. Push the function arguments.
             3. Push the number of arguments.
             4. Push the return address which at this point should be the current
                instruction pointer.
@@ -163,7 +163,7 @@ typedef enum {
         the stack, which should have the return address. */
     OP_CALL,
 
-    /* Return the execution from the subroutine. This instruction execute the
+    /* Return the execution from the function. This instruction execute the
         following instructions:
 
         1. Swap the top element of the stack with the reserved return value at
@@ -177,8 +177,7 @@ typedef enum {
             adding an offset to the address.)
 
            If the stack pointer is the same as the frame pointer, i.e. the
-           execution of the subroutine resulted to no value,
-           no swapping is done.
+           execution of the function resulted to no value, no swapping is done.
 
         2. The stack pointer is decremented by `(N + 1)*W` such that it points
            to the return value.

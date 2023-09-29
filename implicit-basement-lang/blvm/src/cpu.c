@@ -283,9 +283,9 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         
 
-        /* Subroutine instructions*/
+        /* Function instructions */
         case OP_CALL:
-            // Get the subroutine address
+            // Get the function address
             mem_addr = GET_IMMEDIATE_ARG();
 
             cpu->ip = (void *)mem_addr;
@@ -313,8 +313,8 @@ CPUState_t cpu_run(CPU_t *cpu) {
 
             /* Move down the stack pointer effectively popping off the
                call frame.
-               The top of the stack should be the return value of the
-               subroutine */
+               The top of the stack should be the return value of the function
+            */
             cpu->sp = cpu->sp;
         }
             break;

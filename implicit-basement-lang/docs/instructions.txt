@@ -59,12 +59,12 @@ Stack manipulation instructions
             NOTE: Since the stack grows downwards, the offset value is positive.
 
 
-Subroutine instructions:
+Function instructions:
     - CALL, <ADDRESS>
-        Jump the execution to the address of the subroutine. Prior to this,
+        Jump the execution to the address of the function. Prior to this,
         several instructions are to be done:
             1. Push a reserved return value.
-            2. Push the subroutine arguments.
+            2. Push the function arguments.
             3. Push the number of arguments.
             4. Push the return address which at this point should be the current
                instruction pointer.
@@ -73,7 +73,7 @@ Subroutine instructions:
         After the jump has been executed, the frame pointer moves to the top of
         the stack, which should have the return address.
     - RET
-        Return the execution from the subroutine. This instruction execute the
+        Return the execution from the function. This instruction execute the
         following instructions:
 
         1. Swap the top element of the stack with the reserved return value at
@@ -87,7 +87,7 @@ Subroutine instructions:
             adding an offset to the address.)
 
            If the stack pointer is the same as the frame pointer, i.e. the
-           execution of the subroutine resulted to no value,
+           execution of the function resulted to no value,
            no swapping is done.
 
         2. The stack pointer is decremented by `(N + 1)*W` such that it points
