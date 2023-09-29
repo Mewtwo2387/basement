@@ -1,6 +1,6 @@
 
 ; We want to translate the following pseudocode to an equivalent code with the
-; `basement-lang` VM instructions [VERSION 0.1]:
+; `basement-lang` VM instructions [VERSION 0.2]:
 ; 
 ; print(int *string) {
 ;   int *c = *string;
@@ -41,7 +41,7 @@ PRINT_FUNC:
         AND                ; Extract the ASCII character which is 1 byte long.
 
         ;; If a null byte (a zero value) is encountered, end the print loop
-        JMPZ  STR_END
+        JMPZ_ADDR  STR_END
         ;; Alternatively, print the TOS value to STDOUT, which shall then be
         ;; popped off the stack.
         OUT
@@ -51,7 +51,7 @@ PRINT_FUNC:
                         ; of the stack by 1
 
         ;; Repeat the print loop
-        JUMP PRINT_LOOP
+        JUMP_ADDR PRINT_LOOP
     STR_END:
     LOAD_CONST  0x0  ; Push a "SUCCESS" return value.
     RET              ; Return from the execution.

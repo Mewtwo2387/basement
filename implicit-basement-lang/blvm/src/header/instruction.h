@@ -140,12 +140,20 @@ typedef enum {
     /* ---------- Jump instructions ---------- */
 
     /* Unconditional jump to the address supplied by the immediate argument. */
-    OP_JUMP,
+    OP_JUMP_ADDR,
     /* Jump to the address supplied by the immediate argument if the top element
        of the stack is 0. */
-    OP_JMPZ,
+    OP_JMPZ_ADDR,
     /* Jump to the address supplied by the immediate argument if the top element
        of the stack is not 0. */
+    OP_JMPNZ_ADDR,
+    /* Pop an address from the stack and unconditionally jump to it.*/
+    OP_JUMP,
+    /* Pop an address and a value from the stack. If the value is 0, jump to
+       the address. Otherwise, skip to the next instruction. */
+    OP_JMPZ,
+    /* Pop an address and a value from the stack. If the value is not 0, jump to
+       the address. Otherwise, skip to the next instruction. */
     OP_JMPNZ,
     
     /* Function instructions */

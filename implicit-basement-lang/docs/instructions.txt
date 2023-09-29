@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.1]
+Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.2]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -174,14 +174,22 @@ Input/Output instructions:
 
 
 Jump instructions:
-    - JUMP, <ADDRESS>
+    - JUMP_ADDR, <ADDRESS>
         Unconditional jump to the address supplied by the immediate argument.
-    - JMPZ, <ADDRESS>
+    - JMPZ_ADDR, <ADDRESS>
         Jump to the address supplied by the immediate argument if the top
         element of the stack is 0 (i.e. if it is false)
-    - JMPNZ, <ADDRESS>
+    - JMPNZ_ADDR, <ADDRESS>
         Jump to the address supplied by the immediate argument if the top
         element of the stack is NOT 0 (i.e. if it is true)
+    - JUMP
+        Pop an address from the stack and unconditionally jump to it.
+    - JMPZ
+        Pop an address and a value from the stack. If the value is 0, jump
+        to the address. Otherwise, skip to the next instruction.
+    - JMPNZ
+        Pop an address and a value from the stack. If the value is not 0, jump
+        to the address. Otherwise, skip to the next instruction.
 
 
 CPU state instructions:

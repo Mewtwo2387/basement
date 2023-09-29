@@ -269,17 +269,29 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         
         /* Jump instructions */
+        case OP_JUMP_ADDR:
         case OP_JUMP:
-            mem_addr = GET_IMMEDIATE_ARG();
-            cpu->ip = (void *)mem_addr;  // NOTE: (≖_≖ ) this looks sus
+            if (instr == OP_JUMP_ADDR)
+                mem_addr = GET_IMMEDIATE_ARG();
+            else
+                mem_addr = POP_WORD_FROM_STACK();
+
+            cpu->ip = (void *)mem_addr;
             break;
+        case OP_JMPZ_ADDR:
+        case OP_JMPNZ_ADDR:
         case OP_JMPZ:
         case OP_JMPNZ:
-            mem_addr = GET_IMMEDIATE_ARG();
+            if (instr == OP_JMPZ_ADDR || instr == OP_JMPNZ_ADDR)
+                mem_addr = GET_IMMEDIATE_ARG();
+            else
+                mem_addr = POP_WORD_FROM_STACK();
+
             tos_val = bytes_to_word(PEEK_TOS_PTR());
             if (   (tos_val == 0 && instr == OP_JMPZ )
                 || (tos_val != 0 && instr == OP_JMPNZ) )
-                cpu->ip = (void *)mem_addr;  // NOTE: (≖_≖ ) again very sus
+                cpu->ip = (void *)mem_addr;
+            break;
             break;
         
 
