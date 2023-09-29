@@ -149,11 +149,11 @@ typedef enum {
     OP_JMPNZ_ADDR,
     /* Pop an address from the stack and unconditionally jump to it.*/
     OP_JUMP,
-    /* Pop an address and a value from the stack. If the value is 0, jump to
-       the address. Otherwise, skip to the next instruction. */
+    /* Pop an address from the stack. If the value on top of the stack is 0,
+       jump to the address. Otherwise, skip to the next instruction. */
     OP_JMPZ,
-    /* Pop an address and a value from the stack. If the value is not 0, jump to
-       the address. Otherwise, skip to the next instruction. */
+    /* Pop an address from the stack. If the value on top of the stack is not 0,
+       jump to the address. Otherwise, skip to the next instruction. */
     OP_JMPNZ,
     
     /* Function instructions */
