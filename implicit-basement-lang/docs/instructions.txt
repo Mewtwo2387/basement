@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.2.1]
+Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.3]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -36,6 +36,12 @@ Stack manipulation instructions
             Push the immediate argument to the stack.
         - LOAD_ADDR, <ADDRESS>
             Push the value addressed by the immediate argument to the stack.
+        - LOAD_IP
+            Push the instruction pointer to the stack.
+        - LOAD_SP
+            Push the stack pointer to the stack.
+        - LOAD_FP
+            Push the frame pointer to the stack.
         - STORE_ADDR, <ADDRESS>
             Pop the top element of the stack and store it to memory addressed by
             the immediate argument.

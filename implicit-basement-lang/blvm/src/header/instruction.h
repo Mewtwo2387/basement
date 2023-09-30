@@ -15,6 +15,12 @@ typedef enum {
     OP_LOAD_CONST,
     /* Push the value addressed by the immediate argument to the stack */
     OP_LOAD_ADDR,
+    /* Push the instruction pointer to the stack */
+    OP_LOAD_IP,
+    /* Push the stack pointer to the stack */
+    OP_LOAD_SP,
+    /* Push the frame pointer to the stack */
+    OP_LOAD_FP,
     /* Pop the top element of the stack and store it to memory addressed by the
        immediate argument. */
     OP_STORE_ADDR,

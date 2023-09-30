@@ -86,7 +86,7 @@ void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
 
 CPUState_t cpu_run(CPU_t *cpu) {
     /* Utility/temporary variables */
-    word_t mem_addr, tos_val;
+    word_t mem_addr, tos_val, ptr_val;
     word_t op1, op2, op_result;
     word_t user_input, output;
     uint8_t temp_bytes[WORD_SIZE];
@@ -114,6 +114,14 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_LOAD_ADDR:
             mem_addr = GET_IMMEDIATE_ARG();
             MEMORY_TO_STACK(mem_addr);
+            break;
+        case OP_LOAD_IP:
+        case OP_LOAD_SP:
+        case OP_LOAD_FP:
+            ptr_val = (instr == OP_LOAD_IP)? (word_t)cpu->ip :
+                      (instr == OP_LOAD_SP)? (word_t)cpu->sp :
+                                             (word_t)cpu->fp ;
+            PUSH_WORD_TO_STACK(ptr_val);
             break;
         case OP_LOAD:
             mem_addr = POP_WORD_FROM_STACK();
@@ -143,12 +151,8 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         case OP_SWAP_TOP:
         case OP_SWAP: {
-            word_t offset;
-            if (instr == OP_SWAP_TOP)
-                offset = 1;
-            else
-                offset = GET_IMMEDIATE_ARG();
-            
+            word_t offset = (instr == OP_SWAP_TOP)? 1 : GET_IMMEDIATE_ARG();
+
             /* Copy the top element to a temporary storage */
             memcpy(temp_bytes, PEEK_TOS_PTR(), WORD_SIZE);
 
