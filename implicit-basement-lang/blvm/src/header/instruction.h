@@ -164,41 +164,32 @@ typedef enum {
     
     /* Function instructions */
 
-    /* Jump the execution to the address of the function. Prior to this,
-        several instructions are to be done:
+    /* Jump the execution to the address of the function. The address of the
+        memory cell where the CALL instruction is pushed to the stack as the
+        return address.
+        Prior to this, several instructions are to be done:
             1. Push a reserved return value.
             2. Push the function arguments.
             3. Push the number of arguments.
-            4. Push the return address which at this point should be the current
-               instruction pointer.
-        The sequence of data that is pushed to the stack shall be referred to as
-        the "call frame".
+        The sequence of data that is pushed to the stack including the return
+        address shall be referred to as the "call frame".
         After the jump has been executed, the frame pointer moves to the top of
-        the stack, which should have the return address. */
+        the stack, which should have the return address.
+    */
     OP_CALL,
 
     /* Return the execution from the function. This instruction execute the
         following instructions:
 
-        1. Swap the top element of the stack with the reserved return value at
-           the bottom of the topmost call frame. The return value is accessed
-           through the frame pointer by calculating its address:
-
-                    `FP + (N + 1)*W`
-
-           where `N` is the number of arguments and `FP` is the frame pointer.
-           (Note that the stack grows downwards so a "decrement" amounts to
-            adding an offset to the address.)
-
-           If the stack pointer is the same as the frame pointer, i.e. the
-           execution of the function resulted to no value, no swapping is done.
-
-        2. The stack pointer is decremented by `(N + 1)*W` such that it points
-           to the return value.
-        3. Then the instruction pointer is set as the return address, acccessed
-           through the frame pointer.
-        4. The frame pointer is then set to equal to the stack pointer.
-           This action effectively pops off the call frame from the stack. */
+        1. Set the instruction pointer to the return address accessed through
+           frame pointer.
+        2. Decrement the frame pointer to access the number of arguments.
+        3. Decrement the frame pointer with the obtained number of arguments
+           plus one element so as for the frame pointer to point to the
+           reserved return value.
+           Note that the elements in the stack are of the length of one word.
+        4. Then set the stack pointer to equal to the frame pointer.
+    */
     OP_RET
 } Instruction_t;
 
