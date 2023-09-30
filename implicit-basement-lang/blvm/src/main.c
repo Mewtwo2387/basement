@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "instruction.h"
 #include "cpu.h"
 #include "word_util.h"
+#include ".yanfeismug.h"
 
 #define MAX_PROG_SIZE 1024
-
 
 #define ADD_WORD_TO_PROG(prog, idx, word)    \
     word_to_bytes(bytes, word);              \
@@ -14,15 +15,16 @@
     idx += WORD_SIZE;
 
 void write_test_prog__add_2_num(uint8_t *bytes, size_t *prog_size);
-void write_test_prog__func_test(uint8_t *bytes, size_t *prog_size);
+void write_test_prog__func_test(uint8_t *bytes, size_t *prog_size,
+                                const char str_input[]);
 void print_bytes(uint8_t *bytes, size_t bytes_size);
 
 int main(void) {
     CPU_t cpu;
-    uint8_t program[MAX_PROG_SIZE] = { 0 };
+    uint8_t *program = calloc(MAX_PROG_SIZE, sizeof(*program));
     size_t prog_size;
 
-    write_test_prog__func_test(program, &prog_size);
+    write_test_prog__func_test(program, &prog_size, "Hello, World!\n");
     print_bytes(program, prog_size);
 
     init_cpu(&cpu, MEM_SIZE_DEFAULT);
@@ -33,6 +35,7 @@ int main(void) {
         fprintf(stderr, "VM failed: %s\n", cpu.state_msg);
 
     free_cpu(&cpu);
+    free(program);
     return 0;
 }
 
@@ -133,12 +136,11 @@ void write_test_prog__add_2_num(uint8_t *program, size_t *prog_size) {
    ```
    -----------------------------------------------------------------------------
 */
-void write_test_prog__func_test(uint8_t *program, size_t *prog_size) {
+void write_test_prog__func_test(uint8_t *program, size_t *prog_size,
+                                const char str_input[]) {
     word_t word;
     uint8_t bytes[WORD_SIZE];
     size_t idx = 0;
-
-    const char str_input[] = "Hello, World!\n";
 
     /* Label index (pointer) and their corresponding values
        In this case, there are 4 labels. In the assembler, the labels and their
@@ -272,5 +274,5 @@ void print_bytes(uint8_t *bytes, size_t bytes_size) {
             printf("\n");
         printf("%2.2x ", bytes[i]);
     }
-    printf("\n");
+    printf("\n\n");
 }
