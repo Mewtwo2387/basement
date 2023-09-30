@@ -7,7 +7,7 @@
 #include "word_util.h"
 #include ".yanfeismug.h"
 
-#define MAX_PROG_SIZE 1024
+#define MAX_PROG_SIZE 4096
 
 #define ADD_WORD_TO_PROG(prog, idx, word)    \
     word_to_bytes(bytes, word);              \
@@ -24,7 +24,7 @@ int main(void) {
     uint8_t *program = calloc(MAX_PROG_SIZE, sizeof(*program));
     size_t prog_size;
 
-    write_test_prog__func_test(program, &prog_size, "Hello, World!\n");
+    write_test_prog__func_test(program, &prog_size, yanfeismug_art);
     print_bytes(program, prog_size);
 
     init_cpu(&cpu, MEM_SIZE_DEFAULT);
