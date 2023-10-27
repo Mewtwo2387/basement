@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
-Instruction Set of the Virtual Machine of `basement-lang` [VERSION 0.4]
+Instruction Set of the Virtual Machine of `basement-lang`
+    [VERSION 0.5 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -17,14 +18,84 @@ Virtual Machine states
 Word data
     In this virtual machine, a "word" has the size of 64 bits or 8 bytes.
     From hereon, the size of a word in bytes shall be referred to as `W`.
+    The sizes are also implicitly in *bits* unless stated otherwise. For
+    instance, frame pointer offsets are in bytes, not bits.
+    All operations that do not involve pushing values to or popping values from
+    the stack requires the size of their operands to be `W`.
+
+
+Data sizes
+    There are shall be multiple bit sizes for data. These are 8, 16, 32 and 64,
+    64 being the word size. They shall be generically referred to as `N` from
+    hereon.
+
+
+Stack pointers
+    The VM being largely a stack machine, the stack is accessed with two
+    pointers:
+        1. Stack pointer.
+        2. Frame pointer.
+
+    The stack pointer always points to the address above the top element of the
+    stack. While the frame pointer points to the topmost element of the call
+    frame. Call frames are discussed further below.
+
+
+Stack elements
+    Generally speaking, the elements in the stack are always of size `W`.
+    The only exception is the call frame which can have sizes that are not
+    multiples of `W`.
+
+
+Call frame
+    When calling a funciton, several important pieces of information are to be
+    stored to a block of data called  a "call frame" which is to be pushed to
+    the stack upon calling the function.
+
+    The call frame is to have the following structure:
+
+        ... |    A    | B |    C    | D | E |TOS|
+                                        ^   ^
+                                        |   |
+                                        |   Stack pointer
+                                        Frame pointer
+
+        FIGURE 1: Top section of the stack with a call frame.
+
+    Labels:
+        A.   Function arguments, each of which are of size `W`.
+        B.   Size of the argument section in bytes.
+             The size of this data is `W`.
+        C.   Local variable section. The sizes of the local variables
+             are determined during compilation. This also implies that
+             the size of the target data of the LOAD and STORE
+             instructions are also determiend during compilation.
+        D.   Size of the local variable section in bytes.
+             The size of this data is `W`.
+        E.   Return address as a `W` sized integer.
+        TOS. The top of the stack.
+
+
+Function table
+    The generated code from the source code shall include a so called function
+    table which is a block of data containing information about the functions
+    in the program. The table is comprised of elements for each function in the
+    program with the following pieces of information, all of which are of
+    size `W`:
+        1. The number of function arguments.
+        2. The size of the local variable section in *bytes*.
+        3. The address to the function code.
 
 
 Immediate arguments for instructions
     - <LITERAL>
-        A constant value of size `W` bytes supplied by the user in the code.
+        A constant value of size `W` supplied by the user in the code.
     - <ADDRESS>
-        Memory address of size `W` bytes.
+        Memory address of size `W`.
 
+
+Syntax
+    For now, we let the instructions to be CASE-INSENSITIVE.
 
 --------------------------------------------------------------------------------
 INSTRUCTIONS
@@ -33,85 +104,117 @@ INSTRUCTIONS
 Stack manipulation instructions
     PUSH & POP instructions:
         - LOAD_CONST, <LITERAL>
-            Push the immediate argument to the stack.
-        - LOAD_ADDR, <ADDRESS>
-            Push the value addressed by the immediate argument to the stack.
+            Push the immediate argument of size `W` to the stack.
+        - LOAD*N*_ADDR, <ADDRESS>
+            Push a value of size `N` bit to stack addressed by the immediate
+            argument.
+            The size of the pushed values is extended to `W` padding them
+            with zeroes.
+            The actual instructions are to be so:
+                - LOAD8_ADDR
+                - LOAD16_ADDR
+                - LOAD32_ADDR
+                - LOAD64_ADDR
         - LOAD_IP
-            Push the instruction pointer to the stack.
+            Push the instruction pointer as a `W` sized integer to the stack.
         - LOAD_SP
-            Push the stack pointer to the stack.
+            Push the stack pointer as a `W` sized integer to the stack.
         - LOAD_FP
-            Push the frame pointer to the stack.
-        - STORE_ADDR, <ADDRESS>
-            Pop the top element of the stack and store it to memory addressed by
-            the immediate argument.
-        - LOAD
-            Pop an address from the stack and push the value the address points
-            to to the stack.
-        - STORE
-            Pop an address and a literal value. And use them to write to memory.
+            Push the frame pointer as a `W` sized integer to the stack.
+        - STORE*N*_ADDR, <ADDRESS>
+            Pop the `W` sized top element of the stack with size `N` and store
+            it to memory addressed by the immediate argument.
+            The value to be stored shall be bit-masked cutting off the higher
+            significant bits to fit the `N` sized call frame element.
+            The actual instructions are to be so:
+                - STORE8_ADDR
+                - STORE16_ADDR
+                - STORE32_ADDR
+                - STORE64_ADDR
+        - LOAD*N*
+            Pop a `W` sized address from the stack and push the `N` sized value
+            the address points to to the stack.
+            The size of the pushed values is extended to `W` padding them
+            with zeroes.
+            The actual instructions are to be so:
+                - LOAD8
+                - LOAD16
+                - LOAD32
+                - LOAD64
+        - STORE*N*
+            Pop a `W` sized address and a `W` sized value, and write the value
+            to the popped address.
+            The value to be stored shall be bit-masked cutting off the higher
+            significant bits to fit the `N` sized call frame element.
+            The actual instructions are to be so:
+                - STORE8
+                - STORE16
+                - STORE32
+                - STORE64
+        - LOAD_BYTES
+            Pop a `W` sized address and a `W` sized integer `S` from the stack,
+            then load data of size `S` bytes from memory with the obtained
+            address.
+            NOTE: `W` is implicitly in BITS, while `S` is in BYTES.
+        - STORE_BYTES
+            Pop a `W` sized address, a `W` sized integer `S`, and a
+            contigious block of data of size `S` bytes from the stack. Then
+            write the obtained data to memory with the obtained address.
+            NOTE: `W` is implicitly in BITS, while `S` is in BYTES.
+        - LOAD*N*_OFF_FP, <LITERAL>
+            Push a value of size `N` to the stack from a call frame element a
+            number of bytes away the frame pointer whose offset value is
+            supplied by the `W` size immediate argument. This is used to access
+            the arguments and local variables of a function.
+            The size of the pushed values is extended to `W` padding them
+            with zeroes.
+            The actual instructions are to be so:
+                - LOAD8_OFF_FP
+                - LOAD16_OFF_FP
+                - LOAD32_OFF_FP
+                - LOAD64_OFF_FP
+        - STORE*N*_OFF_FP, <LITERAL>
+            Store the `W` sized top element of the stack to a stack element
+            a number of bytes away from the frame pointer, the offset value of
+            which is to be provided by a `W` sized immediate argument.
+            The value to be stored shall be bit-masked cutting off the higher
+            significant bits to fit the `N` sized call frame element.
+            The actual instructions are to be so:
+                - STORE8_OFF_FP
+                - STORE16_OFF_FP
+                - STORE32_OFF_FP
+                - STORE64_OFF_FP
         - POP_RES
-            Pop the top element of the stack and set it as the VM result.
+            Pop the `W` sized top element of the stack and set it as the
+            VM result.
     Miscellaneous:
         - DISCARD
-            Remove the top element of the stack.
+            Remove the `W` sized top element of the stack.
         - DUP
-            Duplicate the top element of the stack.
+            Duplicate the `W` sized top element of the stack.
         - SWAP_TOP
-            Swap the two topmost elements on the stack.
+            Swap the two topmost elements both of size `W` on the stack.
         - SWAP, <LITERAL>
-            Swap the top element of the stack with another element in the stack
-            with the immediate argument as the offset from the top.
+            Swap the `W` sized top element of the stack with another `W` sized
+            element in the stack with the `W` sized immediate argument as the
+            offset from the top.
             NOTE: Since the stack grows downwards, the offset value is positive.
 
 
-Function instructions:
-    - CALL, <ADDRESS>
-        Jump the execution to the address of the function. The address of the
-        memory cell where the CALL instruction is pushed to the stack as the
-        return address.
-        Prior to this, several instructions are to be done:
-            1. Push a reserved return value.
-            2. Push the function arguments.
-            3. Push the number of arguments.
-        The sequence of data that is pushed to the stack including the return
-        address shall be referred to as the "call frame".
-        After the jump has been executed, the frame pointer moves to the top of
-        the stack, which should have the return address.
-    - RET
-        Return the execution from the function. This instruction execute the
-        following instructions:
-
-        1. Set the instruction pointer to the return address accessed through
-           frame pointer.
-        2. Decrement the frame pointer to access the number of arguments.
-        3. Decrement the frame pointer with the obtained number of arguments
-           plus one element so as for the frame pointer to point to the
-           reserved return value.
-           Note that the elements in the stack are of the length of one word.
-        4. Then set the stack pointer to equal to the frame pointer.
-
 Arithmetic logical operation instructions
     Binary operations:
-        Pop two values from the stack, perform the binary operation,
-        and push the result to the stack.
+        Pop two `W` sized values from the stack, perform the binary operation,
+        and push the result which is also of size `W` to the stack.
         - ADD  (addition)
         - SUB  (subtraction)
         - MUL  (multiplication)
         - DIV  (integer division)
     In-place binary operations:
         - ADD_CONST, <LITERAL>
-            Add the immediate argument with the top element of the stack.
-        - ADD_ADDR, <ADDRESS>
-            Get the value addressed by the immediate argument and add it to the
-            top element of the stack.
-        - SUB_CONST, <LITERAL>
-            Subtract the immediate argument with the top element of the stack.
-        - SUB_ADDR, <ADDRESS>
-            Get the value addressed by the immediate argument and subtract it to
-            the top element of the stack.
+            Add the `W` sized immediate argument with the `W` sized top element
+            of the stack.
     Unary operations
-        Pop one value from the stack and do the unary operation on it.
+        Pop one `W` sized value from the stack and do the unary operation on it.
         The result is then pushed to the stack.
         - UN_POSITIVE
             Does not do anything to the number. Akin to NOP.
@@ -153,36 +256,96 @@ Comparison operation instructions:
 
 Input/Output instructions:
     IN:
-        Get a value from the STDIN and push it to the stack.
+        Get a `W` sized value from the STDIN and push it to the stack.
     OUT_CHAR:
-        Pop a value from the stack and print it to STDOUT as an ASCII character.
+        Pop a `W` sized value from the stack and print it to STDOUT as an ASCII
+        character.
     OUT_NUM:
-        Pop a value from the stack and print it to STDOUT as a base-16 integer.
+        Pop a `W` sized value from the stack and print it to STDOUT as a
+        hexadecimal integer.
     OUT_IP:
-        Print the instruction pointer as a base-16 integer.
+        Print the instruction pointer as a hexadecimal integer.
     OUT_SP:
-        Print the stack pointer as a base-16 integer.
+        Print the stack pointer as a hexadecimal integer.
     OUT_ADDR, <ADDRESS>:
-        Print the value addressed by the immediate argument as a base-16 integer
+        Print the `W` sized value addressed by the immediate argument as a
+        hexadecimal integer.
 
 
 Jump instructions:
     - JUMP_ADDR, <ADDRESS>
-        Unconditional jump to the address supplied by the immediate argument.
+        Unconditional jump to the `W` sized address supplied by the immediate
+        argument.
     - JMPZ_ADDR, <ADDRESS>
-        Jump to the address supplied by the immediate argument if the top
-        element of the stack is 0 (i.e. if it is false)
+        Jump to the `W` sized address supplied by the immediate argument if the
+        `W` sized top element of the stack is 0.
     - JMPNZ_ADDR, <ADDRESS>
-        Jump to the address supplied by the immediate argument if the top
-        element of the stack is NOT 0 (i.e. if it is true)
+        Jump to the `W` address supplied by the immediate argument if the
+        `W` sized top element of the stack is NOT 0.
     - JUMP
-        Pop an address from the stack and unconditionally jump to it.
+        Pop a `W` sized address from the stack and jump to it.
     - JMPZ
-        Pop an address from the stack. If the value on top of the stack is 0,
-        jump to the address. Otherwise, skip to the next instruction.
+        Pop a `W` sized address from the stack. If the `W` sized value on top of
+        the stack is 0, jump to the address. Otherwise, skip to the next
+        instruction.
     - JMPNZ
-        Pop an address from the stack. If the value on top of the stack is not 0
-        jump to the address. Otherwise, skip to the next instruction.
+        Pop a `W` sized address from the stack. If the `W` sized value on top of
+        the stack is not 0, jump to the address. Otherwise, skip to the next
+        instruction.
+
+
+Function instructions:
+    - CALL, <ADDRESS>
+        Call a function, consume a number of `W` sized stack elements as the
+        function arguments and push the result as a `W` sized integer to the
+        stack. In truth, this instruction is comprised of multiple instructions.
+        
+        Firstly, the address provided by the immediate argument must lead to
+        the function table element corresponding to the called function.
+
+        Assuming the prerequisite mentioned above is met, then the following
+        instructions are to be executed upon executing the CALL instruction:
+
+        1. Obtain the number of function argument and push it to the stack as
+           size in bytes, i.e. `n * W` where `n` is the number of arguments.
+        2. Obtain the size of the local variables and allocate a space for them.
+           This is done by just incrementing the stack pointer with the said
+           size.
+           Then the size of the local variable section is pushed to the stack.
+        3. The return address which, at this point, is the instruction pointer
+           is pushed to the stack.
+        4. The frame pointer is updated to point to the return address.
+        5. Obtain the address to the function and have the instruction pointer
+           point to that address.
+
+        At this point, on the stack is a call frame as shown in Figure 1 in
+        the PRELIMINARIES section of this document.
+    - RETURN
+        Return from the currently executing function and push the return value
+        of the function to the stack. Like the CALL instruction, this
+        instruction is comprised of multiple instructions.
+
+        Firstly, the return value is pointed to by the stack pointer. This
+        necessitates that there must be at least one `W` sized value above the
+        call frame.
+
+        Assuming that the prerequisite stated above is already met, the
+        following instructions are executed:
+
+        1. Set the instruction pointer with the return address accessed through
+           frame pointer (FP). Decrement FP by `W` so that it is pointing to the
+           next element in the call frame.
+        2. Obtain the size of local variable and use it to decrement FP to reach
+           the next element in the call frame.
+        3. Obtain size of the argument section and use it to decrement FP to
+           reach the bottom of the call frame.
+        4. Copy the `W` sized value the stack pointer is pointing to to the
+           memory FP is pointing to, overwriting a part of the argument
+           section. If there is no argument section, i.e. there are no function
+           arguments, this instruction will just overwrite section B in Figure 1
+           of the CALL instruction description.
+        5. Set the stack pointer as FP, effectively popping off the call frame
+           from the stack.
 
 
 CPU state instructions:
@@ -201,9 +364,57 @@ Miscellaneous:
     - NOP
         No operation. The execution proceeds to the next instruction.
 
+
+--------------------------------------------------------------------------------
+OBSOLETE INSTRUCTIONS:
+----------------------
+
+- LOAD_ADDR, <ADDRESS>
+    Push the value addressed by the immediate argument to the stack.
+- STORE_ADDR, <ADDRESS>
+    Pop the top element of the stack and store it to memory addressed by the
+    immediate argument.
+- LOAD
+    Pop an address from the stack and push the value the address points to
+    to the stack.
+- STORE
+    Pop an address and a literal value. And use them to write to memory.
+- ADD_ADDR, <ADDRESS>
+    Get the value addressed by the `W` sized immediate argument and
+    add it to the top element of the stack.
+- SUB_CONST, <LITERAL>
+    Subtract the immediate argument with the top element of the stack.
+- SUB_ADDR, <ADDRESS>
+    Get the value addressed by the immediate argument and subtract it to
+    the top element of the stack.
+- CALL, <ADDRESS>
+    Jump the execution to the address of the function. The address of the
+    memory cell where the CALL instruction is pushed to the stack as the
+    return address.
+    Prior to this, several instructions are to be done:
+        1. Push a reserved return value.
+        2. Push the function arguments.
+        3. Push the number of arguments.
+    The sequence of data that is pushed to the stack including the return
+    address shall be referred to as the "call frame".
+    After the jump has been executed, the frame pointer moves to the top of
+    the stack, which should have the return address.
+- RET
+    Return the execution from the function. This instruction execute the
+    following instructions:
+
+    1. Set the instruction pointer to the return address accessed through
+        frame pointer.
+    2. Decrement the frame pointer to access the number of arguments.
+    3. Decrement the frame pointer with the obtained number of arguments
+        plus one element so as for the frame pointer to point to the
+        reserved return value.
+        Note that the elements in the stack are of the length of one word.
+    4. Then set the stack pointer to equal to the frame pointer.
+
+
 --------------------------------------------------------------------------------
 NOTES:
-    1.) To simplify further the VM implementation, all data including the memory
-        addresses will have the same size: 64 bits.
-        That is to say, we abandon the original word size of 1 byte.
-        However, the opcodes will still be 1 byte long.
+    1.) Just as with v.0.4 (pre-alpha), pieces of data on the stack is of 
+        size `W`. However, due to the inclusion of call frames with local
+        variables

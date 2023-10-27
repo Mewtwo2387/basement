@@ -1,35 +1,72 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   A simple print program in "basement-lang" (temporary name) v.0.4         ;;
+;;   A simple print program in "basement-lang" v0.5 (pre-alpha)              ;;
+;; -------------------------------------------------------------------------- ;;
+;;   Generated code for the following pseudo-code:
+;;       int32_t print(int8_t *str) {
+;;           while (*str) {
+;;               putc(*str);
+;;               ++str;
+;;           }
+;;           return 0;
+;;       }
+;;       
+;;       int32_t main() {
+;;           print("Hello, World!\n");
+;;           return 0;
+;;       }
 ;; -------------------------------------------------------------------------- ;;
 
-;; Push the call frame
-LOAD_CONST 0x0           ; Reserve the return value.
-LOAD_CONST STRING_ADDR   ; Load the address to the string to be printed.
-LOAD_CONST 0x1           ; Load the number of arguments
-CALL PRINT_FUNC          ; Call the print function
-DONE                     ; Halt the VM
+;; Driver code. All programs are prepended by this.
+call FTBL__FUNC_MAIN    ; Call the main function.
+done                    ; End the program using the return value of function
+                        ; `main` as the result of the VM.
 
-PRINT_FUNC:
-    ;; Load the string address argument to the stack
-    LOAD_FP         ; Get the frame pointer
-    ADD_CONST 0x10  ; Skip the two elements on top of the stack to reach
-                    ; the function argument: the string address.
-                    ; NOTE:  1.) 0x10 = WORD_SIZE * 2. where WORD_SIZE = 8
-                    ;        2.) Adding smth to the stack ptr decrements it
-                    ;            Subtracting the stack ptr increments it
-    LOAD            ; Load the value of the argument, the string address
-    PRINT_LOOP:
-        DUP                  ; Duplicate the top which should be string ptr
-        LOAD                 ; Load the data addressed by the string ptr
-        LOAD_CONST 0xFF      ; Push the byte bit mask
-        AND                  ; Get only the first byte from the word
-        JMPZ_ADDR EXIT_LOOP  ; Exit the print loop if 0x00 is encountered
-        OUT_CHAR             ; Print the character to stdin.
-        ADDI_CONST 0x1       ; Increment the string pointer by 1 byte.
-        JUMP_ADDR PRINT_LOOP ; Repeat
-    EXIT_LOOP:
-    LOAD_CONST 0x0           ; Push the return value of the function
-    RET                      ; Exit from the function.
-;; End of the print function
 
-;; <---------| CONSTANT DECLARATIONS OMITTED |--------->
+FUNC_PRINT:
+    LOOP1:
+        ;; While loop condition
+        load64_from_fp ARG_OFFSET__STR  ; Get the string (a pointer to char).
+        load8                           ; Get the current char from the string.
+        jmpz_addr      END_LOOP1        ; Jump out of the while loop if the end
+                                        ; of the string (null byte) is reached.
+        discard                         ; Discard the obtained char.
+
+        ;; Print the current character the string pointer points to.
+        load64_off_fp  ARG_OFFSET__STR  ; Get the string.
+        load8                           ; Get the current char in the string.
+        out_char                        ; Print the current char to stdout.
+
+        ;; Go to the next character in the string.
+        load64_off_fp  ARG_OFFSET__STR  ; Get the string pointer.
+        add_const      INT8_SIZE        ; Increment the pointer, jumping to the
+                                        ; next char.
+        store64_off_fp ARG_OFFSET__STR  ; Update the string pointer.
+
+        jump LOOP1                      ; Repeat the while loop.
+    END_LOOP1:
+    discard         ; Discard the obtained char which should be a null byte.
+
+    load_const 0x0  ; Push the return value.
+    return          ; Return from the function.
+
+
+FUNC_MAIN:
+    load64_addr CONST_PTR__HELLO_WORLD_STR  ; Push the string pointer to the
+                                            ; stack as a function argument to
+                                            ; the function `print`.
+    call        FTBL__FUNC_PRINT            ; Call the print function.
+                                            ; Thhe immediate argument is an
+                                            ; address that points to the
+                                            ; function table element that
+                                            ; corresponds to `print` function.
+    discard                                 ; Discard the return value of the
+                                            ; `print` function.
+
+    load_const  0x0  ; Push the return value.
+    return           ; Return from the main function, i.e. end the program.
+
+;; -------------------------------------------------------------------------- ;;
+;;  Below this header are the literals, global entities (vars, consts) and
+;;  the function table.
+;;  NOTE: For the sake of this sample code, we remove their declarations.
+;; -------------------------------------------------------------------------- ;;
