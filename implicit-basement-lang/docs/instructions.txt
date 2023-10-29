@@ -325,7 +325,7 @@ Function instructions:
         of the function to the stack. Like the CALL instruction, this
         instruction is comprised of multiple instructions.
 
-        Firstly, the return value is pointed to by the stack pointer. This
+        Firstly, the stack pointer must point to the return value. This
         necessitates that there must be at least one `W` sized value above the
         call frame.
 
@@ -343,7 +343,7 @@ Function instructions:
            memory FP is pointing to, overwriting a part of the argument
            section. If there is no argument section, i.e. there are no function
            arguments, this instruction will just overwrite section B in Figure 1
-           of the CALL instruction description.
+           in the PRELIMINARIES section.
         5. Set the stack pointer as FP, effectively popping off the call frame
            from the stack.
 
