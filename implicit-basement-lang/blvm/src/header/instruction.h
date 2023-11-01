@@ -5,192 +5,349 @@ typedef enum {
     /*  Abort program and set the CPU state to FAILED */
     OP_ABORT = 0,
     /* No operation */
-    OP_NOP,
+     OP_NOP = 1,
     /* Halt code execution */
-    OP_DONE,
+    OP_DONE = 2,
+
 
     /* ---------- Stack manipulation instructions ---------- */
 
     /* Push the immediate argument to the stack */
-    OP_LOAD_CONST,
-    /* Push the value addressed by the immediate argument to the stack */
-    OP_LOAD_ADDR,
-    /* Push the instruction pointer to the stack */
-    OP_LOAD_IP,
-    /* Push the stack pointer to the stack */
-    OP_LOAD_SP,
-    /* Push the frame pointer to the stack */
-    OP_LOAD_FP,
-    /* Pop the top element of the stack and store it to memory addressed by the
-       immediate argument. */
-    OP_STORE_ADDR,
-    /* Pop an address from the stack and push the value the address points to
-       to the stack. */
-    OP_LOAD,
-    /* Pop an address and a literal value. And use them to write to memory. */
-    OP_STORE,
-    /* Pop the top element of the stack and set it as the VM result. */
+    OP_LOAD_CONST = 3,
+
+    /*
+       Push value of size 8, 16, 32 or 64 bits addressed by the word sized
+       immediate argument to the stack
+    */
+    OP_SNTNL_LOAD_ADDR = 0x10,
+
+    OP_LOAD8_ADDR  = 0x11,
+    OP_LOAD16_ADDR = 0x12,
+    OP_LOAD32_ADDR = 0x13,
+    OP_LOAD64_ADDR = 0x14,
+
+    /*
+      Pop the word sized top element of the stack and store it to memory
+      addressed by the immediate argument as a value of size 8, 16, 32, or 64.
+    */
+    OP_SNTNL_STORE_ADDR = 0x20,
+
+    OP_STORE8_ADDR  = 0x21,
+    OP_STORE16_ADDR = 0x22,
+    OP_STORE32_ADDR = 0x23,
+    OP_STORE64_ADDR = 0x24,
+
+
+    /*
+       Pop a word sized address from the stack and push the value of
+       size 8, 16, 32 or 64 the address points to to the stack.
+    */
+    OP_SNTNL_LOAD = 0x30,
+ 
+    OP_LOAD8  = 0x31,
+    OP_LOAD16 = 0x32,
+    OP_LOAD32 = 0x33,
+    OP_LOAD64 = 0x34,
+
+
+    /*
+       Pop a word sized address and a word sized value from the stack,
+       mask the value to its supposed size (i.e. 8, 16, 32, 64 bits), and write
+       the value to memory with the obtained address.
+    */
+    OP_SNTNL_STORE = 0x40,
+
+    OP_STORE8  = 0x41,
+    OP_STORE16 = 0x42,
+    OP_STORE32 = 0x43,
+    OP_STORE64 = 0x44,
+
+
+    /* Push the instruction pointer to the stack as a word sized integer */
+    OP_LOAD_IP = 0x50,
+    /* Push the stack pointer to the stack as a word sized integer */
+    OP_LOAD_SP = 0x51,
+    /* Push the frame pointer to the stack as a word sized integer */
+    OP_LOAD_FP = 0x52,
+
+    /*
+        Pop the word sized top element of the stack and set it as the VM result
+    */
     OP_POP_RES,
-    /* Remove the top element of the stack. */
+    /* Pop and discard the word sized top element of the stack. */
     OP_DISCARD,
-    /* Duplicate the top element of the stack. */
+    /* Duplicate the word sized top element of the stack. */
     OP_DUP,
-    /* Swap the two topmost elements on the stack. */
+    /* Swap the two topmost word sized elements on the stack. */
     OP_SWAP_TOP,
-    /* Swap the top element of the stack with another element in the stack with
-       the immediate argument as the offset from the top.
-       NOTE: Since the stack grows downwards, the offset value is positive. */
+    /*
+        Swap the word sized top element of the stack with another word sized
+        element in the stack with the immediate argument as the offset from the
+        top.
+    */
     OP_SWAP,
 
-    /* ---------- Arithmetic operations ---------- */
 
-    /* Pop two values from the stack, add them together and push the sum to the
-       stack. */
-    OP_ADD,
-    /* Add the immediate argument to the top element of the stack. */
-    OP_ADD_CONST,
-    /* Add the value addressed by the immediate argument to the top element of
-       the stack. */
-    OP_ADD_ADDR,
-    /* Pop two values from the stack, subtract one from the other and push the
-       difference to the stack. */
-    OP_SUB,
-    /* Subtract the top element of the stack with the immediate argument. */
-    OP_SUB_CONST,
-    /* Subtract the top element of the stack with the value addressed by the
-       immediate argument. */
-    OP_SUB_ADDR,
-    /* Pop two values from the stack, multiply the two together and push the
-       product to the stack. */
-    OP_MUL,
-    /* Pop two values from the stack, divide the first popped value with the
-       second popped value and push the quotient to the stack. */
-    OP_DIV,
-    /* Unary positive. It does nothing to the operand, and is added as a
-       counterpart for the `OP_UN_NEGATIVE` instruction for completion. */
-    OP_UN_POSITIVE,
-    /* Unary negative. Pops a value from the stack, "negates" it, and push the
-       result to the stack.
-       Since the operands are unsigned integers, the "negation" is done by
-       applying the following formula:
-            `~n + 1`
-       where `~` is the bitwise NOT operation and `n` is the operand. */
-    OP_UN_NEGATIVE,
+    /* ---------- Arithmetic operations ---------- */
+    /*
+        Pop two word sized values from the stack, add them together and
+        push the sum to the stack.
+    */
+    OP_ADD = 0x60,
+
+    /* Add the immediate argument to the word sized top element of sthe stack */
+    OP_ADD_CONST = 0x61,
+
+    /*
+        Pop two word sized values from the stack, subtract one from the other
+        and push the difference to the stack.
+    */
+    OP_SUB = 0x62,
+
+    /*
+        Pop two word sized values from the stack, multiply the two together and
+        push the product to the stack.
+    */
+    OP_MUL = 0x63,
+
+    /*
+        Pop two word sized values from the stack, divide the first popped value
+        with the second popped value and push the quotient to the stack.
+    */
+    OP_DIV = 0x64,
+
+    /*
+        Unary positive. Consume a word sized operand from the stack and return
+        it as is.
+        Implementation-wise, this amounts to doing nothing like `OP_NOP`,
+        except it throws an error if there is nothing on the stack since this is
+        still a unary operator.
+    */
+    OP_UN_POSITIVE = 0x65,
+
+    /*
+        Unary negative. Pops a word sized value from the stack, "negates" it,
+        and push the result to the stack.
+        Since the operands are unsigned integers, the "negation" is done by
+        applying the following formula:
+             `~n + 1`
+        where `~` is the bitwise NOT operation and `n` is the operand.
+    */
+    OP_UN_NEGATIVE = 0x66,
+
 
     /* ---------- Bitwise logical operations ---------- */
+    /*
+        Pop two word sized values from the stack, apply bitwise OR operation,
+        and push the result to the stack.
+    */
+    OP_OR = 0x67,
 
-    /* Pop two values from the stack, apply bitwise OR operation, and push the
-       result to the stack. */
-    OP_OR,
-    /* Pop two values from the stack, apply bitwise AND operation, and push the
-       result to the stack. */
-    OP_AND,
-    /* Pop two values from the stack, apply bitwise NOR operation, and push the
-       result to the stack. */
-    OP_NOR,
-    /* Pop two values from the stack, apply bitwise NAND operation, and push the
-       result to the stack. */
-    OP_NAND,
-    /* Pop two values from the stack, apply bitwise XOR operation, and push the
-       result to the stack. */
-    OP_XOR,
-    /* Pop two values from the stack and do a left bitshift operation to the
-       first value by an amount specified by the second value. The result is
-       pushed to the stack. */
-    OP_LSH,
-    /* Pop two values from the stack and do a right bitshift operation to the
-       first value by an amount specified by the second value. The result is
-       pushed to the stack. */
-    OP_RSH,
-    /* Pop a value from the stack, and apply bitwise NOT operation, and push the
-       result to the stack. */
-    OP_NOT,
+    /*
+        Pop two word sized values from the stack, apply bitwise AND operation,
+        and push the result to the stack.
+    */
+    OP_AND = 0x68,
 
-    /* ---------- Comparison operations ---------- */
+    /* 
+        Pop two word sized values from the stack, apply bitwise NOR operation,
+        and push the result to the stack.
+    */
+    OP_NOR = 0x69,
 
-    /* Pop two values from the stack, compare if the two values are equal, push
-       1 if true else push 0 to the stack. */
-    OP_EQ,
-    /* Pop two values from the stack, compare if the first value is less than
-       the second one, push 1 if true else push 0 to the stack. */
-    OP_LT,
-    /* Pop two values from the stack, compare if the first value is less than
-       or equal to the second one, push 1 if true else push 0 to the stack. */
-    OP_LEQ,
-    /* Pop two values from the stack, compare if the first value is greater than
-       the second one, push 1 if true else push 0 to the stack. */
-    OP_GT,
-    /* Pop two values from the stack, compare if the first value is greater than
-       or equal to the second one, push 1 if true else push 0 to the stack. */
-    OP_GEQ,
+    /*
+        Pop two word sized values from the stack, apply bitwise NAND operation,
+        and push the result to the stack.
+    */
+    OP_NAND = 0x6A,
+
+    /*
+        Pop two word sized values from the stack, apply bitwise XOR operation,
+        and push the result to the stack.
+    */
+    OP_XOR = 0x6B,
+
+    /* 
+        Pop two word sized values from the stack and do a left bitshift
+        operation to the first value by an amount specified by the second value.
+        The result is then pushed to the stack.
+    */
+    OP_LSH = 0x6C,
+
+    /*
+        Pop two word sized values from the stack and do a right bitshift
+        operation to the first value by an amount specified by the second value.
+        The result is then pushed to the stack.
+    */
+    OP_RSH = 0x6D,
+
+    /* 
+        Pop a value from the stack, and apply bitwise NOT operation,
+        and push the result to the stack.
+    */
+    OP_NOT = 0x6E,
+
+     /* ---------- Comparison operations ---------- */
+    /*
+        Pop two word sized values from the stack, compare if the two values are
+        equal, push 1 if true else push 0 to the stack.
+    */
+    OP_EQ = 0x70,
+
+    /*
+        Pop two word sized values from the stack, compare if the first value is
+        less than the second one, push 1 if true else push 0 to the stack.
+    */
+    OP_LT = 0x71,
+
+    /*
+        Pop two word sized values from the stack, compare if the first value is
+        less than or equal to the second one, push 1 if true else push 0 to the
+        stack.
+    */
+    OP_LEQ = 0x72,
+
+    /*
+        Pop two word sized values from the stack, compare if the first value is
+        greater than the second one, push 1 if true else push 0 to the stack.
+    */
+    OP_GT = 0x73,
+
+    /*
+        Pop two word sized values from the stack, compare if the first value is
+        greater than or equal to the second one, push 1 if true else push 0 to
+        the stack.
+    */
+    OP_GEQ = 0x74,
 
 
     /* ---------- Input/Output instructions ---------- */
+    /*
+        Get a value from the STDIN and push it to the stack as a
+        word sized value.
+    */
+    OP_IN = 0x80,
 
-    /* Get a value from the STDIN and push it to the stack. */
-    OP_IN,
-    /* Pop a value from the stack and print it to STDOUT as an ASCII
-       character. */
+    /*
+        Pop a word sized value from the stack and print it to STDOUT as an ASCII
+        character.
+    */
     OP_OUT_CHAR,
-    /* Pop a value from the stack and print it to STDOUT as a base-16
-       integer. */
+
+    /*
+        Pop a word sized value from the stack and print it to STDOUT as an 
+        integer in hexadecimal.
+    */
     OP_OUT_NUM,
+
     /* Print the instruction pointer as a base-16 integer. */
     OP_OUT_IP,
+
     /* Print the stack pointer as a base-16 integer. */
     OP_OUT_SP,
-    /* Print the value addressed by the immediate argument as a base-16
-       integer. */
+
+    /* 
+        Print the word sized value addressed by the immediate argument as an
+        integer in hexadecimal.
+    */
     OP_OUT_ADDR,
+
 
     /* ---------- Jump instructions ---------- */
 
     /* Unconditional jump to the address supplied by the immediate argument. */
-    OP_JUMP_ADDR,
-    /* Jump to the address supplied by the immediate argument if the top element
-       of the stack is 0. */
+    OP_JUMP_ADDR = 0x90,
+
+    /*
+        Jump to the address supplied by the immediate argument if the word sized
+        top element of the stack is 0.
+    */
     OP_JMPZ_ADDR,
-    /* Jump to the address supplied by the immediate argument if the top element
-       of the stack is not 0. */
+
+    /*
+        Jump to the address supplied by the immediate argument if the word sized
+        top element of the stack is not 0.
+    */
     OP_JMPNZ_ADDR,
-    /* Pop an address from the stack and unconditionally jump to it.*/
+
+    /* Pop a word sized address from the stack and unconditionally jump to it.*/
     OP_JUMP,
-    /* Pop an address from the stack. If the value on top of the stack is 0,
-       jump to the address. Otherwise, skip to the next instruction. */
+
+    /*
+        Pop a word sized address from the stack. If the word sized value on top
+        of the stack is 0, jump to the address. Otherwise, skip to the next
+        instruction.
+    */
     OP_JMPZ,
-    /* Pop an address from the stack. If the value on top of the stack is not 0,
-       jump to the address. Otherwise, skip to the next instruction. */
+
+    /*
+        Pop a word sized address from the stack. If the word sized value on top
+        of the stack is not 0, jump to the address. Otherwise, skip to the next
+        instruction.
+    */
     OP_JMPNZ,
-    
-    /* Function instructions */
 
-    /* Jump the execution to the address of the function. The address of the
-        memory cell where the CALL instruction is pushed to the stack as the
-        return address.
-        Prior to this, several instructions are to be done:
-            1. Push a reserved return value.
-            2. Push the function arguments.
-            3. Push the number of arguments.
-        The sequence of data that is pushed to the stack including the return
-        address shall be referred to as the "call frame".
-        After the jump has been executed, the frame pointer moves to the top of
-        the stack, which should have the return address.
+
+    /* ------- Function instructions ------- */
+
+    /*
+        Call a function, consume a number of word sized sized stack elements as
+        the function arguments and push the result as a word sized integer to
+        the stack.
+       
+        Implementation-wise, this instruction is comprised of multiple
+        instructions.
+ 
+        Firstly, the address provided by the immediate argument must lead to
+        the function table element corresponding to the called function.
+ 
+        Assuming the prerequisite mentioned above is met, then the following
+        instructions are to be executed upon executing the CALL instruction:
+ 
+        1. Obtain the number of function argument and push it to the stack as
+           size in bytes, i.e. `n * W` where `n` is the number of arguments
+           and `W` is the size of a word in bits.
+        2. Obtain the size of the local variables and allocate a space for them.
+           This is done by just incrementing the stack pointer with the said
+           size.
+           Then the size of the local variable section is pushed to the stack.
+        3. The return address which, at this point, is the instruction pointer
+           is pushed to the stack.
+        4. The frame pointer is updated to point to the return address.
+        5. Obtain the address to the function and have the instruction pointer
+           point to that address.
+
+        Upon finishing executing this instruction, on the stack is a call frame.
     */
-    OP_CALL,
+    OP_CALL = 0xA0,
 
-    /* Return the execution from the function. This instruction execute the
-        following instructions:
-
-        1. Set the instruction pointer to the return address accessed through
-           frame pointer.
-        2. Decrement the frame pointer to access the number of arguments.
-        3. Decrement the frame pointer with the obtained number of arguments
-           plus one element so as for the frame pointer to point to the
-           reserved return value.
-           Note that the elements in the stack are of the length of one word.
-        4. Then set the stack pointer to equal to the frame pointer.
+    /*
+        Return from the currently executing function and push the return value
+        of the function to the stack.
+       
+        Like the CALL instruction, this instruction is comprised of multiple
+        instructions.
+ 
+        Firstly, the return value is pointed to by the stack pointer. This
+        necessitates that there must be at least one word sized value above the
+        call frame.
+ 
+        Assuming that the prerequisite stated above is already met, the
+        following instructions are executed:
+ 
+        1. Set the instruction pointer with the return address accessed through
+           frame pointer (FP). Decrement FP by a word size so that it is
+           pointing to the next element in the call frame.
+        2. Obtain the size of local variable and use it to decrement FP to reach
+           the next element in the call frame.
+        3. Obtain size of the argument section and use it to decrement FP to
+           reach the bottom of the call frame.
+        4. Copy the word sized value the stack pointer is pointing to to the
+           memory FP is pointing to, overwriting a section of the call frame.
+        5. Set the stack pointer as FP, effectively popping off the call frame
+           from the stack.
     */
-    OP_RET
+    OP_RETURN
 } Instruction_t;
-
+ 
 #endif

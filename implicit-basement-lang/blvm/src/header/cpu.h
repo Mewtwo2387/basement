@@ -15,18 +15,19 @@ typedef enum {
     STATE_UNKNOWN,
 
     /* Exclusive upper bound of CPU state enum */
-    CPU_STATE_MAX,
+    CPU_STATE_UBOUND,
 } CPUState_t;
 
 typedef struct {
     CPUState_t state;
     char *state_msg;
 
-    /* Memory (RAM). The size is determined by the user or some default value */
+    /* Memory (RAM) */
     uint8_t *memory;
     size_t mem_size;
-    uint8_t *prog_bounds[2]; // The lower and upper bounds of the program.
-    uint8_t *heap_ptr;       // Pointer to the top of the heap.
+
+    /* The lower and upper bounds of the program */
+    uint8_t *prog_bounds[2];
 
     /* Instruction pointer */
     uint8_t *ip;

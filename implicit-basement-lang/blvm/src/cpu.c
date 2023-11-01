@@ -7,33 +7,26 @@
 #include "word_util.h"
 #include "instruction.h"
 
-/* NOTE: Incrementing the stack pointer: cpu->sp -= N
-         Decrementing the stack pointer: cpu->sp += N */
-
+/* 
+    NOTE: Incrementing the stack pointer: cpu->sp -= N
+          Decrementing the stack pointer: cpu->sp += N
+*/
 #define INCREMENT_STACK_PTR(stack_ptr) stack_ptr -= WORD_SIZE
 #define DECREMENT_STACK_PTR(stack_ptr) stack_ptr += WORD_SIZE
+#define NEXT_STACK_ELEM(stack_ptr) stack_ptr - WORD_SIZE
+#define PREV_STACK_ELEM(stack_ptr) stack_ptr + WORD_SIZE
+#define STACK_PTR_OFFSET(stack_ptr, offset) stack_ptr - offset
 
 #define GET_IMMEDIATE_ARG() \
     ( cpu->ip += WORD_SIZE, bytes_to_word(cpu->ip - WORD_SIZE) )
 #define POP_WORD_FROM_STACK() \
     ( cpu->sp += WORD_SIZE, bytes_to_word(cpu->sp - WORD_SIZE) )
-
-/* Get data from memory as a word sized integer */
-#define GET_MEMORY(addr) \
-    bytes_to_word(cpu->memory + addr)
-
-/* Push a word sized integer to stack */
-#define PUSH_WORD_TO_STACK(word) {              \
-        word_to_bytes(temp_bytes, word);        \
-        cpu->sp -= WORD_SIZE;                   \
-        memcpy(cpu->sp, temp_bytes, WORD_SIZE); \
+#define PUSH_WORD_TO_STACK(n) {                       \
+        temp_bytes.word = n;                          \
+        cpu->sp -= WORD_SIZE;                         \
+        memcpy(cpu->sp, temp_bytes.bytes, WORD_SIZE); \
     }
-/* Push word number of bytes to stack */
-#define PUSH_BYTES_TO_STACK(bytes) \
-    memcpy(cpu->sp, temp_bytes, WORD_SIZE)
-/* Store word number of bytes to a temporary array */
-#define TEMP_STORE_BYTES(dest_temp_bytes, src_bytes) \
-    memcpy(dest_temp_bytes, src_bytes, WORD_SIZE)
+
 
 void print_memory(CPU_t *cpu, size_t lbound, size_t ubound);
 
@@ -47,7 +40,6 @@ void init_cpu(CPU_t *cpu, size_t memory_size) {
         .state=HALT_SUCCESS,
         .mem_size=memory_size,
         .prog_bounds={ NULL, NULL },
-        .heap_ptr=NULL,
         .ip=NULL,
         .sp=NULL,
         .fp=NULL
@@ -70,7 +62,6 @@ void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
     cpu->ip = cpu->memory;
     cpu->prog_bounds[0] = cpu->ip;
     cpu->prog_bounds[1] = cpu->ip + prog_size - WORD_SIZE;
-    cpu->heap_ptr = cpu->prog_bounds[1] + 1;
     
     /* Initialize the stack pointers */
     cpu->sp = cpu->memory + (cpu->mem_size - 1);
@@ -82,7 +73,9 @@ CPUState_t cpu_run(CPU_t *cpu) {
     word_t mem_addr, mem_val, tos_val, ptr_val;
     word_t op1, op2, op_result;
     word_t user_input, output;
-    uint8_t temp_bytes[WORD_SIZE];
+
+    union word_bytes temp_bytes = { .word=0 };
+    uint8_t size_idx, instr_type;
 
     for (;;) {
         Instruction_t instr = *(cpu->ip++);
@@ -104,17 +97,64 @@ CPUState_t cpu_run(CPU_t *cpu) {
             /* Jump IP towards the end of the word sized argument */
             cpu->ip += WORD_SIZE;
             break;
-        case OP_LOAD_ADDR:
-        case OP_LOAD:
-            mem_addr = (instr == OP_LOAD_ADDR)? GET_IMMEDIATE_ARG() : 
-                                                POP_WORD_FROM_STACK();
 
-            TEMP_STORE_BYTES(temp_bytes, cpu->memory + mem_addr);
+        case OP_LOAD8_ADDR:
+        case OP_LOAD16_ADDR:
+        case OP_LOAD32_ADDR:
+        case OP_LOAD64_ADDR:
+        case OP_LOAD8:
+        case OP_LOAD16:
+        case OP_LOAD32:
+        case OP_LOAD64:
+            instr_type = instr & 0xF0;
+            size_idx   = (instr & 0x0F) - 1;
+
+            if (instr_type == OP_SNTNL_LOAD_ADDR) {
+                mem_addr = GET_IMMEDIATE_ARG();
+            } else if (instr_type == OP_SNTNL_LOAD) {
+                mem_addr = POP_WORD_FROM_STACK();
+            } else {
+                fprintf(stderr, "Internal error: Unknown LOAD instruction\n");
+                exit(EXIT_FAILURE);
+            }
+
+            memcpy(temp_bytes.bytes, cpu->memory + mem_addr, WORD_SIZE);
+            temp_bytes.word &= data_bitmasks[size_idx];
 
             /* Push the vavlue from the memory to stack */
             INCREMENT_STACK_PTR(cpu->sp);
-            memcpy(cpu->sp, temp_bytes, WORD_SIZE);
+            memcpy(cpu->sp, temp_bytes.bytes, WORD_SIZE);
             break;
+
+        case OP_STORE8_ADDR:
+        case OP_STORE16_ADDR:
+        case OP_STORE32_ADDR:
+        case OP_STORE64_ADDR:
+        case OP_STORE8:
+        case OP_STORE16:
+        case OP_STORE32:
+        case OP_STORE64:
+            instr_type = instr & 0xF0;
+            size_idx   = (instr & 0x0F) - 1;
+
+            if (instr_type == OP_SNTNL_STORE_ADDR) {
+                mem_addr = GET_IMMEDIATE_ARG();
+            } else if (instr_type == OP_SNTNL_STORE) {
+                mem_addr = POP_WORD_FROM_STACK();
+            } else {
+                fprintf(stderr, "Internal error: Unknown LOAD instruction\n");
+                exit(EXIT_FAILURE);
+            }
+
+            memcpy(temp_bytes.bytes, cpu->sp, WORD_SIZE);
+            temp_bytes.word &= data_bitmasks[size_idx];
+
+            /* Write the popped value from the stack to memory */
+            memcpy(cpu->memory + mem_addr, temp_bytes.bytes,
+                   data_sizes[size_idx]);
+            DECREMENT_STACK_PTR(cpu->sp);
+            break;
+
         case OP_LOAD_IP:
         case OP_LOAD_SP:
         case OP_LOAD_FP:
@@ -124,20 +164,10 @@ CPUState_t cpu_run(CPU_t *cpu) {
             ptr_val -= (word_t)cpu->memory;
             PUSH_WORD_TO_STACK(ptr_val);
             break;
-        case OP_STORE_ADDR:
-        case OP_STORE:
-            mem_addr = (instr == OP_STORE_ADDR)? GET_IMMEDIATE_ARG() :
-                                                 POP_WORD_FROM_STACK();
 
-            TEMP_STORE_BYTES(temp_bytes, cpu->sp);
-
-            /* Write the popped value from the stack to memory */
-            memcpy(cpu->memory + mem_addr, temp_bytes, WORD_SIZE);
-            DECREMENT_STACK_PTR(cpu->sp);
-            break;
         case OP_POP_RES:
             tos_val = POP_WORD_FROM_STACK();
-            if (CPU_STATE_MAX <= tos_val)
+            if (CPU_STATE_UBOUND <= tos_val)
                 cpu->state = STATE_UNKNOWN;
             else
                 cpu->state = tos_val;
@@ -154,11 +184,11 @@ CPUState_t cpu_run(CPU_t *cpu) {
             word_t offset = (instr == OP_SWAP_TOP)? 1 : GET_IMMEDIATE_ARG();
 
             /* Copy the top element to a temporary storage */
-            memcpy(temp_bytes, cpu->sp, WORD_SIZE);
+            memcpy(temp_bytes.bytes, cpu->sp, WORD_SIZE);
 
             /* Swap the two elements */
             memcpy(cpu->sp, cpu->sp + offset, WORD_SIZE);
-            memcpy(cpu->sp + offset, temp_bytes, WORD_SIZE);
+            memcpy(cpu->sp + offset, temp_bytes.bytes, WORD_SIZE);
         }
         break;
 
@@ -183,22 +213,22 @@ CPUState_t cpu_run(CPU_t *cpu) {
             op2 = POP_WORD_FROM_STACK();
 
             switch (instr) {
-            case OP_ADD:  op_result = op1 + op2; break;
-            case OP_SUB:  op_result = op1 - op2; break;
-            case OP_MUL:  op_result = op1 * op2; break;
-            case OP_DIV:  op_result = op1 / op2; break;
-            case OP_OR:   op_result = op1 | op2; break;
-            case OP_AND:  op_result = op1 & op2; break;
+            case OP_ADD:  op_result =   op1 + op2;  break;
+            case OP_SUB:  op_result =   op1 - op2;  break;
+            case OP_MUL:  op_result =   op1 * op2;  break;
+            case OP_DIV:  op_result =   op1 / op2;  break;
+            case OP_OR:   op_result =   op1 | op2;  break;
+            case OP_XOR:  op_result =   op1 ^ op2;  break;
+            case OP_AND:  op_result =   op1 & op2;  break;
             case OP_NOR:  op_result = ~(op1 | op2); break;
             case OP_NAND: op_result = ~(op1 & op2); break;
-            case OP_XOR:  op_result = op1 ^ op2; break;
-            case OP_LSH:  op_result = op1 << op2; break;
-            case OP_RSH:  op_result = op1 >> op2; break;
-            case OP_EQ:   op_result = op1 == op2; break;
-            case OP_LT:   op_result = op1 <  op2; break;
-            case OP_LEQ:  op_result = op1 <= op2; break;
-            case OP_GT:   op_result = op1 >  op2; break;
-            case OP_GEQ:  op_result = op1 >= op2; break;
+            case OP_LSH:  op_result =   op1 << op2; break;
+            case OP_RSH:  op_result =   op1 >> op2; break;
+            case OP_EQ:   op_result =   op1 == op2; break;
+            case OP_LT:   op_result =   op1 <  op2; break;
+            case OP_LEQ:  op_result =   op1 <= op2; break;
+            case OP_GT:   op_result =   op1 >  op2; break;
+            case OP_GEQ:  op_result =   op1 >= op2; break;
             }
             PUSH_WORD_TO_STACK(op_result);
         }
@@ -206,29 +236,9 @@ CPUState_t cpu_run(CPU_t *cpu) {
 
         /* In-place binary operations */
         case OP_ADD_CONST:
-        case OP_SUB_CONST:
             op1 = GET_IMMEDIATE_ARG();
             tos_val = POP_WORD_FROM_STACK();
-
-            if (instr == OP_ADD_CONST)
-                tos_val += op1;
-            else
-                tos_val -= op1;
-            
-            PUSH_WORD_TO_STACK(tos_val);
-            break;
-        case OP_ADD_ADDR:
-        case OP_SUB_ADDR:
-            mem_addr = GET_IMMEDIATE_ARG();
-            op1 = GET_MEMORY(mem_addr);
-            tos_val = POP_WORD_FROM_STACK();
-
-            if (instr == OP_ADD_ADDR)
-                tos_val += op1;
-            else
-                tos_val -= op1;
-
-            PUSH_WORD_TO_STACK(tos_val);
+            PUSH_WORD_TO_STACK(op1 + tos_val);
             break;
 
         /* Unary operations */
@@ -244,6 +254,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
         }
         case OP_UN_POSITIVE:
             /* NOTE: This does nothing to the operand */
+            // TODO: CHECK IF THERE'S AN OPERAND ON TOP OF THE STACK
             break;
         
 
@@ -268,7 +279,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         case OP_OUT_ADDR:
             mem_addr = GET_IMMEDIATE_ARG();
-            output = GET_MEMORY(mem_addr);
+            output = bytes_to_word(cpu->memory + mem_addr);
             printf("@0x%16.16lx: 0x%lx", mem_addr, output);
             break;
         
@@ -299,43 +310,65 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
 
         /* Function instructions */
-        case OP_CALL:
-            /* Push the return address, the current instruction pointer */
-            mem_addr = cpu->ip - cpu->memory;
-            mem_addr += WORD_SIZE;   // Skip the immediate argument
+        case OP_CALL: {
+            word_t func_struct_addr = GET_IMMEDIATE_ARG();
+
+            /*
+                Push the number of arguments to stack
+                NOTE: Address to the value is `func_struct_addr`
+            */
+            INCREMENT_STACK_PTR(cpu->sp);
+            memcpy(cpu->sp, cpu->memory + func_struct_addr, WORD_SIZE);
+
+            /*
+                Allocate space for the local variable section by incrementing
+                the stack pointer with the section size in bytes.
+                NOTE: Address to the value is `func_struct_addr + W`
+            */
+            word_t lcl_var_sect_size = 
+                bytes_to_word(cpu->memory + func_struct_addr + WORD_SIZE);
+            cpu->sp = STACK_PTR_OFFSET(cpu->sp, +lcl_var_sect_size);
+
+            /* Push the size of the local variable section to stack */
+            INCREMENT_STACK_PTR(cpu->sp);
+            memcpy(cpu->sp, cpu->memory + func_struct_addr + WORD_SIZE,
+                   WORD_SIZE);
+
+            /* Push the return address to the stack. */
+            mem_addr = (cpu->ip - cpu->memory) + WORD_SIZE;
             PUSH_WORD_TO_STACK(mem_addr);
 
-            // Get the function address
-            mem_addr = GET_IMMEDIATE_ARG();
-
-            cpu->ip = cpu->memory + mem_addr;
+            /* Update the frame pointer so it points to the end of call frame */
             cpu->fp = cpu->sp;
+
+            /* 
+                Jump to the function code.
+                NOTE: Address to the value is `func_struct_addr + 2 * W`
+            */
+            mem_addr =
+                bytes_to_word(cpu->memory + func_struct_addr + 2 * WORD_SIZE);
+            cpu->ip = cpu->memory + mem_addr;
             break;
-        case OP_RET: {
+        }
+        case OP_RETURN: {
             /* Set the instruction pointer to the return address */
             cpu->ip = cpu->memory + bytes_to_word(cpu->fp);
 
-            /* Decrement frame pointer to point to the number of args */
+            /* Pop off the local variable section. */
             DECREMENT_STACK_PTR(cpu->fp);
-            /* Get the number of function arguments */
-            word_t arg_num = bytes_to_word(cpu->fp);
+            word_t lcl_var_sect_size = bytes_to_word(NEXT_STACK_ELEM(cpu->fp));
+            cpu->fp = STACK_PTR_OFFSET(cpu->fp, -lcl_var_sect_size);
 
-            /* Pop off the arguments such that the frame pointer points to the
-               return value.
-               NOTE: "Decrementing stack pointers" is adding the offset to the
-                     stack pointers. */
-            cpu->fp += (arg_num + 1) * WORD_SIZE;
+            /* Pop off the function argument section. */
+            DECREMENT_STACK_PTR(cpu->fp);
+            word_t arg_num = bytes_to_word(NEXT_STACK_ELEM(cpu->fp));
+            cpu->fp = STACK_PTR_OFFSET(cpu->fp, -(arg_num * WORD_SIZE));
 
-            /* Set the return value as the CURRENT top value of the stack */
+            /* Push the return value to the new top of the stack */
             memcpy(cpu->fp, cpu->sp, WORD_SIZE);
-
-            /* Move down the stack pointer effectively popping off the
-               call frame.
-               The top of the stack should be the return value of the function
-            */
             cpu->sp = cpu->fp;
-        }
             break;
+        }
         default:
             cpu->state = HALT_FAILED;
             sprintf(cpu->state_msg, "Unknown opcode (0x%2.2x)", instr);
@@ -362,7 +395,6 @@ void free_cpu(CPU_t *cpu) {
             .state=UNINITIALIZED,
             .mem_size=0,
             .prog_bounds={ NULL, NULL },
-            .heap_ptr=NULL,
             .ip=NULL,
             .sp=NULL,
             .fp=NULL
