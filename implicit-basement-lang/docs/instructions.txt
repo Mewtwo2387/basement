@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-    [VERSION 0.5 (pre-alpha)]
+    [VERSION 0.5.1 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -103,8 +103,15 @@ INSTRUCTIONS
 
 Stack manipulation instructions
     PUSH & POP instructions:
-        - LOAD_CONST, <LITERAL>
-            Push the immediate argument of size `W` to the stack.
+        - LOAD*N*_CONST, <LITERAL>
+            Push the immediate argument of size `N` to the stack.
+            The size of the pushed values is extended to `W` padding them
+            with zeroes.
+            The actual instructions are to be so:
+                - LOAD8_CONST
+                - LOAD16_CONST
+                - LOAD32_CONST
+                - LOAD64_CONST
         - LOAD*N*_ADDR, <ADDRESS>
             Push a value of size `N` bit to stack addressed by the immediate
             argument.

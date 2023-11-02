@@ -1,5 +1,5 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   A simple print program in "basement-lang" v0.5 (pre-alpha)               ;;
+;;   A simple print program in "basement-lang" v0.5.1 (pre-alpha)             ;;
 ;; -------------------------------------------------------------------------- ;;
 ;;   Generated code for the following pseudo-code:
 ;;       int32_t print(int8_t *str) {
@@ -44,10 +44,10 @@ FUNC_PRINT:
 
         jump LOOP1                      ; Repeat the while loop.
     END_LOOP1:
-    discard         ; Discard the obtained char which should be a null byte.
+    discard    ; Discard the obtained char which should be a null byte.
 
-    load_const 0x0  ; Push the return value.
-    return          ; Return from the function.
+    load32_const 0x0  ; Push the return value.
+    return            ; Return from the function.
 
 
 FUNC_MAIN:
@@ -62,8 +62,8 @@ FUNC_MAIN:
     discard                                 ; Discard the return value of the
                                             ; `print` function.
 
-    load_const  0x0  ; Push the return value.
-    return           ; Return from the main function, i.e. end the program.
+    load32_const  0x0  ; Push the return value.
+    return             ; Return from the main function, i.e. end the program.
 
 ;; -------------------------------------------------------------------------- ;;
 ;;  Below this header are the literals, global entities (vars, consts) and
