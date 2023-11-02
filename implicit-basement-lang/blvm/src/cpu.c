@@ -90,10 +90,21 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         
         /* Stack manipulation instructions */
-        case OP_LOAD_CONST:
-            INCREMENT_STACK_PTR(cpu->sp);
+        case OP_LOAD8_CONST:
+        case OP_LOAD16_CONST:
+        case OP_LOAD32_CONST:
+        case OP_LOAD64_CONST:
+            instr_type = instr & 0xF0;
+            size_idx   = instr & 0x0F;
+
+            /* Shorten the immediate to its supposed size. */
+            memcpy(temp_bytes.bytes, cpu->ip, data_sizes[size_idx]);
+            temp_bytes.word &= data_bitmasks[size_idx];
+
             /* Push the immediate argument from the program to stack */
-            memcpy(cpu->sp, cpu->ip, WORD_SIZE);
+            INCREMENT_STACK_PTR(cpu->sp);
+            memcpy(cpu->sp, temp_bytes.bytes, WORD_SIZE);
+
             /* Jump IP towards the end of the word sized argument */
             cpu->ip += WORD_SIZE;
             break;
@@ -107,11 +118,11 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_LOAD32:
         case OP_LOAD64:
             instr_type = instr & 0xF0;
-            size_idx   = (instr & 0x0F) - 1;
+            size_idx   = instr & 0x0F;
 
-            if (instr_type == OP_SNTNL_LOAD_ADDR) {
+            if (instr_type == OP_LOAD8_ADDR) {
                 mem_addr = GET_IMMEDIATE_ARG();
-            } else if (instr_type == OP_SNTNL_LOAD) {
+            } else if (instr_type == OP_LOAD8) {
                 mem_addr = POP_WORD_FROM_STACK();
             } else {
                 fprintf(stderr, "Internal error: Unknown LOAD instruction\n");
@@ -135,11 +146,11 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_STORE32:
         case OP_STORE64:
             instr_type = instr & 0xF0;
-            size_idx   = (instr & 0x0F) - 1;
+            size_idx   = instr & 0x0F;
 
-            if (instr_type == OP_SNTNL_STORE_ADDR) {
+            if (instr_type == OP_STORE8_ADDR) {
                 mem_addr = GET_IMMEDIATE_ARG();
-            } else if (instr_type == OP_SNTNL_STORE) {
+            } else if (instr_type == OP_STORE8) {
                 mem_addr = POP_WORD_FROM_STACK();
             } else {
                 fprintf(stderr, "Internal error: Unknown LOAD instruction\n");
