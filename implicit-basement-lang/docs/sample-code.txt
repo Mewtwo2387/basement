@@ -25,7 +25,7 @@ done                    ; End the program using the return value of function
 FUNC_PRINT:
     LOOP1:
         ;; While loop condition
-        load64_from_fp ARG_OFFSET__STR  ; Get the string (a pointer to char).
+        load64_off_fp  ARG_OFFSET__STR  ; Get the string (a pointer to char).
         load8                           ; Get the current char from the string.
         jmpz_addr      END_LOOP1        ; Jump out of the while loop if the end
                                         ; of the string (null byte) is reached.
