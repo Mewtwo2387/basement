@@ -57,29 +57,52 @@ typedef enum {
     OP_STORE64 = 0x53,
 
 
+    /*
+        Push a value of size `N` to the stack from a call frame element a
+        number of bytes away the frame pointer whose offset value is
+        supplied by the `W` size immediate argument.
+        This is used to access the arguments and local variables of a function.
+    */
+
+    OP_LOAD8_OFF_FP  = 0x60,
+    OP_LOAD16_OFF_FP = 0x61,
+    OP_LOAD32_OFF_FP = 0x62,
+    OP_LOAD64_OFF_FP = 0x63,
+
+    /*
+        Store the `W` sized top element of the stack to a stack element
+        a number of bytes away from the frame pointer, the offset value of
+        which is to be provided by a `W` sized immediate argument.
+    */
+    OP_STORE8_OFF_FP  = 0x70,
+    OP_STORE16_OFF_FP = 0x71,
+    OP_STORE32_OFF_FP = 0x72,
+    OP_STORE64_OFF_FP = 0x73,
+
+
     /* Push the instruction pointer to the stack as a word sized integer */
-    OP_LOAD_IP = 0x60,
+    OP_LOAD_IP = 0x80,
     /* Push the stack pointer to the stack as a word sized integer */
-    OP_LOAD_SP = 0x61,
+    OP_LOAD_SP = 0x81,
     /* Push the frame pointer to the stack as a word sized integer */
-    OP_LOAD_FP = 0x62,
+    OP_LOAD_FP = 0x82,
 
     /*
         Pop the word sized top element of the stack and set it as the VM result
     */
-    OP_POP_RES = 0x63,
+    OP_POP_RES = 0x83,
     /* Pop and discard the word sized top element of the stack. */
-    OP_DISCARD = 0x64,
+    OP_DISCARD = 0x84,
     /* Duplicate the word sized top element of the stack. */
-    OP_DUP = 0x65,
+    OP_DUP = 0x85,
     /* Swap the two topmost word sized elements on the stack. */
-    OP_SWAP_TOP = 0x66,
+    OP_SWAP_TOP = 0x86,
     /*
         Swap the word sized top element of the stack with another word sized
         element in the stack with the immediate argument as the offset from the
         top.
     */
-    OP_SWAP = 0x67,
+    OP_SWAP = 0x87,
 
 
     /* ---------- Arithmetic operations ---------- */
@@ -87,28 +110,28 @@ typedef enum {
         Pop two word sized values from the stack, add them together and
         push the sum to the stack.
     */
-    OP_ADD = 0x70,
+    OP_ADD = 0x90,
 
     /* Add the immediate argument to the word sized top element of sthe stack */
-    OP_ADD_CONST = 0x71,
+    OP_ADD_CONST = 0x91,
 
     /*
         Pop two word sized values from the stack, subtract one from the other
         and push the difference to the stack.
     */
-    OP_SUB = 0x72,
+    OP_SUB = 0x92,
 
     /*
         Pop two word sized values from the stack, multiply the two together and
         push the product to the stack.
     */
-    OP_MUL = 0x73,
+    OP_MUL = 0x93,
 
     /*
         Pop two word sized values from the stack, divide the first popped value
         with the second popped value and push the quotient to the stack.
     */
-    OP_DIV = 0x74,
+    OP_DIV = 0x94,
 
     /*
         Unary positive. Consume a word sized operand from the stack and return
@@ -117,7 +140,7 @@ typedef enum {
         except it throws an error if there is nothing on the stack since this is
         still a unary operator.
     */
-    OP_UN_POSITIVE = 0x75,
+    OP_UN_POSITIVE = 0x95,
 
     /*
         Unary negative. Pops a word sized value from the stack, "negates" it,
@@ -127,7 +150,7 @@ typedef enum {
              `~n + 1`
         where `~` is the bitwise NOT operation and `n` is the operand.
     */
-    OP_UN_NEGATIVE = 0x76,
+    OP_UN_NEGATIVE = 0x96,
 
 
     /* ---------- Bitwise logical operations ---------- */
@@ -135,84 +158,84 @@ typedef enum {
         Pop two word sized values from the stack, apply bitwise OR operation,
         and push the result to the stack.
     */
-    OP_OR = 0x77,
+    OP_OR = 0x97,
 
     /*
         Pop two word sized values from the stack, apply bitwise AND operation,
         and push the result to the stack.
     */
-    OP_AND = 0x78,
+    OP_AND = 0x98,
 
     /* 
         Pop two word sized values from the stack, apply bitwise NOR operation,
         and push the result to the stack.
     */
-    OP_NOR = 0x79,
+    OP_NOR = 0x99,
 
     /*
         Pop two word sized values from the stack, apply bitwise NAND operation,
         and push the result to the stack.
     */
-    OP_NAND = 0x7A,
+    OP_NAND = 0x9A,
 
     /*
         Pop two word sized values from the stack, apply bitwise XOR operation,
         and push the result to the stack.
     */
-    OP_XOR = 0x7B,
+    OP_XOR = 0x9B,
 
     /* 
         Pop two word sized values from the stack and do a left bitshift
         operation to the first value by an amount specified by the second value.
         The result is then pushed to the stack.
     */
-    OP_LSH = 0x7C,
+    OP_LSH = 0x9C,
 
     /*
         Pop two word sized values from the stack and do a right bitshift
         operation to the first value by an amount specified by the second value.
         The result is then pushed to the stack.
     */
-    OP_RSH = 0x7D,
+    OP_RSH = 0x9D,
 
     /* 
         Pop a value from the stack, and apply bitwise NOT operation,
         and push the result to the stack.
     */
-    OP_NOT = 0x7E,
+    OP_NOT = 0x9E,
 
      /* ---------- Comparison operations ---------- */
     /*
         Pop two word sized values from the stack, compare if the two values are
         equal, push 1 if true else push 0 to the stack.
     */
-    OP_EQ = 0x80,
+    OP_EQ = 0xA0,
 
     /*
         Pop two word sized values from the stack, compare if the first value is
         less than the second one, push 1 if true else push 0 to the stack.
     */
-    OP_LT = 0x81,
+    OP_LT = 0xA1,
 
     /*
         Pop two word sized values from the stack, compare if the first value is
         less than or equal to the second one, push 1 if true else push 0 to the
         stack.
     */
-    OP_LEQ = 0x82,
+    OP_LEQ = 0xA2,
 
     /*
         Pop two word sized values from the stack, compare if the first value is
         greater than the second one, push 1 if true else push 0 to the stack.
     */
-    OP_GT = 0x83,
+    OP_GT = 0xA3,
 
     /*
         Pop two word sized values from the stack, compare if the first value is
         greater than or equal to the second one, push 1 if true else push 0 to
         the stack.
     */
-    OP_GEQ = 0x84,
+    OP_GEQ = 0xA4,
 
 
     /* ---------- Input/Output instructions ---------- */
@@ -220,66 +243,66 @@ typedef enum {
         Get a value from the STDIN and push it to the stack as a
         word sized value.
     */
-    OP_IN = 0x90,
+    OP_IN = 0xB0,
 
     /*
         Pop a word sized value from the stack and print it to STDOUT as an ASCII
         character.
     */
-    OP_OUT_CHAR = 0x91,
+    OP_OUT_CHAR = 0xB1,
 
     /*
         Pop a word sized value from the stack and print it to STDOUT as an 
         integer in hexadecimal.
     */
-    OP_OUT_NUM = 0x92,
+    OP_OUT_NUM = 0xB2,
 
     /* Print the instruction pointer as a base-16 integer. */
-    OP_OUT_IP = 0x93,
+    OP_OUT_IP = 0xB3,
 
     /* Print the stack pointer as a base-16 integer. */
-    OP_OUT_SP = 0x94,
+    OP_OUT_SP = 0xB4,
 
     /* 
         Print the word sized value addressed by the immediate argument as an
         integer in hexadecimal.
     */
-    OP_OUT_ADDR = 0x95,
+    OP_OUT_ADDR = 0xB5,
 
 
     /* ---------- Jump instructions ---------- */
 
     /* Unconditional jump to the address supplied by the immediate argument. */
-    OP_JUMP_ADDR = 0xA0,
+    OP_JUMP_ADDR = 0xC0,
 
     /*
         Jump to the address supplied by the immediate argument if the word sized
         top element of the stack is 0.
     */
-    OP_JMPZ_ADDR = 0xA1,
+    OP_JMPZ_ADDR = 0xC1,
 
     /*
         Jump to the address supplied by the immediate argument if the word sized
         top element of the stack is not 0.
     */
-    OP_JMPNZ_ADDR = 0xA2,
+    OP_JMPNZ_ADDR = 0xC2,
 
     /* Pop a word sized address from the stack and unconditionally jump to it.*/
-    OP_JUMP = 0xA3,
+    OP_JUMP = 0xC3,
 
     /*
         Pop a word sized address from the stack. If the word sized value on top
         of the stack is 0, jump to the address. Otherwise, skip to the next
         instruction.
     */
-    OP_JMPZ = 0xA4,
+    OP_JMPZ = 0xC4,
 
     /*
         Pop a word sized address from the stack. If the word sized value on top
         of the stack is not 0, jump to the address. Otherwise, skip to the next
         instruction.
     */
-    OP_JMPNZ = 0xA5,
+    OP_JMPNZ = 0xC5,
 
 
     /* ------- Function instructions ------- */
@@ -313,7 +336,7 @@ typedef enum {
 
         Upon finishing executing this instruction, on the stack is a call frame.
     */
-    OP_CALL = 0xB0,
+    OP_CALL = 0xD0,
 
     /*
         Return from the currently executing function and push the return value
@@ -341,7 +364,7 @@ typedef enum {
         5. Set the stack pointer as FP, effectively popping off the call frame
            from the stack.
     */
-    OP_RETURN = 0xB1
+    OP_RETURN = 0xD1
 } Instruction_t;
  
 #endif

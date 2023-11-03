@@ -70,7 +70,7 @@ void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
 
 CPUState_t cpu_run(CPU_t *cpu) {
     /* Utility/temporary variables */
-    word_t mem_addr, mem_val, tos_val, ptr_val;
+    word_t mem_addr, mem_val, mem_size, tos_val, ptr_val;
     word_t op1, op2, op_result;
     word_t user_input, output;
 
@@ -94,7 +94,6 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_LOAD16_CONST:
         case OP_LOAD32_CONST:
         case OP_LOAD64_CONST:
-            instr_type = instr & 0xF0;
             size_idx   = instr & 0x0F;
 
             /* Shorten the immediate to its supposed size. */
@@ -132,7 +131,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
             memcpy(temp_bytes.bytes, cpu->memory + mem_addr, WORD_SIZE);
             temp_bytes.word &= data_bitmasks[size_idx];
 
-            /* Push the vavlue from the memory to stack */
+            /* Push the value from the memory to stack */
             INCREMENT_STACK_PTR(cpu->sp);
             memcpy(cpu->sp, temp_bytes.bytes, WORD_SIZE);
             break;
@@ -157,13 +156,54 @@ CPUState_t cpu_run(CPU_t *cpu) {
                 exit(EXIT_FAILURE);
             }
 
+            /* Pop the top value off the stack */
             memcpy(temp_bytes.bytes, cpu->sp, WORD_SIZE);
             temp_bytes.word &= data_bitmasks[size_idx];
+            DECREMENT_STACK_PTR(cpu->sp);
 
             /* Write the popped value from the stack to memory */
             memcpy(cpu->memory + mem_addr, temp_bytes.bytes,
                    data_sizes[size_idx]);
+            break;
+        
+        case OP_LOAD8_OFF_FP:
+        case OP_LOAD16_OFF_FP:
+        case OP_LOAD32_OFF_FP:
+        case OP_LOAD64_OFF_FP:
+            size_idx = instr & 0x0F;
+            tos_val = GET_IMMEDIATE_ARG();
+            
+            memcpy(
+                temp_bytes.bytes,
+                STACK_PTR_OFFSET(cpu->fp, -((int64_t)tos_val)),
+                WORD_SIZE
+            );
+            temp_bytes.word &= data_bitmasks[size_idx];
+
+            /* Push the value from the memory to stack */
+            INCREMENT_STACK_PTR(cpu->sp);
+            memcpy(cpu->sp, temp_bytes.bytes, WORD_SIZE);
+            break;
+        
+
+        case OP_STORE8_OFF_FP :
+        case OP_STORE16_OFF_FP:
+        case OP_STORE32_OFF_FP:
+        case OP_STORE64_OFF_FP:
+            size_idx = instr & 0x0F;
+            tos_val = GET_IMMEDIATE_ARG();
+
+            /* Pop the top value off the stack */
+            memcpy(temp_bytes.bytes, cpu->sp, WORD_SIZE);
+            temp_bytes.word &= data_bitmasks[size_idx];
             DECREMENT_STACK_PTR(cpu->sp);
+
+            /* Write the popped value from the stack to memory */
+            memcpy(
+                STACK_PTR_OFFSET(cpu->fp, -((int64_t)tos_val)),
+                temp_bytes.bytes,
+                data_sizes[size_idx]
+            );
             break;
 
         case OP_LOAD_IP:
