@@ -1,5 +1,5 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   A simple print program in "basement-lang" v0.5.1 (pre-alpha)             ;;
+;;   A simple print program in "basement-lang" v0.5.2 (pre-alpha)             ;;
 ;; -------------------------------------------------------------------------- ;;
 ;;   Generated code for the following pseudo-code:
 ;;       int32_t print(int8_t *str) {
