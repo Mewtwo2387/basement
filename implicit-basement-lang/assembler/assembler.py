@@ -85,9 +85,9 @@ def write_sample_code1():
     ### CODE SEGMENT ###
 
     ### Driver code ###
-    bytecode.append(op.OP_CALL)
+    bytecode.append(op.CALL)
     bytecode.extend(load_dummy_bytes(FTBL__FUNC_MAIN))
-    bytecode.append(op.OP_DONE)
+    bytecode.append(op.DONE)
 
     ### Function: print ###
     # Update the `FUNC_PRINT` and `LOOP1` addresses
@@ -98,63 +98,63 @@ def write_sample_code1():
         func_table[FUNC_PRINT].call_frame_size
 
     # While loop condition
-    bytecode.append(op.OP_LOAD64_OFF_FP)
+    bytecode.append(op.LOAD64_OFF_FP)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
-    bytecode.append(op.OP_LOAD8)
+    bytecode.append(op.LOAD8)
 
-    bytecode.append(op.OP_JMPZ_ADDR)
+    bytecode.append(op.JMPZ_ADDR)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
 
-    bytecode.append(op.OP_DISCARD)
+    bytecode.append(op.DISCARD)
 
     # Print one character at a time
-    bytecode.append(op.OP_LOAD64_OFF_FP)
+    bytecode.append(op.LOAD64_OFF_FP)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
-    bytecode.append(op.OP_LOAD8)
+    bytecode.append(op.LOAD8)
 
-    bytecode.append(op.OP_OUT_CHAR)
+    bytecode.append(op.OUT_CHAR)
 
     # Go to the next character in the string.
-    bytecode.append(op.OP_LOAD64_OFF_FP)
+    bytecode.append(op.LOAD64_OFF_FP)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
-    bytecode.append(op.OP_ADD_CONST)
+    bytecode.append(op.ADD_CONST)
     bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
 
-    bytecode.append(op.OP_STORE64_OFF_FP)
+    bytecode.append(op.STORE64_OFF_FP)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
-    bytecode.append(op.OP_JUMP_ADDR)
+    bytecode.append(op.JUMP_ADDR)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
 
     # Update the `END_LOOP1` address
     address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
 
-    bytecode.append(op.OP_DISCARD)
+    bytecode.append(op.DISCARD)
     
-    bytecode.append(op.OP_LOAD32_CONST)
+    bytecode.append(op.LOAD32_CONST)
     bytecode.extend(int_to_bytes(0, WORD_SIZE))
 
-    bytecode.append(op.OP_RETURN)
+    bytecode.append(op.RETURN)
 
     ### Function: main ###
     # Update the `FUNC_MAIN` address
     address_table[FUNC_MAIN] = len(bytecode)
 
-    bytecode.append(op.OP_LOAD64_CONST)
+    bytecode.append(op.LOAD64_CONST)
     bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
 
-    bytecode.append(op.OP_CALL)
+    bytecode.append(op.CALL)
     bytecode.extend(load_dummy_bytes(FTBL__FUNC_PRINT))
 
-    bytecode.append(op.OP_DISCARD)
+    bytecode.append(op.DISCARD)
 
-    bytecode.append(op.OP_LOAD32_CONST)
+    bytecode.append(op.LOAD32_CONST)
     bytecode.extend(int_to_bytes(0, WORD_SIZE))
 
-    bytecode.append(op.OP_RETURN)
+    bytecode.append(op.RETURN)
 
     ### CONSTANT SEGMENT ###
     # Update the `STR_PTR` address
@@ -223,10 +223,10 @@ def write_sample_code2():
 
     ## === CODE SEGMENT === ##
     ## Driver code ##
-    bytecode.append(op.OP_CALL)
+    bytecode.append(op.CALL)
     bytecode.extend(load_dummy_bytes(FTBL__FUNC_MAIN))
 
-    bytecode.append(op.OP_DONE)
+    bytecode.append(op.DONE)
 
     ## Function `print` ##
     # Register the address of FUNC_PRINT
@@ -236,43 +236,43 @@ def write_sample_code2():
     address_table[FUNC_PRINT__OFFSET_STR] = \
         func_table[FUNC_PRINT].call_frame_size
 
-    bytecode.append(op.OP_LOAD64_OFF_FP)
+    bytecode.append(op.LOAD64_OFF_FP)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
     # Register the address of LOOP1
     address_table[FUNC_PRINT__LOOP1] = len(bytecode)
 
-    bytecode.append(op.OP_DUP)
+    bytecode.append(op.DUP)
 
-    bytecode.append(op.OP_LOAD8)
+    bytecode.append(op.LOAD8)
 
-    bytecode.append(op.OP_JMPZ_ADDR)
+    bytecode.append(op.JMPZ_ADDR)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
 
-    bytecode.append(op.OP_OUT_CHAR)
+    bytecode.append(op.OUT_CHAR)
 
-    bytecode.append(op.OP_ADD_CONST)
+    bytecode.append(op.ADD_CONST)
     bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
 
-    bytecode.append(op.OP_JUMP_ADDR)
+    bytecode.append(op.JUMP_ADDR)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
 
     # Register the address of END_LOOP1
     address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
 
-    bytecode.append(op.OP_RETURN)
+    bytecode.append(op.RETURN)
 
     ## Function `main` ##
     # Register the address of FUNC_MAIN
     address_table[FUNC_MAIN] = len(bytecode)
 
-    bytecode.append(op.OP_LOAD64_CONST)
+    bytecode.append(op.LOAD64_CONST)
     bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
 
-    bytecode.append(op.OP_CALL)
+    bytecode.append(op.CALL)
     bytecode.extend(load_dummy_bytes(FTBL__FUNC_PRINT))
 
-    bytecode.append(op.OP_RETURN)
+    bytecode.append(op.RETURN)
 
     ## === CONSTANT SEGMENT === ##
     # Register the address of PTR_STR

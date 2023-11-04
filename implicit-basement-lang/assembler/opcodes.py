@@ -1,92 +1,92 @@
 ## ---------- CPU State/Miscellaneous instructions ---------- ##
-OP_ABORT = 0x00
+ABORT = 0x00
 """Abort program and set the CPU state to FAILED"""
-OP_NOP   = 0x01
+NOP   = 0x01
 """ No operation """
-OP_DONE  = 0x02
+DONE  = 0x02
 """ Halt code execution """
 
 
 ## ---------- Stack manipulation instructions ---------- ##
 ## Push the immediate argument to the stack
-OP_LOAD8_CONST  = 0x10
-OP_LOAD16_CONST = 0x11
-OP_LOAD32_CONST = 0x12
-OP_LOAD64_CONST = 0x13
+LOAD8_CONST  = 0x10
+LOAD16_CONST = 0x11
+LOAD32_CONST = 0x12
+LOAD64_CONST = 0x13
 
 ## Push value of size 8, 16, 32 or 64 bits addressed by the word size
 ## immediate argument to the stack
-OP_LOAD8_ADDR  = 0x20
-OP_LOAD16_ADDR = 0x21
-OP_LOAD32_ADDR = 0x22
-OP_LOAD64_ADDR = 0x23
+LOAD8_ADDR  = 0x20
+LOAD16_ADDR = 0x21
+LOAD32_ADDR = 0x22
+LOAD64_ADDR = 0x23
 
 ## Pop the word sized top element of the stack and store it to memory
 ## addressed by the immediate argument as a value of size 8, 16, 32, or 64.
-OP_STORE8_ADDR  = 0x30
-OP_STORE16_ADDR = 0x31
-OP_STORE32_ADDR = 0x32
-OP_STORE64_ADDR = 0x33
+STORE8_ADDR  = 0x30
+STORE16_ADDR = 0x31
+STORE32_ADDR = 0x32
+STORE64_ADDR = 0x33
 
 
 ## Pop a word sized address from the stack and push the value of
 ## size 8, 16, 32 or 64 the address points to to the stack.
-OP_LOAD8  = 0x40
-OP_LOAD16 = 0x41
-OP_LOAD32 = 0x42
-OP_LOAD64 = 0x43
+LOAD8  = 0x40
+LOAD16 = 0x41
+LOAD32 = 0x42
+LOAD64 = 0x43
 
 
 ## Pop a word sized address and a word sized value from the stack,
 ## mask the value to its supposed size (i.e. 8, 16, 32, 64 bits), and write
 ## the value to memory with the obtained address.
-OP_STORE8  = 0x50
-OP_STORE16 = 0x51
-OP_STORE32 = 0x52
-OP_STORE64 = 0x53
+STORE8  = 0x50
+STORE16 = 0x51
+STORE32 = 0x52
+STORE64 = 0x53
 
 
 ## Push a value of size `N` to the stack from a call frame element a
 ## number of bytes away the frame pointer whose offset value is
 ## supplied by the `W` size immediate argument.
 ## This is used to access the arguments and local variables of a function.
-OP_LOAD8_OFF_FP  = 0x60
-OP_LOAD16_OFF_FP = 0x61
-OP_LOAD32_OFF_FP = 0x62
-OP_LOAD64_OFF_FP = 0x63
+LOAD8_OFF_FP  = 0x60
+LOAD16_OFF_FP = 0x61
+LOAD32_OFF_FP = 0x62
+LOAD64_OFF_FP = 0x63
 
 
 ## Store the `W` sized top element of the stack to a stack element
 ## a number of bytes away from the frame pointer, the offset value of
 ## which is to be provided by a `W` sized immediate argument.
-OP_STORE8_OFF_FP  = 0x70
-OP_STORE16_OFF_FP = 0x71
-OP_STORE32_OFF_FP = 0x72
-OP_STORE64_OFF_FP = 0x73
+STORE8_OFF_FP  = 0x70
+STORE16_OFF_FP = 0x71
+STORE32_OFF_FP = 0x72
+STORE64_OFF_FP = 0x73
 
 
-OP_LOAD_IP = 0x80
+LOAD_IP = 0x80
 """ Push the instruction pointer to the stack as a word sized integer. """
 
-OP_LOAD_SP = 0x81
+LOAD_SP = 0x81
 """ Push the stack pointer to the stack as a word sized integer. """
 
-OP_LOAD_FP = 0x82
+LOAD_FP = 0x82
 """ Push the frame pointer to the stack as a word sized integer. """
 
-OP_POP_RES = 0x83
+PRES = 0x83
 """ Pop the word sized top element of the stack and set it as the VM result. """
 
-OP_DISCARD = 0x84
+DISCARD = 0x84
 """ Pop and discard the word sized top element of the stack. """
 
-OP_DUP = 0x85
+DUP = 0x85
 """ Duplicate the word sized top element of the stack. """
 
-OP_SWAP_TOP = 0x86
+SWAP_TOP = 0x86
 """ Swap the two topmost word sized elements on the stack. """
 
-OP_SWAP = 0x87
+SWAP = 0x87
 """
     Swap the word sized top element of the stack with another word sized
     element in the stack with the immediate argument as the offset from the
@@ -99,39 +99,39 @@ OP_SWAP = 0x87
     Pop two word sized values from the stack, add them together and
     push the sum to the stack.
 """
-OP_ADD = 0x90
+ADD = 0x90
 
-OP_ADD_CONST = 0x91
+ADD_CONST = 0x91
 """ Add the immediate argument to the word sized top element of sthe stack. """
 
-OP_SUB = 0x92
+SUB = 0x92
 """
     Pop two word sized values from the stack, subtract one from the other
     and push the difference to the stack.
 """
 
-OP_MUL = 0x93
+MUL = 0x93
 """
     Pop two word sized values from the stack, multiply the two together and
     push the product to the stack.
 """
 
-OP_DIV = 0x94
+DIV = 0x94
 """
     Pop two word sized values from the stack, divide the first popped value
     with the second popped value and push the quotient to the stack.
 """
 
-OP_UN_POSITIVE = 0x95
+UN_POSITIVE = 0x95
 """
     Unary positive. Consume a word sized operand from the stack and return
     it as is.
-    Implementation-wise, this amounts to doing nothing like `OP_NOP`,
+    Implementation-wise, this amounts to doing nothing like `NOP`,
     except it throws an error if there is nothing on the stack since this is
     still a unary operator.
 """
 
-OP_UN_NEGATIVE = 0x96
+UN_NEGATIVE = 0x96
 """
     Unary negative. Pops a word sized value from the stack, "negates" it,
     and push the result to the stack.
@@ -143,83 +143,83 @@ OP_UN_NEGATIVE = 0x96
 
 
 ## ---------- Bitwise logical operations ---------- ##
-OP_OR = 0x97
+OR = 0x97
 """
     Pop two word sized values from the stack, apply bitwise OR operation,
     and push the result to the stack.
 """
 
-OP_AND = 0x98
+AND = 0x98
 """
     Pop two word sized values from the stack, apply bitwise AND operation,
     and push the result to the stack.
 """
 
-OP_NOR = 0x99
+NOR = 0x99
 """
     Pop two word sized values from the stack, apply bitwise NOR operation,
     and push the result to the stack.
 """
 
-OP_NAND = 0x9A
+NAND = 0x9A
 """
     Pop two word sized values from the stack, apply bitwise NAND operation,
     and push the result to the stack.
 """
 
-OP_XOR = 0x9B
+XOR = 0x9B
 """
     Pop two word sized values from the stack, apply bitwise XOR operation,
     and push the result to the stack.
 """
 
-OP_LSH = 0x9C
+LSH = 0x9C
 """
     Pop two word sized values from the stack and do a left bitshift
     operation to the first value by an amount specified by the second value.
     The result is then pushed to the stack.
 """
 
-OP_RSH = 0x9D
+RSH = 0x9D
 """
     Pop two word sized values from the stack and do a right bitshift
     operation to the first value by an amount specified by the second value.
     The result is then pushed to the stack.
 """
 
-OP_NOT = 0x9E
+NOT = 0x9E
 """
     Pop a value from the stack, and apply bitwise NOT operation,
     and push the result to the stack.
 """
 
 ## ---------- Comparison operations ---------- ##
-OP_EQ = 0xA0
+EQ = 0xA0
 """
     Pop two word sized values from the stack, compare if the two values are
     equal, push 1 if true else push 0 to the stack.
 """
 
-OP_LT = 0xA1
+LT = 0xA1
 """
     Pop two word sized values from the stack, compare if the first value is
     less than the second one, push 1 if true else push 0 to the stack.
 """
 
-OP_LEQ = 0xA2
+LEQ = 0xA2
 """
     Pop two word sized values from the stack, compare if the first value is
     less than or equal to the second one, push 1 if true else push 0 to the
     stack.
 """
 
-OP_GT = 0xA3
+GT = 0xA3
 """
     Pop two word sized values from the stack, compare if the first value is
     greater than the second one, push 1 if true else push 0 to the stack.
 """
 
-OP_GEQ = 0xA4
+GEQ = 0xA4
 """
     Pop two word sized values from the stack, compare if the first value is
     greater than or equal to the second one, push 1 if true else push 0 to
@@ -228,30 +228,30 @@ OP_GEQ = 0xA4
 
 
 ## ---------- Input/Output instructions ---------- ##
-OP_IN = 0xB0
+IN = 0xB0
 """
     Get a value from the STDIN and push it to the stack as a word sized value.
 """
 
-OP_OUT_CHAR = 0xB1
+OUT_CHAR = 0xB1
 """
     Pop a word sized value from the stack and print it to STDOUT as an ASCII
     character.
 """
 
-OP_OUT_NUM = 0xB2
+OUT_NUM = 0xB2
 """
     Pop a word sized value from the stack and print it to STDOUT as an 
     integer in hexadecimal.
 """
 
-OP_OUT_IP = 0xB3
+OUT_IP = 0xB3
 """ Print the instruction pointer as a base-16 integer. """
 
-OP_OUT_SP = 0xB4
+OUT_SP = 0xB4
 """ Print the stack pointer as a base-16 integer. """
 
-OP_OUT_ADDR = 0xB5
+OUT_ADDR = 0xB5
 """
     Print the word sized value addressed by the immediate argument as an
     integer in hexadecimal.
@@ -259,36 +259,36 @@ OP_OUT_ADDR = 0xB5
 
 
 ## ---------- Jump instructions ---------- ##
-OP_JUMP_ADDR = 0xC0
+JUMP_ADDR = 0xC0
 """
     Unconditional jump to the address supplied by the immediate argument.
 """
 
-OP_JMPZ_ADDR = 0xC1
+JMPZ_ADDR = 0xC1
 """
     Jump to the address supplied by the immediate argument if the word sized
     top element of the stack is 0.
 """
 
-OP_JMPNZ_ADDR = 0xC2
+JMPNZ_ADDR = 0xC2
 """
     Jump to the address supplied by the immediate argument if the word sized
     top element of the stack is not 0.
 """
 
-OP_JUMP = 0xC3
+JUMP = 0xC3
 """
 Pop a word sized address from the stack and unconditionally jump to it.   
 """
 
-OP_JMPZ = 0xC4
+JMPZ = 0xC4
 """
     Pop a word sized address from the stack. If the word sized value on top
     of the stack is 0, jump to the address. Otherwise, skip to the next
     instruction.
 """
 
-OP_JMPNZ = 0xC5
+JMPNZ = 0xC5
 """
     Pop a word sized address from the stack. If the word sized value on top
     of the stack is not 0, jump to the address. Otherwise, skip to the next
@@ -296,7 +296,7 @@ OP_JMPNZ = 0xC5
 """
 
 ## ------- Function instructions ------- ##
-OP_CALL = 0xD0
+CALL = 0xD0
 """
     Call a function, consume a number of word sized sized stack elements as
     the function arguments and push the result as a word sized integer to
@@ -327,7 +327,7 @@ OP_CALL = 0xD0
     Upon finishing executing this instruction, on the stack is a call frame.
 """
 
-OP_RETURN = 0xD1
+RETURN = 0xD1
 """
     Return from the currently executing function and push the return value
     of the function to the stack.
