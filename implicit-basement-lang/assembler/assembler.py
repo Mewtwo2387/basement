@@ -36,6 +36,10 @@ def int_to_bytes(n, size):
     return [(n >> (s * 8)) & 0xFF for s in range(size)]
 
 
+def load_dummy_bytes(name: str):
+    return [name, *FILLER_BYTE_ARR]
+
+
 def write_test_code():
     """
     Attempt to generate bytecodes  for the following pseudocode:
@@ -82,7 +86,7 @@ def write_test_code():
 
     ### Driver code ###
     bytecode.append(op.OP_CALL)
-    bytecode.extend([FTBL__FUNC_MAIN, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FTBL__FUNC_MAIN))
     bytecode.append(op.OP_DONE)
 
     ### Function: print ###
@@ -91,20 +95,22 @@ def write_test_code():
     address_table[FUNC_PRINT__LOOP1] = len(bytecode)
     # Update the relative address OFFSET_STR
     address_table[FUNC_PRINT__OFFSET_STR] = \
-        func_table[FUNC_PRINT].call_frame_size - WORD_SIZE
+        func_table[FUNC_PRINT].call_frame_size
 
     # While loop condition
     bytecode.append(op.OP_LOAD64_OFF_FP)
-    bytecode.extend([FUNC_PRINT__OFFSET_STR, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
+
+    bytecode.append(op.OP_LOAD8)
 
     bytecode.append(op.OP_JMPZ_ADDR)
-    bytecode.extend([FUNC_PRINT__END_LOOP1, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
 
     bytecode.append(op.OP_DISCARD)
 
     # Print one character at a time
     bytecode.append(op.OP_LOAD64_OFF_FP)
-    bytecode.extend([FUNC_PRINT__OFFSET_STR, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
     bytecode.append(op.OP_LOAD8)
 
@@ -112,16 +118,16 @@ def write_test_code():
 
     # Go to the next character in the string.
     bytecode.append(op.OP_LOAD64_OFF_FP)
-    bytecode.extend([FUNC_PRINT__OFFSET_STR, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
     bytecode.append(op.OP_ADD_CONST)
     bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
 
     bytecode.append(op.OP_STORE64_OFF_FP)
-    bytecode.extend([FUNC_PRINT__OFFSET_STR, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
 
-    bytecode.append(op.OP_JUMP)
-    bytecode.extend([FUNC_PRINT__LOOP1, *FILLER_BYTE_ARR])
+    bytecode.append(op.OP_JUMP_ADDR)
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
 
     # Update the `END_LOOP1` address
     address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
@@ -137,11 +143,11 @@ def write_test_code():
     # Update the `FUNC_MAIN` address
     address_table[FUNC_MAIN] = len(bytecode)
 
-    bytecode.append(op.OP_LOAD64_ADDR)
-    bytecode.extend([FUNC_MAIN__PTR_STR, *FILLER_BYTE_ARR])
+    bytecode.append(op.OP_LOAD64_CONST)
+    bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
 
     bytecode.append(op.OP_CALL)
-    bytecode.extend([FTBL__FUNC_PRINT, *FILLER_BYTE_ARR])
+    bytecode.extend(load_dummy_bytes(FTBL__FUNC_PRINT))
 
     bytecode.append(op.OP_DISCARD)
 
@@ -155,12 +161,12 @@ def write_test_code():
     address_table[FUNC_MAIN__PTR_STR] = len(bytecode)
 
     string = "Hello, World!\n"
-    bytecode.extend([ord(c) for c in string])
+    bytecode.extend([ord(c) for c in string] + [0])
 
     ### FUNCTION STRUCTURE SEGMENT ###
     # Update the `FTBL__FUNC_PRINT` address
     address_table[FTBL__FUNC_PRINT] = len(bytecode)
-    func_table[FUNC_PRINT].address = len(bytecode)
+    func_table[FUNC_PRINT].address = address_table[FUNC_PRINT]
 
     func_print_obj = func_table[FUNC_PRINT]
     func_print_data_bytes = \
@@ -170,7 +176,7 @@ def write_test_code():
     
     # Update the `FTBL__FUNC_MAIN` address
     address_table[FTBL__FUNC_MAIN] = len(bytecode)
-    func_table[FUNC_MAIN].address = len(bytecode)
+    func_table[FUNC_MAIN].address = address_table[FUNC_MAIN]
 
     func_main_obj = func_table[FUNC_MAIN]
     func_main_data_bytes = \

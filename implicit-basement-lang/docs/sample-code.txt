@@ -42,7 +42,7 @@ FUNC_PRINT:
                                         ; next char.
         store64_off_fp ARG_OFFSET__STR  ; Update the string pointer.
 
-        jump LOOP1                      ; Repeat the while loop.
+        jump_addr      LOOP1            ; Repeat the while loop.
     END_LOOP1:
     discard    ; Discard the obtained char which should be a null byte.
 
@@ -51,7 +51,7 @@ FUNC_PRINT:
 
 
 FUNC_MAIN:
-    load64_addr CONST_PTR__HELLO_WORLD_STR  ; Push the string pointer to the
+    load64_const CONST_PTR__HELLO_WORLD_STR  ; Push the string pointer to the
                                             ; stack as a function argument to
                                             ; the function `print`.
     call        FTBL__FUNC_PRINT            ; Call the print function.
