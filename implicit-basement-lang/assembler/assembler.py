@@ -40,7 +40,7 @@ def load_dummy_bytes(name: str):
     return [name, *FILLER_BYTE_ARR]
 
 
-def write_test_code():
+def write_sample_code1():
     """
     Attempt to generate bytecodes  for the following pseudocode:
         int32_t print(int8_t *str) {
@@ -193,8 +193,145 @@ def write_test_code():
     return bytecode
 
 
+def write_sample_code2():
+    bytecode = []
+
+    FTBL__FUNC_MAIN        = "ftbl__main"
+    FTBL__FUNC_PRINT       = "ftbl__print"
+    FUNC_PRINT             = "print"
+    FUNC_PRINT__LOOP1      = "loop1"
+    FUNC_PRINT__OFFSET_STR = "arg_offset_str"
+    FUNC_PRINT__END_LOOP1  = "end_loop"
+    FUNC_MAIN              = "main"
+    FUNC_MAIN__PTR_STR     = "str_ptr"
+
+    address_table = {
+        FUNC_PRINT             : -1,
+        FUNC_PRINT__LOOP1      : -1,
+        FUNC_PRINT__OFFSET_STR : -1,
+        FUNC_PRINT__END_LOOP1  : -1,
+        FUNC_MAIN              : -1,
+        FUNC_MAIN__PTR_STR     : -1,
+        FTBL__FUNC_MAIN        : -1,
+        FTBL__FUNC_PRINT       : -1
+    }
+
+    func_table = {
+        FUNC_PRINT : Function(1, 0, -1),
+        FUNC_MAIN  : Function(0, 0, -1)
+    }
+
+    ## === CODE SEGMENT === ##
+    ## Driver code ##
+    bytecode.append(op.OP_CALL)
+    bytecode.extend(load_dummy_bytes(FTBL__FUNC_MAIN))
+
+    bytecode.append(op.OP_DONE)
+
+    ## Function `print` ##
+    # Register the address of FUNC_PRINT
+    address_table[FUNC_PRINT] = len(bytecode)
+    # Update the relative address OFFSET_STR
+    #   In this case, the argument is the very first element of the call frame.
+    address_table[FUNC_PRINT__OFFSET_STR] = \
+        func_table[FUNC_PRINT].call_frame_size
+
+    bytecode.append(op.OP_LOAD64_OFF_FP)
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__OFFSET_STR))
+
+    # Register the address of LOOP1
+    address_table[FUNC_PRINT__LOOP1] = len(bytecode)
+
+    bytecode.append(op.OP_DUP)
+
+    bytecode.append(op.OP_LOAD8)
+
+    bytecode.append(op.OP_JMPZ_ADDR)
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
+
+    bytecode.append(op.OP_OUT_CHAR)
+
+    bytecode.append(op.OP_ADD_CONST)
+    bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
+
+    bytecode.append(op.OP_JUMP_ADDR)
+    bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
+
+    # Register the address of END_LOOP1
+    address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
+
+    bytecode.append(op.OP_RETURN)
+
+    ## Function `main` ##
+    # Register the address of FUNC_MAIN
+    address_table[FUNC_MAIN] = len(bytecode)
+
+    bytecode.append(op.OP_LOAD64_CONST)
+    bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
+
+    bytecode.append(op.OP_CALL)
+    bytecode.extend(load_dummy_bytes(FTBL__FUNC_PRINT))
+
+    bytecode.append(op.OP_RETURN)
+
+    ## === CONSTANT SEGMENT === ##
+    # Register the address of PTR_STR
+    address_table[FUNC_MAIN__PTR_STR] = len(bytecode)
+
+    string = "Hello, World!\n\0"
+    bytecode.extend([ord(c) for c in string])
+
+    ## === FUNCTION STRUCTURE SEGMENT == ##
+    ## Struct for the function `print` ##
+    # Register the address of FTBL__FUNC_PRINT
+    address_table[FTBL__FUNC_PRINT] = len(bytecode)
+    # Update the code address of the function `print`
+    func_table[FUNC_PRINT].address = address_table[FUNC_PRINT]
+
+    # Push the number of arguments `print` requires
+    bytecode.extend(int_to_bytes(
+        func_table[FUNC_PRINT].arg_num, WORD_SIZE)
+    )
+    # Push the size of the local variable section of the function
+    bytecode.extend(
+        int_to_bytes(func_table[FUNC_PRINT].var_sec_size, WORD_SIZE)
+    )
+    # Push the return address of the 
+    bytecode.extend(
+        int_to_bytes(func_table[FUNC_PRINT].address, WORD_SIZE)
+    )
+
+    ## Struct for the function `main` ##
+    # Register the address of FTBL__FUNC_MAIN
+    address_table[FTBL__FUNC_MAIN] = len(bytecode)
+    # Update the code address of the function `print`
+    func_table[FUNC_MAIN].address = address_table[FUNC_MAIN]
+
+    # Push the number of arguments `print` requires
+    bytecode.extend(int_to_bytes(
+        func_table[FUNC_MAIN].arg_num, WORD_SIZE)
+    )
+    # Push the size of the local variable section of the function
+    bytecode.extend(
+        int_to_bytes(func_table[FUNC_MAIN].var_sec_size, WORD_SIZE)
+    )
+    # Push the return address of the 
+    bytecode.extend(
+        int_to_bytes(func_table[FUNC_MAIN].address, WORD_SIZE)
+    )
+
+    # Update the labels
+    for i, elem in enumerate(bytecode):
+        if isinstance(elem, str):
+            bytecode[i : i + WORD_SIZE] = \
+                int_to_bytes(address_table[elem], WORD_SIZE)
+    
+    return bytecode
+
+
 def main():
-    bytecode = write_test_code()
+    # bytecode = write_sample_code1()
+    bytecode = write_sample_code2()
 
     # Print header
     print("A Hello World program:")

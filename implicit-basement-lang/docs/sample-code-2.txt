@@ -1,0 +1,53 @@
+;; -------------------------------------------------------------------------- ;;
+;;   A print program in "basement-lang" v0.5.2 (pre-alpha)                    ;;
+;;   This is an attempt to improve the code in `sample-code.txt`              ;;
+;; -------------------------------------------------------------------------- ;;
+;;   Generated code for the following pseudo-code:
+;;       int32_t print(int8_t *str) {
+;;           while (*str) {
+;;               putc(*str);
+;;               ++str;
+;;           }
+;;           return 0;
+;;       }
+;;       
+;;       int32_t main() {
+;;           print("Hello, World!\n");
+;;           return 0;
+;;       }
+;; -------------------------------------------------------------------------- ;;
+
+;; Driver code. All programs are prepended by this.
+call FTBL__FUNC_MAIN    ; Call the main function.
+done                    ; End the program using the return value of function
+                        ; `main` as the result of the VM.
+
+FUNC_PRINT:
+    load64_off_fp  ARG_OFFSET__STR
+    LOOP1:
+        ;; --- While loop condition ---
+        ;; Since the `jmpz_addr` does not consume the TOS value, we use it to
+        ;; our advantage.
+        dup                             ; We duplicate the pointer instead
+        load8
+        jmpz_addr      END_LOOP1
+
+        ;; Print the current character the string pointer points to
+        ;; NOTE: This consumes the 8 bit integer on TOS, exposing the current
+        ;;       string pointer
+        out_char
+
+        ;; Point to the next character in the string
+        add_const   INT8_SIZE  ; Increment the pointer
+        jump_addr   LOOP1
+    END_LOOP1:
+    ;; At this point, on TOS is the null byte (a value of zero) which we use as
+    ;; the return value of the function
+    return
+
+
+FUNC_MAIN:
+    load64_const  CONST_PTR__HELLO_WORLD_STR
+    call          FTBL__FUNC_PRINT
+    return
+    
