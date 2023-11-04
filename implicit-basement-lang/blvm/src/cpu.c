@@ -29,6 +29,8 @@
 
 
 void print_memory(CPU_t *cpu, size_t lbound, size_t ubound);
+void print_instruction(CPU_t *cpu);
+void print_stack(CPU_t *cpu);
 
 void init_cpu(CPU_t *cpu, size_t memory_size) {
     if (memory_size == 0) {
@@ -386,7 +388,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
                    WORD_SIZE);
 
             /* Push the return address to the stack. */
-            mem_addr = (cpu->ip - cpu->memory) + WORD_SIZE;
+            mem_addr = (cpu->ip - cpu->memory);
             PUSH_WORD_TO_STACK(mem_addr);
 
             /* Update the frame pointer so it points to the end of call frame */
@@ -407,17 +409,24 @@ CPUState_t cpu_run(CPU_t *cpu) {
 
             /* Pop off the local variable section. */
             DECREMENT_STACK_PTR(cpu->fp);
-            word_t lcl_var_sect_size = bytes_to_word(NEXT_STACK_ELEM(cpu->fp));
+            word_t lcl_var_sect_size = bytes_to_word(cpu->fp);
             cpu->fp = STACK_PTR_OFFSET(cpu->fp, -lcl_var_sect_size);
 
             /* Pop off the function argument section. */
             DECREMENT_STACK_PTR(cpu->fp);
-            word_t arg_num = bytes_to_word(NEXT_STACK_ELEM(cpu->fp));
+            word_t arg_num = bytes_to_word(cpu->fp);
             cpu->fp = STACK_PTR_OFFSET(cpu->fp, -(arg_num * WORD_SIZE));
 
             /* Push the return value to the new top of the stack */
             memcpy(cpu->fp, cpu->sp, WORD_SIZE);
             cpu->sp = cpu->fp;
+
+            /*
+                Since the callee may also be a function, we decrement the
+                frame pointer so as to have it point to potentially the return
+                address.
+            */
+            cpu->fp = PREV_STACK_ELEM(cpu->fp);
             break;
         }
         default:
@@ -461,4 +470,35 @@ void print_memory(CPU_t *cpu, size_t lbound, size_t ubound) {
         n++;
         printf("[%lx]: %2.2x\n", i, cpu->memory[i]);
     }
+}
+
+void print_instruction(CPU_t *cpu) {    
+    /* Print header */
+    printf("    ");
+    for (size_t i = 0x00; i < 0x10; ++i)
+        printf(" %2.2lx ", i);
+    printf("\n");
+
+    printf("---------------------------------------------------");
+    for (uint8_t *ptr = cpu->prog_bounds[0]; ptr <= cpu->prog_bounds[1]; ++ptr){
+        size_t idx = ptr - cpu->prog_bounds[0];
+        if (idx % 16 == 0)
+            printf("\n%2.2lx| ", idx);
+        
+        char c_front = (ptr == (cpu->ip - 1))? '[' : ' ';
+        char c_back  = (ptr == (cpu->ip - 1))? ']' : ' ';
+        printf("%c%2.2x%c", c_front, *ptr, c_back);
+    }
+    printf("\n\n");
+}
+
+void print_stack(CPU_t *cpu) {
+    uint8_t *ptr = cpu->memory + cpu->mem_size - 1;
+    printf("Stack:\n");
+    do {
+        printf("%2.2x", *ptr);
+        if (-((size_t)ptr - (cpu->mem_size - 1)) % WORD_SIZE == 0)
+            printf(" ");
+    } while (ptr-- != cpu->sp);
+    printf("\n");
 }
