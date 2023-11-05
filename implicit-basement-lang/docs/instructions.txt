@@ -414,4 +414,5 @@ OBSOLETE INSTRUCTIONS:
 NOTES:
     1.) Just as with v.0.4 (pre-alpha), pieces of data on the stack is of 
         size `W`. However, due to the inclusion of call frames with local
-        variables
+        variables, there may be elements in the stack whose sizes are not
+        multiples of `W`.
