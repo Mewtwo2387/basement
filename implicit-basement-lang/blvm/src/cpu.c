@@ -266,22 +266,22 @@ CPUState_t cpu_run(CPU_t *cpu) {
             op2 = POP_WORD_FROM_STACK();
 
             switch (instr) {
-            case OP_ADD:  op_result =   op1 + op2;  break;
-            case OP_SUB:  op_result =   op1 - op2;  break;
-            case OP_MUL:  op_result =   op1 * op2;  break;
-            case OP_DIV:  op_result =   op1 / op2;  break;
-            case OP_OR:   op_result =   op1 | op2;  break;
-            case OP_XOR:  op_result =   op1 ^ op2;  break;
-            case OP_AND:  op_result =   op1 & op2;  break;
-            case OP_NOR:  op_result = ~(op1 | op2); break;
-            case OP_NAND: op_result = ~(op1 & op2); break;
-            case OP_LSH:  op_result =   op1 << op2; break;
-            case OP_RSH:  op_result =   op1 >> op2; break;
-            case OP_EQ:   op_result =   op1 == op2; break;
-            case OP_LT:   op_result =   op1 <  op2; break;
-            case OP_LEQ:  op_result =   op1 <= op2; break;
-            case OP_GT:   op_result =   op1 >  op2; break;
-            case OP_GEQ:  op_result =   op1 >= op2; break;
+            case OP_ADD:  op_result =   op2 + op1;  break;
+            case OP_SUB:  op_result =   op2 - op1;  break;
+            case OP_MUL:  op_result =   op2 * op1;  break;
+            case OP_DIV:  op_result =   op2 / op1;  break;
+            case OP_OR:   op_result =   op2 | op1;  break;
+            case OP_XOR:  op_result =   op2 ^ op1;  break;
+            case OP_AND:  op_result =   op2 & op1;  break;
+            case OP_NOR:  op_result = ~(op2 | op1); break;
+            case OP_NAND: op_result = ~(op2 & op1); break;
+            case OP_LSH:  op_result =   op2 << op1; break;
+            case OP_RSH:  op_result =   op2 >> op1; break;
+            case OP_EQ:   op_result =   op2 == op1; break;
+            case OP_LT:   op_result =   op2 <  op1; break;
+            case OP_LEQ:  op_result =   op2 <= op1; break;
+            case OP_GT:   op_result =   op2 >  op1; break;
+            case OP_GEQ:  op_result =   op2 >= op1; break;
             }
             PUSH_WORD_TO_STACK(op_result);
         }
