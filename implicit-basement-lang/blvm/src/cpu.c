@@ -455,7 +455,9 @@ void print_instruction(CPU_t *cpu) {
         printf(" %2.2lx ", i);
     printf("\n");
 
-    printf("---------------------------------------------------");
+    printf(
+        "--|----------------------------------------------------------------"
+    );
     for (uint8_t *ptr = cpu->memory; ptr <= cpu->prog_ubound; ++ptr){
         size_t idx = ptr - cpu->memory;
         if (idx % 16 == 0)
