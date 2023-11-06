@@ -57,8 +57,9 @@ void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
 
 CPUState_t cpu_run(CPU_t *cpu) {
     /* Utility/temporary variables */
-    word_t mem_addr, mem_val, mem_size, tos_val, ptr_val;
-    word_t op1, op2, op_result;
+
+    word_t mem_addr, mem_val, mem_size, ptr_val;
+    word_t tos_val, imm_arg, op1, op2, op_result;
     word_t user_input, output;
 
     union word_bytes temp_bytes = { .word=0 };
@@ -156,9 +157,9 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_LOAD32_OFF_FP:
         case OP_LOAD64_OFF_FP:
             size_idx = instr & 0x0F;
-            tos_val = GET_IMMEDIATE_ARG();
+            imm_arg = GET_IMMEDIATE_ARG();
             
-            memcpy(temp_bytes.bytes, cpu->fp - tos_val, WORD_SIZE);
+            memcpy(temp_bytes.bytes, cpu->fp - imm_arg, WORD_SIZE);
             temp_bytes.word &= data_bitmasks[size_idx];
 
             /* Push the value from the memory to stack */
@@ -171,13 +172,13 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_STORE32_OFF_FP:
         case OP_STORE64_OFF_FP:
             size_idx = instr & 0x0F;
-            tos_val = GET_IMMEDIATE_ARG();
+            imm_arg = GET_IMMEDIATE_ARG();
 
             /* Pop the top value off the stack */
             temp_bytes.word = *(--cpu->sp) & data_bitmasks[size_idx];
 
             /* Write the popped value from the stack to memory */
-            memcpy(cpu->fp - tos_val, temp_bytes.bytes, data_sizes[size_idx]);
+            memcpy(cpu->fp - imm_arg, temp_bytes.bytes, data_sizes[size_idx]);
             break;
 
         case OP_LOAD_IP:
@@ -327,7 +328,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
                 /* Pop memory address off the stack */
                 mem_addr = *(--cpu->sp);
 
-            tos_val = *(TOS_PTR);
+            tos_val = *(--cpu->sp);
             if ((instr == OP_JMPZ || instr == OP_JMPZ_ADDR) && tos_val == 0)
                 cpu->ip = cpu->memory + mem_addr;
             if ((instr == OP_JMPNZ || instr == OP_JMPNZ_ADDR) && tos_val != 0)

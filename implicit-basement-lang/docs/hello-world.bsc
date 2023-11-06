@@ -1,5 +1,5 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   A simple print program in "basement-lang" v0.6 (pre-alpha)               ;;
+;;   A simple print program in "basement-lang" v0.7 (pre-alpha)               ;;
 ;; -------------------------------------------------------------------------- ;;
 ;;   Generated code for the following pseudo-code:
 ;;       int32_t print(int8_t *str) {
@@ -29,7 +29,6 @@ FUNC_PRINT:
         load8                           ; Get the current char from the string.
         jmpz_addr      END_LOOP1        ; Jump out of the while loop if the end
                                         ; of the string (null byte) is reached.
-        discard                         ; Discard the obtained char.
 
         ;; Print the current character the string pointer points to.
         load64_off_fp  ARG_OFFSET__STR  ; Get the string.
@@ -44,8 +43,6 @@ FUNC_PRINT:
 
         jump_addr      LOOP1            ; Repeat the while loop.
     END_LOOP1:
-    discard    ; Discard the obtained char which should be a null byte.
-
     load32_const 0x0  ; Push the return value.
     return            ; Return from the function.
 
@@ -59,8 +56,6 @@ FUNC_MAIN:
                                             ; address that points to the
                                             ; function table element that
                                             ; corresponds to `print` function.
-    discard                                 ; Discard the return value of the
-                                            ; `print` function.
 
     load32_const  0x0  ; Push the return value.
     return             ; Return from the main function, i.e. end the program.

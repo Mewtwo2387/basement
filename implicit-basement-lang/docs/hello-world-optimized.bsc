@@ -1,5 +1,5 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   A print program in "basement-lang" v0.6 (pre-alpha)                      ;;
+;;   A print program in "basement-lang" v0.7 (pre-alpha)                      ;;
 ;;   This is an attempt to improve the code in `sample-code.txt`              ;;
 ;; -------------------------------------------------------------------------- ;;
 ;;   Generated code for the following pseudo-code:
@@ -26,15 +26,13 @@ FUNC_PRINT:
     load64_off_fp  ARG_OFFSET__STR
     LOOP1:
         ;; --- While loop condition ---
-        ;; Since the `jmpz_addr` does not consume the TOS value, we use it to
-        ;; our advantage.
-        dup                             ; We duplicate the pointer instead
+        dup     ; Duplicate the pointer instead
         load8
-        jmpz_addr      END_LOOP1
+        jmpz_addr END_LOOP1
 
-        ;; Print the current character the string pointer points to
-        ;; NOTE: This consumes the 8 bit integer on TOS, exposing the current
-        ;;       string pointer
+        ;; Print the current character the string pointer points toss
+        dup
+        load8
         out_char
 
         ;; Point to the next character in the string

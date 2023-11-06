@@ -1,11 +1,11 @@
 ;; -------------------------------------------------------------------------- ;;
-;;   Factorial function test. (v0.6 pre-alpha)                                ;;
+;;   Factorial function test. (v0.7 pre-alpha)                                ;;
 ;; -------------------------------------------------------------------------- ;;
 ;;   Pseudo-code:
 ;;      int64_t factorial(int32_t n) {
 ;;          if (n == 0 | n == 1)
 ;;              return 1;
-;;          return factorial(n - 1) * factorial(n - 2);
+;;          return n * factorial(n - 1);
 ;;      }
 ;;
 ;;      int32_t main() {
@@ -42,11 +42,8 @@ FUNC_FACTORIAL:
         ;;       -> (n, 1, -, factorial, n, 2, -, factorial, *)
 
         load32_off_fp  ARG_N
+        dup
         load32_const   0x1
-        sub
-        call FTBL_FACTORIAL
-        load32_off_fp  ARG_N
-        load32_const   0x2
         sub
         call FTBL_FACTORIAL
         mul

@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-    [VERSION 0.6 (pre-alpha)]
+    [VERSION 0.7 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -267,21 +267,21 @@ Jump instructions:
         Unconditional jump to the `W` sized address supplied by the immediate
         argument.
     - JMPZ_ADDR, <ADDRESS>
-        Jump to the `W` sized address supplied by the immediate argument if the
-        `W` sized top element of the stack is 0.
+        Pop the `W` sized top element of the stack, and jump to the `W` sized
+        address supplied by the immediate argument if the popped value is 0.
     - JMPNZ_ADDR, <ADDRESS>
-        Jump to the `W` address supplied by the immediate argument if the
-        `W` sized top element of the stack is NOT 0.
+        Pop the `W` sized top element of the stack, and jump to the `W` sized
+        address supplied by the immediate argument if the top element is NOT 0.
     - JUMP
         Pop a `W` sized address from the stack and jump to it.
     - JMPZ
-        Pop a `W` sized address from the stack. If the `W` sized value on top of
-        the stack is 0, jump to the address. Otherwise, skip to the next
-        instruction.
+        Pop a `W` sized address and a `W` sized value from the stack. If the
+        latter value is 0, jump to the obtained address. Otherwise, skip to
+        the next instruction.
     - JMPNZ
-        Pop a `W` sized address from the stack. If the `W` sized value on top of
-        the stack is not 0, jump to the address. Otherwise, skip to the next
-        instruction.
+        Pop a `W` sized address and a `W` sized value from the stack. If the
+        latter value is NOT 0, jump to the obtained address. Otherwise, skip to
+        the next instruction.
 
 
 Function instructions:
