@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-    [VERSION 0.5.2 (pre-alpha)]
+    [VERSION 0.6 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -18,47 +18,41 @@ Virtual Machine states
 Word data
     In this virtual machine, a "word" has the size of 64 bits or 8 bytes.
     From hereon, the size of a word in bytes shall be referred to as `W`.
-    The sizes are also implicitly in *bits* unless stated otherwise. For
-    instance, frame pointer offsets are in bytes, not bits.
-    All operations that do not involve pushing values to or popping values from
-    the stack requires the size of their operands to be `W`.
+    The sizes are also in *bits* unless stated otherwise.
+    For instance, frame pointer offsets are in bytes, not bits.
 
 
 Data sizes
-    There are shall be multiple bit sizes for data. These are 8, 16, 32 and 64,
+    There shall be multiple bit sizes for data. These are 8, 16, 32 and 64,
     64 being the word size. They shall be generically referred to as `N` from
     hereon.
 
 
-Stack pointers
-    The VM being largely a stack machine, the stack is accessed with two
-    pointers:
+Stacks
+    There shall be two stacks: the operand stack and call stack:
+        1. The operand stack, which shall hereon be referred to as just the
+           "stack", contains `W` sized elements that are operands to an
+           operation or results of an operation.
+        2. The call stack contains elements called call frames which contains
+           information about a function call. Call frames are further discussed
+           below.
+
+    These stacks are accessed by two pointers:
         1. Stack pointer.
         2. Frame pointer.
 
-    The stack pointer always points to the address above the top element of the
-    stack. While the frame pointer points to the topmost element of the call
-    frame. Call frames are discussed further below.
-
-
-Stack elements
-    Generally speaking, the elements in the stack are always of size `W`.
-    The only exception is the call frame which can have sizes that are not
-    multiples of `W`.
-
 
 Call frame
-    When calling a funciton, several important pieces of information are to be
-    stored to a block of data called  a "call frame" which is to be pushed to
-    the stack upon calling the function.
+    When calling a function, several important pieces of information are to be
+    stored to a block of data called a "call frame" which is pushed to the
+    call stack upon calling the function.
 
-    The call frame is to have the following structure:
+    The call frame has the following structure:
 
         ... |    A    | B |    C    | D | E |TOS|
-                                        ^   ^
-                                        |   |
-                                        |   Stack pointer
-                                        Frame pointer
+                                              ^
+                                              |
+                                              Frame pointer
 
         FIGURE 1: Top section of the stack with a call frame.
 
@@ -79,12 +73,11 @@ Call frame
 Function table
     The generated code from the source code shall include a so called function
     table which is a block of data containing information about the functions
-    in the program. The table is comprised of elements for each function in the
-    program with the following pieces of information, all of which are of
-    size `W`:
+    in the program. The elements in the table contain the following information:
         1. The number of function arguments.
         2. The size of the local variable section in *bytes*.
         3. The address to the function code.
+    These pieces of data are of size `W`.
 
 
 Immediate arguments for instructions
@@ -298,51 +291,41 @@ Function instructions:
         stack. In truth, this instruction is comprised of multiple instructions.
         
         Firstly, the address provided by the immediate argument must lead to
-        the function table element corresponding to the called function.
+        the function table element corresponding to the calling function.
 
-        Assuming the prerequisite mentioned above is met, then the following
-        instructions are to be executed upon executing the CALL instruction:
+        Assuming the prerequisite mentioned above is met, the following
+        instructions are to be executed:
 
-        1. Obtain the number of function argument and push it to the stack as
-           size in bytes, i.e. `n * W` where `n` is the number of arguments.
-        2. Obtain the size of the local variables and allocate a space for them.
-           This is done by just incrementing the stack pointer with the said
-           size.
-           Then the size of the local variable section is pushed to the stack.
-        3. The return address which, at this point, is the instruction pointer
-           is pushed to the stack.
-        4. The frame pointer is updated to point to the return address.
-        5. Obtain the address to the function and have the instruction pointer
-           point to that address.
+        1. Obtain the number of function argument `n` from the function table.
+        2. Pop `n` number of `W` sized elements from the operand stack and push
+           them to the call stack.
+        3. Push the number of arguments `n` as a `W` sized integer to the
+           call stack.
+        4. Obtain the size of the local variable section of the call frame from
+           the function table.
+        5. Allocate a space for the local variable section by incrementing the
+           frame pointer with the obtained value for the section's size.
+        6. Push the instruction pointer to the call stack as a `W`
+           sized integer. This serves as the return address.
+        7. Obtain the address to the code of the function from the function
+           table and use it as the value of the instruction pointer.
 
-        At this point, on the stack is a call frame as shown in Figure 1 in
-        the PRELIMINARIES section of this document.
     - RETURN
-        Return from the currently executing function and push the return value
-        of the function to the stack. Like the CALL instruction, this
-        instruction is comprised of multiple instructions.
+        Return from the currently executing function and pop off the call frame
+        from the call stack. Like the CALL instruction, this instruction is
+        comprised of multiple instructions:
 
-        Firstly, the stack pointer must point to the return value. This
-        necessitates that there must be at least one `W` sized value above the
-        call frame.
-
-        Assuming that the prerequisite stated above is already met, the
-        following instructions are executed:
-
-        1. Set the instruction pointer with the return address accessed through
-           frame pointer (FP). Decrement FP by `W` so that it is pointing to the
-           next element in the call frame.
-        2. Obtain the size of local variable and use it to decrement FP to reach
-           the next element in the call frame.
-        3. Obtain size of the argument section and use it to decrement FP to
-           reach the bottom of the call frame.
-        4. Copy the `W` sized value the stack pointer is pointing to to the
-           memory FP is pointing to, overwriting a part of the argument
-           section. If there is no argument section, i.e. there are no function
-           arguments, this instruction will just overwrite section B in Figure 1
-           in the PRELIMINARIES section.
-        5. Set the stack pointer as FP, effectively popping off the call frame
-           from the stack.
+        1. Pop the return address from the call stack and set it as the value of
+           the instruction pointer.
+        2. Pop the size of the local variable section off the call stack and
+           decrement the frame pointer with it, effectively popping off the
+           local variable section.
+        3. Pop the number of function arguments of the call stack and decrement
+           the frame pointer with it, effectively popping off the function
+           argument section.
+        
+        At this point, the call frame has been fully discarded from the call
+        stack.
 
 
 CPU state instructions:
@@ -412,7 +395,3 @@ OBSOLETE INSTRUCTIONS:
 
 --------------------------------------------------------------------------------
 NOTES:
-    1.) Just as with v.0.4 (pre-alpha), pieces of data on the stack is of 
-        size `W`. However, due to the inclusion of call frames with local
-        variables, there may be elements in the stack whose sizes are not
-        multiples of `W`.

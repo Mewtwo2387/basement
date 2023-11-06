@@ -38,7 +38,7 @@ int main(size_t argc, char *argv[]) {
     program = realloc(program, prog_size);
 
     CPU_t cpu;
-    init_cpu(&cpu, MEM_SIZE_DEFAULT);
+    init_cpu(&cpu, MEM_SIZE_DEFAULT, STACK_SIZE_DEFAULT);
     cpu_load_program(&cpu, program, prog_size);
     
     cpu_run(&cpu);
