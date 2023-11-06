@@ -10,6 +10,7 @@
 ;;
 ;;      int32_t main() {
 ;;          int64_t res = factorial(3);
+;;          print(res);
 ;;          return 0;
 ;;      }
 ;; -------------------------------------------------------------------------- ;;
@@ -59,7 +60,11 @@ FUNC_MAIN:
 
     load64_const 0x3
     call FTBL_FACTORIAL
+    store64_off_fp LCL_VAR_RES
+
+    ;; Print the value of res
     load64_off_fp LCL_VAR_RES
+    out_num
 
     ;; "return 0;"
     load32_const 0x0
