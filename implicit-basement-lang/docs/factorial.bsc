@@ -11,6 +11,7 @@
 ;;      int32_t main() {
 ;;          int64_t res = factorial(3);
 ;;          print(res);
+;;          print('\n');
 ;;          return 0;
 ;;      }
 ;; -------------------------------------------------------------------------- ;;
@@ -62,6 +63,10 @@ FUNC_MAIN:
     ;; Print the value of res
     load64_off_fp LCL_VAR_RES
     out_num
+
+    ;; Print a new line
+    load8_const '\n'
+    out_char
 
     ;; "return 0;"
     load32_const 0x0
