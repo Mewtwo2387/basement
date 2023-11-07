@@ -12,33 +12,42 @@
     ( cpu->ip += WORD_SIZE, bytes_to_word(cpu->ip - WORD_SIZE) )
 #define TOS_PTR cpu->sp - 1
 
-#define STACK_OVERFLOW_CHECK(cpu) \
-    if ((cpu->sp - cpu->op_stack) >= cpu->stack_size) \
-        { fprintf(stderr, "Error: Stack overflow\n"); exit(EXIT_FAILURE); }
+#define STACK_OVERFLOW_CHECK(cpu)                       \
+    if ((cpu->sp - cpu->op_stack) >= cpu->stack_size) { \
+        sprintf(cpu->state_msg, "Stack overflow");      \
+        cpu->state = STATE_HALT_FAILURE;                \
+        break;                                          \
+    }
 
-#define STACK_UNDERFLOW_CHECK(cpu, offset)  \
-    if ((cpu->sp - cpu->op_stack) < offset) \
-        { fprintf(stderr, "Error: Stack underflow\n"); exit(EXIT_FAILURE); }
+#define STACK_UNDERFLOW_CHECK(cpu, offset) \
+    if ((cpu->sp - cpu->op_stack) < offset) {       \
+        sprintf(cpu->state_msg, "Stack underflow"); \
+        cpu->state = STATE_HALT_FAILURE;            \
+        break;                                      \
+    }
 
 #define CALL_STACK_OVERFLOW_CHECK(cpu, offset) \
     if ((word_t)(cpu->fp - cpu->call_stack) + offset >= cpu->stack_size) { \
-        fprintf(stderr, "Error: Call stack overflow\n");                   \
-         exit(EXIT_FAILURE);                                               \
+        sprintf(cpu->state_msg, "Call stack overflow");                    \
+        cpu->state = STATE_HALT_FAILURE;                                   \
+        break;                                                             \
     }
 
-#define CALL_STACK_UNDERFLOW_CHECK(cpu, offset)           \
-    if ((cpu->fp - cpu->call_stack) < offset) {           \
-        fprintf(stderr, "Error: Call stack underflow\n"); \
-         exit(EXIT_FAILURE);                              \
+#define CALL_STACK_UNDERFLOW_CHECK(cpu, offset) \
+    if ((cpu->fp - cpu->call_stack) < offset) {          \
+        sprintf(cpu->state_msg, "Call stack underflow"); \
+        cpu->state = STATE_HALT_FAILURE;                 \
+        break;                                           \
     }
 
-#define MEM_BOUND_CHECK(mem_addr, mem_size)                                    \
-    if (mem_addr >= mem_size) {                                                \
-        fprintf(                                                               \
-            stderr,                                                            \
-            "Error: Memory address out of bounds (max addr:0x%lx <= 0x%lx)\n", \
-            mem_size - 1, mem_addr                                             \
-        );                                                                     \
+#define MEM_BOUND_CHECK(mem_addr, mem_size) \
+    if (mem_addr >= mem_size) {                                       \
+        sprintf(cpu->state_msg,                                       \
+            "Memory address out of bounds (max addr:0x%lx <= 0x%lx)", \
+            mem_size - 1, mem_addr                                    \
+        );                                                            \
+        cpu->state = STATE_HALT_FAILURE;                              \
+        break;                                                        \
     }
 
 
@@ -65,6 +74,9 @@ void init_cpu(CPU_t *cpu, size_t memory_size, size_t stack_size) {
                         END_STATE_MSG_LEN + 1,
                         sizeof(*cpu->state_msg)
                     );
+
+    /* Initialize the CPU state as not running without error */
+    cpu->state = STATE_HALT_SUCCESS;
 }
 
 void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
@@ -86,17 +98,25 @@ void cpu_load_program(CPU_t *cpu, uint8_t *prog_bytecode, size_t prog_size) {
 }
 
 CPUState_t cpu_run(CPU_t *cpu) {
+    cpu->state = STATE_RUNNING;
+
+    /*
+        Variable for translating from an array of bytes to a single integer and
+        vice versa.
+    */
     union word_bytes temp_bytes = { .word=0 };
 
-    for (;;) {
+    while (cpu->state == STATE_RUNNING) {
         Instruction_t instr = *(cpu->ip++);
 
         switch (instr) {
         case OP_ABORT:
             cpu->state = STATE_HALT_FAILURE;
             sprintf(cpu->state_msg, "Abort instruction encountered");
+            break;
         case OP_DONE:
-            goto exit_loop;
+            if (cpu->state == STATE_RUNNING)
+                cpu->state = STATE_HALT_SUCCESS;
         case OP_NOP:
             break;
         
@@ -514,11 +534,9 @@ CPUState_t cpu_run(CPU_t *cpu) {
         default:
             cpu->state = STATE_HALT_FAILURE;
             sprintf(cpu->state_msg, "Unknown opcode (0x%2.2x)", instr);
-            goto exit_loop;
         }
     }
 
-exit_loop:
     return cpu->state;
 }
 
@@ -527,7 +545,8 @@ void cpu_clear_memory(CPU_t *cpu) {
         || cpu->memory == NULL
         || cpu->op_stack == NULL
         || cpu->call_stack == NULL
-        || cpu->state == STATE_UNINITIALIZED)
+        || cpu->state == STATE_UNINITIALIZED
+        || cpu->state == STATE_UNKNOWN)
     {
         fprintf(stderr, "Error: Attempted to clear the memory of an "
                         "uninitialized CPU\n");

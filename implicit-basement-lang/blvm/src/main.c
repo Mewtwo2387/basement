@@ -3,6 +3,8 @@
 #include "cpu.h"
 
 int main(size_t argc, char *argv[]) {
+    int main_ret_val = 0;
+
     /* Get the program */
     uint8_t *program = malloc(sizeof(*program) * MEM_SIZE_DEFAULT);
     if (argc != 2) {
@@ -42,10 +44,12 @@ int main(size_t argc, char *argv[]) {
     cpu_load_program(&cpu, program, prog_size);
     
     cpu_run(&cpu);
-    if (cpu.state == STATE_HALT_FAILURE)
+    if (cpu.state == STATE_HALT_FAILURE) {
         fprintf(stderr, "VM failed: %s\n", cpu.state_msg);
+        main_ret_val = 1;
+    }
 
     free_cpu(&cpu);
     free(program);
-    return 0;
+    return main_ret_val;
 }
