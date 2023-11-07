@@ -10,10 +10,10 @@
 #define END_STATE_MSG_LEN  256
 
 typedef enum {
-    HALT_SUCCESS = 0,
-    HALT_FAILED,
-    RUNNING,
-    UNINITIALIZED,
+    STATE_HALT_SUCCESS = 0,
+    STATE_HALT_FAILURE,
+    STATE_RUNNING,
+    STATE_UNINITIALIZED,
     STATE_UNKNOWN,
 
     /* Exclusive upper bound of CPU state enum */

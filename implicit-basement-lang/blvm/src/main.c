@@ -42,7 +42,7 @@ int main(size_t argc, char *argv[]) {
     cpu_load_program(&cpu, program, prog_size);
     
     cpu_run(&cpu);
-    if (cpu.state == HALT_FAILED)
+    if (cpu.state == STATE_HALT_FAILURE)
         fprintf(stderr, "VM failed: %s\n", cpu.state_msg);
 
     free_cpu(&cpu);

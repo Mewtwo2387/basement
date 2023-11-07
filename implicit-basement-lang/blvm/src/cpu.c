@@ -93,7 +93,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
 
         switch (instr) {
         case OP_ABORT:
-            cpu->state = HALT_FAILED;
+            cpu->state = STATE_HALT_FAILURE;
             sprintf(cpu->state_msg, "Abort instruction encountered");
         case OP_DONE:
             goto exit_loop;
@@ -512,7 +512,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
             break;
         }
         default:
-            cpu->state = HALT_FAILED;
+            cpu->state = STATE_HALT_FAILURE;
             sprintf(cpu->state_msg, "Unknown opcode (0x%2.2x)", instr);
             goto exit_loop;
         }
@@ -527,7 +527,7 @@ void cpu_clear_memory(CPU_t *cpu) {
         || cpu->memory == NULL
         || cpu->op_stack == NULL
         || cpu->call_stack == NULL
-        || cpu->state == UNINITIALIZED)
+        || cpu->state == STATE_UNINITIALIZED)
     {
         fprintf(stderr, "Error: Attempted to clear the memory of an "
                         "uninitialized CPU\n");
@@ -543,7 +543,7 @@ void free_cpu(CPU_t *cpu) {
     free(cpu->call_stack);
 
     *cpu = (CPU_t){ 0 };
-    cpu->state = UNINITIALIZED;
+    cpu->state = STATE_UNINITIALIZED;
 }
 
 void print_memory(CPU_t *cpu, size_t lbound, size_t ubound) {
