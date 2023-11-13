@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "cpu.h"
-#include "safe_alloc.h"
+#include "opcode.h"
 #include "word_util.h"
-#include "instruction.h"
+#include "safe_alloc.h"
 
 
 #define GET_IMMEDIATE_ARG() \

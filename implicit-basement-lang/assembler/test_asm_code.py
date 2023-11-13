@@ -1,4 +1,4 @@
-import opcodes as op
+import opcode as op
 import data_size
 from data_size import WORD_SIZE
 from function import Function
