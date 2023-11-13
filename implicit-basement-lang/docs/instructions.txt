@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-    [VERSION 0.7 (pre-alpha)]
+    [VERSION 0.8 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -20,6 +20,30 @@ Word data
     From hereon, the size of a word in bytes shall be referred to as `W`.
     The sizes are also in *bits* unless stated otherwise.
     For instance, frame pointer offsets are in bytes, not bits.
+
+
+Floating point numbers and arithmetic
+    All forms of data are integers under the hood. And all operations so far,
+    i.e. pre-0.8 instructions, assume that all forms of data are integers.
+    While this is still true in this current version, generally speaking,
+    great care must be exercised when dealing with floating point arithmetic
+    since they are more complex than integers.
+
+    In this version, floating point arithmetic is implemented with two
+    precisions:
+        1.) Single precision or 32-bit float.
+        2.) Double precision or 64-bit float.
+
+    We use the more descriptive "32-bit float" and "64-bit float" terms which
+    maybe shortened to F32 and F64, respectively. Likewise, the term "floating
+    point number" may also just be called as "float".
+
+    There will be separate arithmetic operations for floating point numbers, and
+    a set of instructions for casting between integer and floats.
+
+    Do note that floats are still subjected to the same rule for data alignment,
+    i.e. whether a float be of size 32 or 64, it is automatically
+    expanded to size `W` padded with zeros if need be both in the operand stack.
 
 
 Data sizes
@@ -115,12 +139,6 @@ Stack manipulation instructions
                 - LOAD16_ADDR
                 - LOAD32_ADDR
                 - LOAD64_ADDR
-        - LOAD_IP
-            Push the instruction pointer as a `W` sized integer to the stack.
-        - LOAD_SP
-            Push the stack pointer as a `W` sized integer to the stack.
-        - LOAD_FP
-            Push the frame pointer as a `W` sized integer to the stack.
         - STORE*N*_ADDR, <ADDRESS>
             Pop the `W` sized top element of the stack with size `N` and store
             it to memory addressed by the immediate argument.
@@ -175,6 +193,12 @@ Stack manipulation instructions
                 - STORE32_OFF_FP
                 - STORE64_OFF_FP
     Miscellaneous:
+        - LOAD_IP
+            Push the instruction pointer as a `W` sized integer to the stack.
+        - LOAD_SP
+            Push the stack pointer as a `W` sized integer to the stack.
+        - LOAD_FP
+            Push the frame pointer as a `W` sized integer to the stack.
         - POP_RES
             Pop the `W` sized top element of the stack and set it as the
             VM result.
@@ -192,28 +216,49 @@ Stack manipulation instructions
 
 
 Arithmetic logical operation instructions
-    Binary operations:
+    Binary integer operations:
         Pop two `W` sized values from the stack, perform the binary operation,
         and push the result which is also of size `W` to the stack.
         - ADD  (addition)
         - SUB  (subtraction)
         - MUL  (multiplication)
         - DIV  (integer division)
-    In-place binary operations:
+    Binary floating point operations:
+        Same operation as with binary integer operations.
+        - ADD_F32
+        - ADD_F64
+        - SUB_F32
+        - SUB_F64
+        - MUL_F32
+        - MUL_F64
+        - DIV_F32
+        - DIV_F64
+    In-place binary integer operations:
         - ADD_CONST, <LITERAL>
             Add the `W` sized immediate argument with the `W` sized top element
             of the stack.
-    Unary operations
+    Unary integer/floating point operations
         Pop one `W` sized value from the stack and do the unary operation on it.
         The result is then pushed to the stack.
         - UN_POSITIVE
-            Does not do anything to the number. Akin to NOP.
+            Does not do anything to the number. But it requires that it must
+            have at least one element on the stack to act as its operand.
+            Same operation applies to the floating point numbers.
         - UN_NEGATIVE
             "Negate" the value on top of the stack. This is equivalent to the
             following bitwise operation:    
                 `~n + 1`
             where `~` is the bitwise NOT operation and `n` is the operand to be
             negated.
+            Same operation applies to the floating point numbers.
+    Type casting between integer and floating point numbers:
+        Pop a `W` sized element off the stack which represents either
+        a float (either 32 or 64 bits) or a `W` sized integer, and cast it to
+        its target data type.
+        - INT_TO_F32
+        - INT_TO_F64
+        - F32_TO_INT
+        - F64_TO_INT
 
 
 Bitwise logical operation instructions
