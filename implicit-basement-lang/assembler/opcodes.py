@@ -49,36 +49,49 @@ SWAP_TOP       = 0x86
 SWAP           = 0x87
 
 ## ---------- Arithmetic operations ---------- ##
-ADD         = 0x90
-ADD_CONST   = 0x91
-SUB         = 0x92
-MUL         = 0x93
-DIV         = 0x94
-UN_POSITIVE = 0x95
-UN_NEGATIVE = 0x96
+ADD           = 0x90
+ADD_CONST     = 0x91
+SUB           = 0x92
+MUL           = 0x93
+DIV           = 0x94
+UN_POSITIVE   = 0x95
+UN_NEGATIVE   = 0x96
+## ---------- Arithmetic floating point operations ---------- ##
+ADD_F32       = 0x97
+ADD_F64       = 0x98
+SUB_F32       = 0x99
+SUB_F64       = 0x9A
+MUL_F32       = 0x9B
+MUL_F64       = 0x9C
+DIV_F32       = 0x9D
+DIV_F64       = 0x9E
+## ---------- Type casting operations ---------- ##
+OP_INT_TO_F32 = 0x9F
+OP_INT_TO_F64 = 0xA0
+OP_F32_TO_INT = 0xA1
+OP_F64_TO_INT = 0xA2
 ## ---------- Bitwise logical operations ---------- ##
-OR          = 0x97
-AND         = 0x98
-NOR         = 0x99
-NAND        = 0x9A
-XOR         = 0x9B
-LSH         = 0x9C
-RSH         = 0x9D
-NOT         = 0x9E
+OR            = 0xA3
+AND           = 0xA4
+NOR           = 0xA5
+NAND          = 0xA6
+XOR           = 0xA7
+LSH           = 0xA8
+RSH           = 0xA9
+NOT           = 0xAA
 ## ---------- Comparison operations ---------- ##
-EQ          = 0xA0
-LT          = 0xA1
-LEQ         = 0xA2
-GT          = 0xA3
-GEQ         = 0xA4
+EQ            = 0xAB
+LT            = 0xAC
+LEQ           = 0xAD
+GT            = 0xAE
+GEQ           = 0xAF
 
 ## ---------- Input/Output instructions ---------- ##
 IN       = 0xB0
 OUT_CHAR = 0xB1
 OUT_NUM  = 0xB2
-OUT_IP   = 0xB3
-OUT_SP   = 0xB4
-OUT_ADDR = 0xB5
+OUT_F32  = 0xB3
+OUT_F64  = 0xB4
 
 ## ---------- Jump instructions ---------- ##
 JUMP_ADDR  = 0xC0

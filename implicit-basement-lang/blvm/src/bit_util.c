@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "word_util.h"
+#include "bit_util.h"
 
 void word_to_bytes(uint8_t *dest_bytes, word_t src_word) {
     union word_bytes wb = { .word=src_word };

@@ -1,5 +1,5 @@
-#ifndef _WORD_UTIL_H
-#define _WORD_UTIL_H
+#ifndef _BIT_UTIL_H
+#define _BIT_UTIL_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -9,6 +9,12 @@
 union word_bytes {
     word_t word;
     uint8_t bytes[sizeof(word_t)];
+};
+
+union word_float {
+    word_t word;
+    float  f32;
+    double f64;
 };
 
 void word_to_bytes(uint8_t *dest_bytes, word_t src_word);

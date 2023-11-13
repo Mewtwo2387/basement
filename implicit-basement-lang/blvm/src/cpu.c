@@ -3,8 +3,8 @@
 #include <string.h>
 
 #include "cpu.h"
-#include "opcode.h"
-#include "word_util.h"
+#include "opcodes.h"
+#include "bit_util.h"
 #include "safe_alloc.h"
 
 
@@ -288,10 +288,10 @@ CPUState_t cpu_run(CPU_t *cpu) {
             /* Swap the two elements */
             *(TOS_PTR) = *(TOS_PTR - offset);
             *(TOS_PTR - offset) = temp_bytes.word;
+            break;
         }
-        break;
 
-        /* Binary operations */
+        /* Integer binary operations */
         case OP_ADD:
         case OP_SUB:
         case OP_MUL:
@@ -333,10 +333,10 @@ CPUState_t cpu_run(CPU_t *cpu) {
             case OP_GEQ:  op_result =   op2 >= op1; break;
             }
             *(cpu->sp++) = op_result;
+            break;
         }
-        break;
 
-        /* In-place binary operations */
+        /* In-place integer binary operations */
         case OP_ADD_CONST: {
             /* 
                 NOTE: Checking for stack overflow is unnecessary since this only
@@ -347,6 +347,59 @@ CPUState_t cpu_run(CPU_t *cpu) {
             word_t op1 = GET_IMMEDIATE_ARG();
             word_t tos_val = *(--cpu->sp);
             *(cpu->sp++) = tos_val + op1;
+            break;
+        }
+
+        /* 32-bit floating point binary operations */
+        case OP_ADD_F32:
+        case OP_SUB_F32:
+        case OP_MUL_F32:
+        case OP_DIV_F32: {
+            /* Pop two operands from the stack */
+            STACK_UNDERFLOW_CHECK(cpu, 2);
+            word_t raw_op1 = *(--cpu->sp);
+            word_t raw_op2 = *(--cpu->sp);
+
+            union word_float wf;
+
+            float op1 = (wf.word = raw_op1, wf.f32);
+            float op2 = (wf.word = raw_op2, wf.f32);
+            float op_result;
+
+            switch (instr) {
+            case OP_ADD_F32: op_result = op1 + op2; break;
+            case OP_SUB_F32: op_result = op1 - op2; break;
+            case OP_MUL_F32: op_result = op1 * op2; break;
+            case OP_DIV_F32: op_result = op1 / op2; break;
+            }
+
+            *(cpu->sp++) = (wf.f32 = op_result, wf.word);
+            break;
+        }
+        /* 64-bit floating point binary operations */
+        case OP_ADD_F64:
+        case OP_SUB_F64:
+        case OP_MUL_F64:
+        case OP_DIV_F64: {
+            /* Pop two operands from the stack */
+            STACK_UNDERFLOW_CHECK(cpu, 2);
+            word_t raw_op1 = *(--cpu->sp);
+            word_t raw_op2 = *(--cpu->sp);
+
+            union word_float wf;
+
+            double op1 = (wf.word = raw_op1, wf.f64);
+            double op2 = (wf.word = raw_op2, wf.f64);
+            double op_result;
+
+            switch (instr) {
+            case OP_ADD_F64: op_result = op1 + op2; break;
+            case OP_SUB_F64: op_result = op1 - op2; break;
+            case OP_MUL_F64: op_result = op1 * op2; break;
+            case OP_DIV_F64: op_result = op1 / op2; break;
+            }
+
+            *(cpu->sp++) = (wf.f64 = op_result, wf.word);
             break;
         }
 
@@ -376,6 +429,33 @@ CPUState_t cpu_run(CPU_t *cpu) {
             STACK_UNDERFLOW_CHECK(cpu, 1);
             break;
         
+        /* Type casting operations */
+        case OP_INT_TO_F32:
+        case OP_INT_TO_F64: {
+            STACK_UNDERFLOW_CHECK(cpu, 1);
+
+            word_t int_input = *(--cpu->sp);
+
+            union word_float wf;
+            if (instr == OP_INT_TO_F32)
+                wf.f32 = (float)(int_input);
+            else
+                wf.f64 = (double)(int_input);
+            
+            *(cpu->sp++) = wf.word;
+            break;
+        }
+        case OP_F32_TO_INT:
+        case OP_F64_TO_INT: {
+            STACK_UNDERFLOW_CHECK(cpu, 1);
+
+            union word_float wf;
+            wf.word = *(--cpu->sp);
+
+            *(cpu->sp++) = (instr == OP_F32_TO_INT)? 
+                           (word_t)wf.f32 : (word_t)wf.f64 ;
+            break;
+        }
 
         /* IO instructions */
         case OP_IN:
@@ -395,19 +475,18 @@ CPUState_t cpu_run(CPU_t *cpu) {
                 printf("%ld", output);
             break;
         }
-        case OP_OUT_IP:
-            printf("IP: %p", cpu->ip);
-            break;
-        case OP_OUT_SP:
-            printf("SP: %p", cpu->sp);
-            break;
-        case OP_OUT_ADDR: {
-            word_t mem_addr = GET_IMMEDIATE_ARG();
+        case OP_OUT_F32:
+        case OP_OUT_F64: {
+            /* Pop the output to be written to stdout */
+            STACK_UNDERFLOW_CHECK(cpu, 1);
 
-            /* Fetch the value addressed by the memory and print it to stdout */
-            MEM_BOUND_CHECK(mem_addr, cpu->mem_size);
-            word_t output = bytes_to_word(cpu->memory + mem_addr);
-            printf("@0x%16.16lx: 0x%lx", mem_addr, output);
+            union word_float wf;
+            wf.word = *(--cpu->sp);
+
+            if (instr == OP_OUT_F32)
+                printf("%f", wf.f32);
+            else 
+                printf("%f", wf.f64);
             break;
         }
         
