@@ -1,0 +1,130 @@
+--------------------------------------------------------------------------------
+    Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
+        Version: 0.1
+--------------------------------------------------------------------------------
+program     := { ( decl, EOL ) | func | struct }, EOF ;
+
+decl        := var_decl | func_decl ;
+var_decl    := [ var_attrib ], type, var_id, [ var_init ],
+               { var_id, [ var_init ] } ;
+var_attrib  := "const" ;
+var_id      := id, [ "[", integer, "]" ] ;
+var_init    := "=", ( literal | arr_init | struct_init ) ;
+func_decl   := type, id, "(", param_list, ")",
+               { ",", id, "(", param_list, ")" } ;
+
+struct      := "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
+               [ "struct" ], [ id ] ;
+struct_mem  := type, id, { ",", id }, EOL ;
+
+type        := ( int_type | float_type | ( "struct", id ) | "void" ), { "*" } ;
+int_type    := "u8"
+             | "u16"
+             | "u32"
+             | "u64"
+             | "i8"
+             | "i16"
+             | "i32"
+             | "i64"
+             | "usize" ;
+float_type  := "f32" | "f64" ;
+
+func        := "function", id, "(", param_list, ")", [ "=>", type ] , cmpd_stmt,
+               [ "function" ], [ id ] ;
+param_list  := param, { param } ;
+param       := type, id, "[", integer, "]" ;
+
+cmpd_stmt   := scope_start, { ( var_decl, EOL ) | stmt }, scope_end ;
+stmt        := if_stmt
+             | loop_stmt
+             | loop_ctrl
+             | scope_block
+             | ( expr, EOL )
+             | EOL ;
+loop_ctrl   := ( "break" | "continue" ), EOL ;
+if_stmt     := "if", "(", expr, ")", cmpd_stmt,
+               [ "else", ["if" "(", expr, ")" ], cmpd_stmt ], [ "if" ] ;
+loop_stmt   := [ id ], "loop", cmpd_stmt, "end", [ "loop" ], [ id ] ;
+scope_block := "block", cmpd_stmt, [ "block" ] ;
+
+expr        := literal
+             | func_call
+             | var_invoke
+             | ( id, "=", ( expr | arr_init | struct_init ) )
+             | ( l_un_op, expr )
+             | ( expr, r_un_op )
+             | ( expr, bin_op, expr )
+             | ( expr, bit_op, expr )
+             | ( expr, rel_op, expr )
+             | ( "(", expr, ")" ) ;
+
+literal     := integer | float | char | string ;
+func_call   := id, "(", [ expr, { ",", expr } ], ")" ;
+var_invoke  := id, [ "[", expr, "]" ], [ ".", var_invoke ] ;
+arr_init    := "[", [ expr, { ",", expr } ], "]" ;
+struct_init := id, "{", [ expr, { ",", expr } ], "}" ;
+l_un_op     := "+"
+             | "-"
+             | "~"
+             | "!"
+             | "*"
+             | "&"
+             | "++"
+             | "--" ;
+r_un_op     := "++" | "--" ;
+bin_op      := "+" | "-" | "*" | "/" | "%" ;
+bit_op      := "|" | "&" | "^" | ">>" | "<<" ;
+rel_op      := ">" | "<" | "==" | "!=" | ">=" | "<=" ;
+
+scope_start := ":"  ;
+scope_end   := "end";
+EOL         := "\n" ;
+EOF         := "\0" ;
+
+integer     := digit, [ digit ] ;
+float       := integer, ".", [ integer ] ;
+char        := "'", ascii_char, "'" ;
+string      := '"', { ascii_char }, '"' ;
+id          := letter, { letter | digit | "_" } ;
+letter      := a | b ... | y | z | A | B ... | Y | Z ;
+digit       := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+ascii_char  := (? ASCII characters ?) ;
+
+--------------------------------------------------------------------------------
+    Operator Precedence
+
+o------------------------------------------------------------------------------o
+| Operator | Description                                       | Associativity |
+|----------|---------------------------------------------------|---------------|
+|   ( )    | Function call                                     |               |
+|   [ ]    | Array subscript                                   | left to right |
+|    .     | Struct member selection                           |               |
+|  ++ --   | Postfix increment/decrement                       |               |
+|----------|---------------------------------------------------|---------------|
+|  ++ --   | Prefix increment/decrement                        |               |
+|   + -    | Unary plus/minus                                  |               |
+|   ! ~    | Logical negation/bitwise NOT                      | right to left |
+|    *     | Pointer dereference                               |               |
+|    &     | Address of operand                                |               |
+|----------|---------------------------------------------------|---------------|
+|  * / %   | Multiplication, division, modulo operation        | left to right |
+|----------|---------------------------------------------------|---------------|
+|   + -    | Addition, subtraction                             | left to right |
+|----------|---------------------------------------------------|---------------|
+|  <<  >>  | Bitwise shift left & right                        | left to right |
+|----------|---------------------------------------------------|---------------|
+|   < <=   | Less than, less than or equal to                  | left to right |
+|   > >=   | Greater than, greater than or equal to            |               |
+|----------|---------------------------------------------------|---------------|
+|  == !=   | Equal to, not equal to                            | left to right |
+|----------|---------------------------------------------------|---------------|
+|    &     | Bitwise AND                                       | left to right |
+|----------|---------------------------------------------------|---------------|
+|    ^     | Bitwise XOR                                       | left to right |
+|----------|---------------------------------------------------|---------------|
+|    |     | Bitwise OR                                        | left to right |
+|----------|---------------------------------------------------|---------------|
+|    =     | Assignment operation                              | right to left |
+o------------------------------------------------------------------------------o
+
+NOTE: This is based on the C language operator precedence.
