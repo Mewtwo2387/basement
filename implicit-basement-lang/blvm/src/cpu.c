@@ -120,7 +120,7 @@ CPUState_t cpu_run(CPU_t *cpu) {
         case OP_NOP:
             break;
         
-        /* Stack manipulation instructions */
+        /* Memory manipulating instructions */
         case OP_LOAD8_CONST:
         case OP_LOAD16_CONST:
         case OP_LOAD32_CONST:
@@ -290,12 +290,45 @@ CPUState_t cpu_run(CPU_t *cpu) {
             *(TOS_PTR - offset) = temp_bytes.word;
             break;
         }
+        case OP_COPY: {
+            /* Pop the dest addr, src addr and the data size off the stack */
+            STACK_UNDERFLOW_CHECK(cpu, 3);
+            word_t dest_addr = *(--cpu->sp);
+            word_t src_addr  = *(--cpu->sp);
+            word_t dat_size  = *(--cpu->sp);
+            if (dat_size == 0)
+                break;
+
+            /* Memory bound checking */
+            MEM_BOUND_CHECK(dest_addr, cpu->mem_size);
+            MEM_BOUND_CHECK(src_addr, cpu->mem_size);
+            if (   ((dest_addr + dat_size) >= cpu->mem_size) \
+                || ((src_addr + dat_size)  >= cpu->mem_size) )
+            {
+                cpu->state = STATE_HALT_FAILURE;
+                sprintf(
+                    cpu->state_msg,
+                    "Data segment to be copied %s is out of bounds",
+                    ((dest_addr + dat_size) >= cpu->mem_size)? "to" : ""
+                );
+                break;
+            }
+
+            uint8_t *temp_arr = safe_malloc(dat_size);
+
+            memcpy(temp_arr, cpu->memory + src_addr, dat_size);
+            memcpy(cpu->memory + dest_addr, temp_arr, dat_size);
+            
+            free(temp_arr);
+            break;
+        }
 
         /* Integer binary operations */
         case OP_ADD:
         case OP_SUB:
         case OP_MUL:
         case OP_DIV:
+        case OP_MOD:
         case OP_OR:
         case OP_AND:
         case OP_NOR:
@@ -314,11 +347,24 @@ CPUState_t cpu_run(CPU_t *cpu) {
             word_t op2 = *(--cpu->sp);
             word_t op_result;
 
+            /* Check for invalid/undefined operations */
+            if ( (instr == OP_DIV || instr == OP_MOD) && op2 == 0 ) {
+                cpu->state = STATE_HALT_FAILURE;
+                sprintf(
+                    cpu->state_msg, "%s by zero is undefined",
+                    (instr == OP_DIV)?
+                      "Integer division"
+                    : "Modulo operation"
+                );
+                break;
+            }
+
             switch (instr) {
             case OP_ADD:  op_result =   op2 + op1;  break;
             case OP_SUB:  op_result =   op2 - op1;  break;
             case OP_MUL:  op_result =   op2 * op1;  break;
             case OP_DIV:  op_result =   op2 / op1;  break;
+            case OP_MOD:  op_result =   op2 % op1;  break;
             case OP_OR:   op_result =   op2 | op1;  break;
             case OP_XOR:  op_result =   op2 ^ op1;  break;
             case OP_AND:  op_result =   op2 & op1;  break;

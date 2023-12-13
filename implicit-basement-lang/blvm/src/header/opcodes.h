@@ -7,7 +7,7 @@ typedef enum {
     OP_DONE  = 0x02,
 
 
-    /* ---------- Stack manipulation instructions ---------- */
+    /* ---------- Memory manipulating instructions ---------- */
     OP_LOAD8_CONST    = 0x10,
     OP_LOAD16_CONST   = 0x11,
     OP_LOAD32_CONST   = 0x12,
@@ -51,6 +51,7 @@ typedef enum {
     OP_DUP            = 0x85,
     OP_SWAP_TOP       = 0x86,
     OP_SWAP           = 0x87,
+    OP_COPY           = 0x88,
 
 
     /* ---------- Arithmetic integer operations ---------- */
@@ -59,58 +60,59 @@ typedef enum {
     OP_SUB         = 0x92,
     OP_MUL         = 0x93,
     OP_DIV         = 0x94,
-    OP_UN_POSITIVE = 0x95,
-    OP_UN_NEGATIVE = 0x96,
+    OP_MOD         = 0X95,
+    OP_UN_POSITIVE = 0x96,
+    OP_UN_NEGATIVE = 0x97,
     /* ---------- Arithmetic floating point operations ---------- */
-    OP_ADD_F32     = 0x97,
-    OP_ADD_F64     = 0x98,
-    OP_SUB_F32     = 0x99,
-    OP_SUB_F64     = 0x9A,
-    OP_MUL_F32     = 0x9B,
-    OP_MUL_F64     = 0x9C,
-    OP_DIV_F32     = 0x9D,
-    OP_DIV_F64     = 0x9E,
+    OP_ADD_F32     = 0x98,
+    OP_ADD_F64     = 0x99,
+    OP_SUB_F32     = 0x9A,
+    OP_SUB_F64     = 0x9B,
+    OP_MUL_F32     = 0x9C,
+    OP_MUL_F64     = 0x9D,
+    OP_DIV_F32     = 0x9E,
+    OP_DIV_F64     = 0x9F,
     /* ---------- Type casting operations ---------- */
-    OP_INT_TO_F32  = 0x9F,
-    OP_INT_TO_F64  = 0xA0,
-    OP_F32_TO_INT  = 0xA1,
-    OP_F64_TO_INT  = 0xA2,
+    OP_INT_TO_F32  = 0xA0,
+    OP_INT_TO_F64  = 0xA1,
+    OP_F32_TO_INT  = 0xA2,
+    OP_F64_TO_INT  = 0xA3,
     /* ---------- Bitwise logical operations ---------- */
-    OP_OR          = 0xA3,
-    OP_AND         = 0xA4,
-    OP_NOR         = 0xA5,
-    OP_NAND        = 0xA6,
-    OP_XOR         = 0xA7,
-    OP_LSH         = 0xA8,
-    OP_RSH         = 0xA9,
-    OP_NOT         = 0xAA,
+    OP_OR          = 0xA4,
+    OP_AND         = 0xA5,
+    OP_NOR         = 0xA6,
+    OP_NAND        = 0xA7,
+    OP_XOR         = 0xA8,
+    OP_LSH         = 0xA9,
+    OP_RSH         = 0xAA,
+    OP_NOT         = 0xAB,
     /* ---------- Comparison operations ---------- */
-    OP_EQ          = 0xAB,
-    OP_LT          = 0xAC,
-    OP_LEQ         = 0xAD,
-    OP_GT          = 0xAE,
-    OP_GEQ         = 0xAF,
+    OP_EQ          = 0xAC,
+    OP_LT          = 0xAD,
+    OP_LEQ         = 0xAE,
+    OP_GT          = 0xAF,
+    OP_GEQ         = 0xB0,
 
 
     /* ---------- Input/Output instructions ---------- */
-    OP_IN       = 0xB0,
-    OP_OUT_CHAR = 0xB1,
-    OP_OUT_NUM  = 0xB2,
-    OP_OUT_F32  = 0xB3,
-    OP_OUT_F64  = 0xB4,
+    OP_IN       = 0xC0,
+    OP_OUT_CHAR = 0xC1,
+    OP_OUT_NUM  = 0xC2,
+    OP_OUT_F32  = 0xC3,
+    OP_OUT_F64  = 0xC4,
 
     /* ---------- Jump instructions ---------- */
-    OP_JUMP_ADDR  = 0xC0,
-    OP_JMPZ_ADDR  = 0xC1,
-    OP_JMPNZ_ADDR = 0xC2,
-    OP_JUMP       = 0xC3,
-    OP_JMPZ       = 0xC4,
-    OP_JMPNZ      = 0xC5,
+    OP_JUMP_ADDR  = 0xD0,
+    OP_JMPZ_ADDR  = 0xD1,
+    OP_JMPNZ_ADDR = 0xD2,
+    OP_JUMP       = 0xD3,
+    OP_JMPZ       = 0xD4,
+    OP_JMPNZ      = 0xD5,
 
 
     /* ------- Function instructions ------- */
-    OP_CALL   = 0xD0,
-    OP_RETURN = 0xD1
+    OP_CALL   = 0xE0,
+    OP_RETURN = 0xE1
 } Instruction_t;
  
 #endif

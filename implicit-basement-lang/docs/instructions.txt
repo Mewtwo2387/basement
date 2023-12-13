@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 Instruction Set of the Virtual Machine of `basement-lang`
-    [VERSION 0.8.1 (pre-alpha)]
+    [VERSION 0.8.2 (pre-alpha)]
 --------------------------------------------------------------------------------
 PRELIMINARIES
 -------------
@@ -118,7 +118,7 @@ Syntax
 INSTRUCTIONS
 ------------
 
-Stack manipulation instructions
+Memory manipulating instructions
     PUSH & POP instructions:
         - LOAD*N*_CONST, <LITERAL>
             Push the immediate argument of size `N` to the stack.
@@ -213,6 +213,12 @@ Stack manipulation instructions
             element in the stack with the `W` sized immediate argument as the
             offset from the top.
             NOTE: Since the stack grows downwards, the offset value is positive.
+        - COPY
+            Copy a memory segment specified by a destination address to another
+            address. This instruction pops the destination address, the source
+            address and the size of the segment in bytes off the stack.
+            The size data is an unsigned integer, and if it has a value of 0
+            then no copying is done.
 
 
 Arithmetic logical operation instructions
@@ -223,6 +229,7 @@ Arithmetic logical operation instructions
         - SUB  (subtraction)
         - MUL  (multiplication)
         - DIV  (integer division)
+        - MOD  (modulo operation)
     Binary floating point operations:
         Same operation as with binary integer operations.
         - ADD_F32
@@ -401,26 +408,3 @@ OUT_ADDR, <ADDRESS>:
     hexadecimal integer.
 --------------------------------------------------------------------------------
 NOTES:
-    1. Proposed new instructions:
-            - "MOD"  (opcode: 0x95)
-                Modulo operation.
-            - "COPY" (opcode: 0x88)
-                Copy data of specified size from a memory address to
-                another.
-                The instruction accepts three operands popped from the stack in
-                this order:
-                    i.    Destination address
-                    ii.   Source address
-                    iii.  Size of the data to be transferred.
-
-        Notes with regards to the proposal:
-            a. The "MOD" instruction accepts two operands from the stack.
-            b. The instructions after "MOD" will be incremented by 1.
-            c. The COPY instruction copies the data from the source into a
-               temporary buffer, before the data is written to the destination.
-               This addresses the problem of overlapping source and destination
-               segments.
-            d. The size of the data is to be taken as an unsigned integer.
-            e. A value of zero for the size amounts to doing nothing.
-    2. In light of the new proposed instruction, the "stack manipulating
-       instructions" shall be called "memory manipulating instructions".

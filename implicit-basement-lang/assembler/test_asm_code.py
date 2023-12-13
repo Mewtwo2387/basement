@@ -1,5 +1,5 @@
-import opcodes as op
 import data_size
+import instruction as instr
 from data_size import WORD_SIZE
 from function import Function
 
@@ -100,9 +100,9 @@ def write_hello_word_asm():
     ### === CODE SEGMENT === ###
 
     ### Driver code ###
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend(load_dummy_bytes(FTBL_MAIN))
-    bytecode.append(op.DONE)
+    bytecode.append(instr.DONE.code)
 
     ### Function: print ###
     # Update the `FUNC_PRINT` address
@@ -115,59 +115,59 @@ def write_hello_word_asm():
         func_table[FUNC_PRINT].call_frame_size
 
     # While loop condition
-    bytecode.append(op.LOAD64_OFF_FP)
+    bytecode.append(instr.LOAD64_OFF_FP.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__ARG_STR))
 
-    bytecode.append(op.LOAD8)
+    bytecode.append(instr.LOAD8.code)
 
-    bytecode.append(op.JMPZ_ADDR)
+    bytecode.append(instr.JMPZ_ADDR.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
 
 
     # Print one character at a time
-    bytecode.append(op.LOAD64_OFF_FP)
+    bytecode.append(instr.LOAD64_OFF_FP.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__ARG_STR))
 
-    bytecode.append(op.LOAD8)
+    bytecode.append(instr.LOAD8.code)
 
-    bytecode.append(op.OUT_CHAR)
+    bytecode.append(instr.OUT_CHAR.code)
 
     # Go to the next character in the string.
-    bytecode.append(op.LOAD64_OFF_FP)
+    bytecode.append(instr.LOAD64_OFF_FP.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__ARG_STR))
 
-    bytecode.append(op.ADD_CONST)
+    bytecode.append(instr.ADD_CONST.code)
     bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
 
-    bytecode.append(op.STORE64_OFF_FP)
+    bytecode.append(instr.STORE64_OFF_FP.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__ARG_STR))
 
-    bytecode.append(op.JUMP_ADDR)
+    bytecode.append(instr.JUMP_ADDR.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
 
     # Update the `END_LOOP1` address
     address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
 
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend(int_to_bytes(0, WORD_SIZE))
 
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
 
     ### Function: main ###
     # Update the `FUNC_MAIN` address
     address_table[FUNC_MAIN] = len(bytecode)
     func_table[FUNC_MAIN].address = address_table[FUNC_MAIN]
 
-    bytecode.append(op.LOAD64_CONST)
+    bytecode.append(instr.LOAD64_CONST.code)
     bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
 
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend(load_dummy_bytes(FTBL_PRINT))
 
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend(int_to_bytes(0, WORD_SIZE))
 
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
 
     ### === CONSTANT SEGMENT === ###
     # Update the `STR_PTR` address
@@ -221,10 +221,10 @@ def write_hello_word_optimized_asm():
 
     ## === CODE SEGMENT === ##
     ## Driver code ##
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend(load_dummy_bytes(FTBL_MAIN))
 
-    bytecode.append(op.DONE)
+    bytecode.append(instr.DONE.code)
 
     ## Function `print` ##
     # Register the address of FUNC_PRINT
@@ -235,47 +235,47 @@ def write_hello_word_optimized_asm():
     address_table[FUNC_PRINT__ARG_STR] = \
         func_table[FUNC_PRINT].call_frame_size
 
-    bytecode.append(op.LOAD64_OFF_FP)
+    bytecode.append(instr.LOAD64_OFF_FP.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__ARG_STR))
 
     # Register the address of LOOP1
     address_table[FUNC_PRINT__LOOP1] = len(bytecode)
 
-    bytecode.append(op.DUP)
+    bytecode.append(instr.DUP.code)
 
-    bytecode.append(op.LOAD8)
+    bytecode.append(instr.LOAD8.code)
 
-    bytecode.append(op.JMPZ_ADDR)
+    bytecode.append(instr.JMPZ_ADDR.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__END_LOOP1))
 
-    bytecode.append(op.DUP)
+    bytecode.append(instr.DUP.code)
 
-    bytecode.append(op.LOAD8)
+    bytecode.append(instr.LOAD8.code)
 
-    bytecode.append(op.OUT_CHAR)
+    bytecode.append(instr.OUT_CHAR.code)
 
-    bytecode.append(op.ADD_CONST)
+    bytecode.append(instr.ADD_CONST.code)
     bytecode.extend(int_to_bytes(data_size.INT8_SIZE, WORD_SIZE))
 
-    bytecode.append(op.JUMP_ADDR)
+    bytecode.append(instr.JUMP_ADDR.code)
     bytecode.extend(load_dummy_bytes(FUNC_PRINT__LOOP1))
 
     # Register the address of END_LOOP1
     address_table[FUNC_PRINT__END_LOOP1] = len(bytecode)
 
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
 
     ## Function `main` ##
     # Register the address of FUNC_MAIN
     address_table[FUNC_MAIN] = len(bytecode)
 
-    bytecode.append(op.LOAD64_CONST)
+    bytecode.append(instr.LOAD64_CONST.code)
     bytecode.extend(load_dummy_bytes(FUNC_MAIN__PTR_STR))
 
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend(load_dummy_bytes(FTBL_PRINT))
 
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
 
     ## === CONSTANT SEGMENT === ##
     # Register the address of PTR_STR
@@ -344,12 +344,12 @@ def write_factorial_asm():
 
     ## === CODE SEGMENT === ##
     ## Driver code ##
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend(
         load_dummy_bytes(FTBL_MAIN)
     )
     
-    bytecode.append(op.DONE)
+    bytecode.append(instr.DONE.code)
 
     ## Function `factorial` ##
     # Register the address of the `factorial` function
@@ -369,35 +369,35 @@ def write_factorial_asm():
     #   `n == 0 | n == 1`
     # In RPN:
     #   `n, 0, ==, n, 1, ==, | `
-    bytecode.append(op.LOAD32_OFF_FP)
+    bytecode.append(instr.LOAD32_OFF_FP.code)
     bytecode.extend(
         load_dummy_bytes(FUNC_FACTORIAL_ARG_N)
     )
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend(
         int_to_bytes(0x0, WORD_SIZE)
     )
-    bytecode.append(op.EQ)
-    bytecode.append(op.LOAD32_OFF_FP)
+    bytecode.append(instr.EQ.code)
+    bytecode.append(instr.LOAD32_OFF_FP.code)
     bytecode.extend(
         load_dummy_bytes(FUNC_FACTORIAL_ARG_N)
     )
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend(
         int_to_bytes(0x1, WORD_SIZE)
     )
-    bytecode.append(op.EQ)
-    bytecode.append(op.OR)
+    bytecode.append(instr.EQ.code)
+    bytecode.append(instr.OR.code)
 
     # If TOS is false (i.e. zero), jump to the else clause
-    bytecode.append(op.JMPZ_ADDR)
+    bytecode.append(instr.JMPZ_ADDR.code)
     bytecode.extend( load_dummy_bytes(FUNC_FACTORIAL_ELSE1) )
     # Otherwise, return 1.
-    bytecode.append(op.LOAD64_CONST)
+    bytecode.append(instr.LOAD64_CONST.code)
     bytecode.extend(
         int_to_bytes(0x1, WORD_SIZE)
     )
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
 
     # Register the address of the label `ELSE1`
     address_table[FUNC_FACTORIAL_ELSE1] = len(bytecode)
@@ -406,22 +406,22 @@ def write_factorial_asm():
     #   "n * factorial(n - 1)"
     # In RPN:
     #   "n, n, 1, -, factorial, *"
-    bytecode.append(op.LOAD32_OFF_FP)
+    bytecode.append(instr.LOAD32_OFF_FP.code)
     bytecode.extend( load_dummy_bytes(FUNC_FACTORIAL_ARG_N) )
 
-    bytecode.append(op.DUP)
+    bytecode.append(instr.DUP.code)
 
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend( int_to_bytes(0x1, WORD_SIZE) )
 
-    bytecode.append(op.SUB)
+    bytecode.append(instr.SUB.code)
 
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend( load_dummy_bytes(FTBL_FACTORIAL) )
 
-    bytecode.append(op.MUL)
+    bytecode.append(instr.MUL.code)
 
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
     ## End of function `factorial` ##
 
     ## Function `main` ##
@@ -441,24 +441,24 @@ def write_factorial_asm():
     address_table[FUNC_MAIN_VAR_RES] = \
         (WORD_SIZE * 2) + func_table[FUNC_MAIN].var_sec_size
     
-    bytecode.append(op.LOAD64_CONST)
+    bytecode.append(instr.LOAD64_CONST.code)
     bytecode.extend( int_to_bytes(0x3, WORD_SIZE) )
-    bytecode.append(op.CALL)
+    bytecode.append(instr.CALL.code)
     bytecode.extend( load_dummy_bytes(FTBL_FACTORIAL) )
-    bytecode.append(op.STORE64_OFF_FP)
+    bytecode.append(instr.STORE64_OFF_FP.code)
     bytecode.extend( load_dummy_bytes(FUNC_MAIN_VAR_RES) )
 
-    bytecode.append(op.LOAD64_OFF_FP)
+    bytecode.append(instr.LOAD64_OFF_FP.code)
     bytecode.extend( load_dummy_bytes(FUNC_MAIN_VAR_RES) )
-    bytecode.append(op.OUT_NUM)
+    bytecode.append(instr.OUT_NUM.code)
 
-    bytecode.append(op.LOAD8_CONST)
+    bytecode.append(instr.LOAD8_CONST.code)
     bytecode.extend( int_to_bytes(ord('\n'), WORD_SIZE) )
-    bytecode.append(op.OUT_CHAR)
+    bytecode.append(instr.OUT_CHAR.code)
 
-    bytecode.append(op.LOAD32_CONST)
+    bytecode.append(instr.LOAD32_CONST.code)
     bytecode.extend( int_to_bytes(0x0, WORD_SIZE) )
-    bytecode.append(op.RETURN)
+    bytecode.append(instr.RETURN.code)
     ## End of function `main` ##
 
     ## === GLOBAL CONSTANT SEGMENT === ##
