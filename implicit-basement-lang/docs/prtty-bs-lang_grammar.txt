@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.1
+        Version: 0.2
 --------------------------------------------------------------------------------
 program     := { ( decl, EOL ) | func | struct }, EOF ;
 
@@ -62,7 +62,7 @@ literal     := integer | float | char | string ;
 func_call   := id, "(", [ expr, { ",", expr } ], ")" ;
 var_invoke  := id, [ "[", expr, "]" ], [ ".", var_invoke ] ;
 arr_init    := "[", [ expr, { ",", expr } ], "]" ;
-struct_init := id, "{", [ expr, { ",", expr } ], "}" ;
+struct_init := "{", [ expr, { ",", expr } ], "}" ;
 l_un_op     := "+"
              | "-"
              | "~"
@@ -70,7 +70,8 @@ l_un_op     := "+"
              | "*"
              | "&"
              | "++"
-             | "--" ;
+             | "--"
+             | ("(", type, ")" );
 r_un_op     := "++" | "--" ;
 bin_op      := "+" | "-" | "*" | "/" | "%" ;
 bit_op      := "|" | "&" | "^" | ">>" | "<<" ;
@@ -104,6 +105,7 @@ o------------------------------------------------------------------------------o
 |  ++ --   | Prefix increment/decrement                        |               |
 |   + -    | Unary plus/minus                                  |               |
 |   ! ~    | Logical negation/bitwise NOT                      | right to left |
+| ( type ) | Type characters                                   |               |
 |    *     | Pointer dereference                               |               |
 |    &     | Address of operand                                |               |
 |----------|---------------------------------------------------|---------------|
