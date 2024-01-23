@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.2.2
+        Version: 0.2.3
 --------------------------------------------------------------------------------
 program     := { ( decl, EOL ) | func | struct }, EOF ;
 
@@ -39,8 +39,7 @@ stmt        := if_stmt
              | loop_stmt
              | loop_ctrl
              | scope_block
-             | ( expr, EOL )
-             | EOL ;
+             | ( [ expr ], EOL ) ;
 loop_ctrl   := ( "break" | "continue" ), EOL ;
 if_stmt     := "if", "(", expr, ")", cmpd_stmt,
                [ "else", ["if" "(", expr, ")" ], cmpd_stmt ], [ "if" ] ;
