@@ -743,12 +743,14 @@ def parse_scope_block(prog_str: str) -> bool:
 def parse_return(prog_str: str) -> bool:
     brpt = BranchPoint()
 
-    if not (    match_str(prog_str, RETURN_KEYWORD, True)
-            and parse_expr_stmt(prog_str)):
+    if not match_str(prog_str, RETURN_KEYWORD, True):
+        return False
+    append_to_output(Return())
+
+    if not parse_expr_stmt(prog_str):
         brpt.revert_point()
         return False
 
-    append_to_output(Return())
     return True
 
 
