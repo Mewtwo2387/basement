@@ -6,12 +6,7 @@ from ..keywords import (
     STRUCT_L_DELIM,
     STRUCT_R_DELIM,
     STRUCT_MMB_DELIM,
-    COMMA_CHAR,
-    SCOPE_START,
-    SCOPE_END,
-    SCOPE_START_ALT,
-    SCOPE_END_ALT,
-    EOL
+    COMMA_CHAR
 )
 
 
@@ -47,10 +42,13 @@ class Comma(Delim):
 
 
 class ScopeStart(Delim):
-    char = f"{SCOPE_START}\" | \"{SCOPE_START_ALT}"
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}"
 
 class ScopeEnd(Delim):
-    char = f"{SCOPE_END}\" | \"{SCOPE_END_ALT}"
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}"
 
 class EndOfLine(Delim):
-    char = EOL
+    def __str__(self) -> str:
+        return "EOL"
