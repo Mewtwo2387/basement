@@ -124,9 +124,10 @@ def get_id(prog_str: str) -> str:
         letter, { letter | digit } ;
     """
     global input_idx
-    idx_start = input_idx
 
     skip_whitespace(prog_str)
+
+    idx_start = input_idx
 
     # First character must alphabetic
     if not prog_str[input_idx].isalpha():
