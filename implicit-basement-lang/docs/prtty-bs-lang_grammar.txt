@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.2.6
+        Version: 0.2.7
 --------------------------------------------------------------------------------
 program     := { ( decl, EOL ) | func | struct }, EOF ;
 
@@ -70,7 +70,7 @@ l_un_op     := "+"
              | "&"
              | "++"
              | "--"
-             | ("(", type, ")" );
+             | ( "(", type, ")" );
 r_un_op     := "++" | "--" ;
 bin_op      := "+" | "-" | "*" | "/" | "%" ;
 bit_op      := "|" | "&" | "^" | ">>" | "<<" ;
@@ -81,11 +81,12 @@ scope_end   := "end" | EOL;
 EOL         := "\n" ;
 EOF         := "\0" ;
 
-integer     := digit, [ digit ] ;
-float       := integer, ".", [ integer ] ;
+integer     := digit_seq, [ int_type ] ;
+float       := digit_seq, ".", [ digit_seq ], [ float_type ] ;
 char        := "'", ascii_char, "'" ;
 string      := '"', { ascii_char }, '"' ;
 id          := letter, { letter | digit | "_" } ;
+digit_seq   := digit, [ digit ] ;
 letter      := a | b ... | y | z | A | B ... | Y | Z ;
 digit       := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
 ascii_char  := (? ASCII characters ?) ;
