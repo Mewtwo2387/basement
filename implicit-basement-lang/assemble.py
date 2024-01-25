@@ -1,7 +1,13 @@
 from assembler.parser import parse
 
 def main():
-    code = """i32 x = 1, y = 2;""" + chr(0)
+    code = """
+        i32 x = 1, y = 2;
+
+        function my_func() -> i32:
+            return 0;
+        end function
+    """ + chr(0)
     res = parse(code)
     if isinstance(res, tuple):
         output, _ = res

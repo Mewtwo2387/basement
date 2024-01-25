@@ -623,6 +623,7 @@ def parse_stmt(prog_str: str) -> bool:
         parse_loop_stmt,
         parse_loop_ctrl,
         parse_scope_block,
+        parse_return,
         parse_expr_stmt
     )
     for func in parse_stmt_funcs:
@@ -727,6 +728,17 @@ def parse_scope_block(prog_str: str) -> bool:
         return False
 
     match_str(prog_str, END_SCOPE_BLOCK_KEYWORD, True)  # Optional structure
+    return True
+
+
+def parse_return(prog_str: str) -> bool:
+    brpt = BranchPoint()
+
+    if not (    match_str(prog_str, RETURN_KEYWORD, True)
+            and parse_expr_stmt(prog_str)):
+        brpt.revert_point()
+        return False
+
     return True
 
 
