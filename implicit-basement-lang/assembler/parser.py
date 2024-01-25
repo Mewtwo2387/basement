@@ -110,7 +110,7 @@ def match_str(prog_str: str, matched_str: str,
     for c_prog, c_match in zip_longest(prog_str[input_idx:], matched_str):
         if (c_prog is None) and (c_match is not None):
             str_matching = False
-        if (not str_matching) or ( (c_prog, c_match) == (None, None) ):
+        if (not str_matching) or (c_match == None):
             break
         str_matching = (c_prog == c_match)
 
