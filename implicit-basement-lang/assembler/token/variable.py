@@ -1,6 +1,6 @@
 from .token import ValueDict, Token
+from ..data_type.types import DataType
 from dataclasses import dataclass, field
-from data_type.typing import DataType
 from typing import Optional
 
 

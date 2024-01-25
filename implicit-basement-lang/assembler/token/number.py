@@ -1,5 +1,5 @@
 from .token import Token, ValueDict
-from data_type.number import IntType, FloatType
+from ..data_type.number import IntType, FloatType
 from dataclasses import dataclass
 
 

@@ -1,4 +1,4 @@
-from number import U_INT64
+from .number import U_INT64
 
 PTR_SIZE_TYPE = U_INT64
 

@@ -1,5 +1,5 @@
 from .token import Token
-from data_type.number import CHAR_TYPE
+from ..data_type.number import CHAR_TYPE
 from dataclasses import dataclass
 
 

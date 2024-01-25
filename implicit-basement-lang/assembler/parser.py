@@ -1,18 +1,18 @@
-from token.token    import Token
-from token.function import Function, FunctionDeclaration, FunctionCall
-from token.variable import Variable, VariableInvoke
-from token.number   import Integer, Float
-from token.string   import String
-from token.delim    import (
+from .token.token import Token
+from .token.function import Function, FunctionDeclaration, FunctionCall
+from .token.variable import Variable, VariableInvoke
+from .token.number   import Integer, Float
+from .token.string   import String
+from .token.delim    import (
         ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
         StructDelimLeft, StructDelimRight,StructMemberDelim,
         Comma, ScopeStart, ScopeEnd
     )
-from token.branch import If, Else, Loop, LoopContinue, LoopBreak
-from token.operator import (
+from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
+from .token.operator import (
     AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp
 )
-from data_type.number import (
+from .data_type.number import (
         INT_TYPE_NAME,  
         FLOAT_TYPE_NAME, 
         VOID_TYPE_NAME,  
@@ -22,11 +22,13 @@ from data_type.number import (
         DEFAULT_FLOAT_TYPE,
         IntType, FloatType
     )
-from data_type.struct import Struct
-from data_type.pointer import PointerType
-from data_type.typing import DataType
+from .data_type.struct import Struct
+from .data_type.pointer import PointerType
+from .data_type.types import DataType
 
-from keywords import *
+from .error import ParseError
+
+from .keywords import *
 
 from dataclasses import dataclass, field
 from itertools import zip_longest
@@ -39,10 +41,6 @@ struct_dict: dict[str, Struct] = {}
 input_idx: int = 0
 output_list: list[Token] = []
 output_idx = 0
-
-
-class ParseError(Exception):
-    pass
 
 
 @dataclass
