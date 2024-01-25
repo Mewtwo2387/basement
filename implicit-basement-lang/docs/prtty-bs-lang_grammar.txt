@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.2.3
+        Version: 0.2.4
 --------------------------------------------------------------------------------
 program     := { ( decl, EOL ) | func | struct }, EOF ;
 
 decl        := var_decl | func_decl ;
 var_decl    := [ var_attrib ], type, var_id, [ var_init ],
-               { var_id, [ var_init ] } ;
+               { ",", var_id, [ var_init ] } ;
 var_attrib  := "const" ;
 var_id      := id, [ "[", integer, "]" ] ;
 var_init    := "=", ( literal | arr_init | struct_init ) ;
