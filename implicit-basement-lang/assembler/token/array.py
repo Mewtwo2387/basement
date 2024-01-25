@@ -22,3 +22,9 @@ class Array(Token):
             "type" : self.type,
             "value" : self.value.copy()
         }
+    
+    def __str__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(mmb_size={self.type}, "
+            f"[{','.join([str(t) for t in self.value])}] )"
+        )

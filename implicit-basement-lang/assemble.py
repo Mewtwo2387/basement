@@ -4,9 +4,10 @@ def main():
     code = """i32 x = 1, y = 2;""" + chr(0)
     res = parse(code)
     if isinstance(res, tuple):
-        print("Horray!")
         output, _ = res
-        print(*output, sep="\n")
+        print(*output, sep=", ")
+    else:
+        print("Error parsing")
 
 
 def print_bytes(arr):

@@ -1,19 +1,33 @@
 from .token import Token
+from ..keywords import (
+    IF_KEYWORD,
+    ELSE_KEYWORD,
+    LOOP_KEYWORD,
+    LOOP_CONT_KEYWORD,
+    LOOP_BREAK_KEYWORD
+)
+
+class BranchControl(Token):
+    keyword = None
+
+    def __str__(self) -> str:
+        return f"{self.keyword}"
+
 
 class If(Token):
-    pass
+    keyword = IF_KEYWORD
 
 
 class Else(Token):
-    pass
+    keyword = ELSE_KEYWORD
 
 
 class Loop(Token):
-    pass
+    keyword = LOOP_KEYWORD
 
 
 class LoopContinue(Token):
-    pass
+    keyword = LOOP_CONT_KEYWORD
 
 class LoopBreak(Token):
-    pass
+    keyword = LOOP_BREAK_KEYWORD

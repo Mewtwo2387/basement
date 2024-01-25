@@ -51,3 +51,6 @@ class FunctionDeclaration(Function):
 @dataclass
 class FunctionCall(Token):
     func_name : str
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(\"{self.func_name}\")"

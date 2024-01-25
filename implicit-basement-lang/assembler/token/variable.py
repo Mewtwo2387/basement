@@ -25,3 +25,6 @@ class Variable(Token):
 @dataclass
 class VariableInvoke(Token):
     name : str
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(\"{self.name}\")"

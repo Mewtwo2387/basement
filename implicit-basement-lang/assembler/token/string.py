@@ -9,3 +9,6 @@ class String(Token):
 
     def __post_init__(self):
         self.size = CHAR_TYPE * len(self.value)
+    
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(\"{self.value}\")"

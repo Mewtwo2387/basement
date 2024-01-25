@@ -10,6 +10,9 @@ class Integer(Token):
 
     def get_value(self) -> ValueDict:
         return {"value": self.value, "type": self.type}
+    
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.value}, size={self.type})"
 
 
 @dataclass
@@ -19,6 +22,9 @@ class Float(Token):
 
     def get_value(self) -> ValueDict:
         return {"value": self.value, "type": self.type}
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({self.value}, size={self.type})"
 
 
 NumberToken = Integer | Float

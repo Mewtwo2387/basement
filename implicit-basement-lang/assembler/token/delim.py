@@ -1,32 +1,56 @@
 from .token import Token
+from ..keywords import (
+    ARR_L_DELIM,
+    ARR_R_DELIM,
+    ARR_MMB_DELIM,
+    STRUCT_L_DELIM,
+    STRUCT_R_DELIM,
+    STRUCT_MMB_DELIM,
+    COMMA_CHAR,
+    SCOPE_START,
+    SCOPE_END,
+    SCOPE_START_ALT,
+    SCOPE_END_ALT,
+    EOL
+)
 
 
-class ArrayDelimLeft(Token):
-    pass
+class Delim(Token):
+    char = None
 
-class ArrayDelimRight(Token):
-    pass
-
-class ArrayMemberDelim(Token):
-    pass
+    def __str__(self) -> str:
+        return f"\"{self.char}\""
 
 
-class StructDelimLeft(Token):
-    pass
+class ArrayDelimLeft(Delim):
+    char = ARR_L_DELIM
 
-class StructDelimRight(Token):
-    pass
+class ArrayDelimRight(Delim):
+    char = ARR_R_DELIM
 
-class StructMemberDelim(Token):
-    pass
-
-
-class Comma(Token):
-    pass
+class ArrayMemberDelim(Delim):
+    char = ARR_MMB_DELIM
 
 
-class ScopeStart(Token):
-    pass
+class StructDelimLeft(Delim):
+    char = STRUCT_L_DELIM
 
-class ScopeEnd(Token):
-    pass
+class StructDelimRight(Delim):
+    char = STRUCT_R_DELIM
+
+class StructMemberDelim(Delim):
+    char = STRUCT_MMB_DELIM
+
+
+class Comma(Delim):
+    char = COMMA_CHAR
+
+
+class ScopeStart(Delim):
+    char = f"{SCOPE_START}\" | \"{SCOPE_START_ALT}"
+
+class ScopeEnd(Delim):
+    char = f"{SCOPE_END}\" | \"{SCOPE_END_ALT}"
+
+class EndOfLine(Delim):
+    char = EOL
