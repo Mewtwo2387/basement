@@ -1,12 +1,12 @@
 from .token.token import Token
-from .token.function import Function, FunctionDeclaration, FunctionCall
+from .token.function import Function, FunctionDeclaration, FunctionCall, Return
 from .token.variable import Variable, VariableInvoke
 from .token.number   import Integer, Float
 from .token.string   import String
 from .token.delim    import (
         ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
         StructDelimLeft, StructDelimRight,StructMemberDelim,
-        Comma, ScopeStart, ScopeEnd
+        Comma, ScopeStart, ScopeEnd, EndOfLine
     )
 from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
 from .token.operator import (
@@ -70,9 +70,8 @@ def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
     #   { ( decl, EOL ) | func | struct }
     while True:
         brpt = BranchPoint()
-        parsing_success =  (parse_decl(prog_str)
-                            and match_str(prog_str, EOL, True)) \
-                        or (parse_func(prog_str))               \
+        parsing_success =  (parse_decl(prog_str) and parse_eol(prog_str)) \
+                        or (parse_func(prog_str))                         \
                         or (parse_struct(prog_str))
         if not parsing_success:
             brpt.revert_point()
@@ -136,11 +135,21 @@ def get_id(prog_str: str) -> str:
 
     while input_idx < len(prog_str):
         c = prog_str[input_idx]
-        if not (c.isalpha() or c.isnumeric()):
+        if not (c.isalpha() or c.isnumeric() or c == "_"):
             break
         input_idx += 1
 
     return prog_str[idx_start:input_idx]
+
+
+def parse_eol(prog_str: str) -> bool:
+    """
+    Parse an end of line (EOL) character
+    """
+    if not match_str(prog_str, EOL, True):
+        return False
+    append_to_output(EndOfLine())
+    return True
 
 
 def parse_decl(prog_str: str) -> bool:
@@ -596,7 +605,7 @@ def parse_cmpd_stmt(prog_str: str) -> bool:
     while True:
         brpt_loop = BranchPoint()
 
-        if parse_var_decl(prog_str) and match_str(prog_str, EOL, True):
+        if parse_var_decl(prog_str) and parse_eol(prog_str):
             parsed_rule_count += 1
             continue
 
@@ -707,7 +716,7 @@ def parse_loop_ctrl(prog_str: str) -> bool:
     if match_str(prog_str, LOOP_CONT_KEYWORD):
         append_to_output(LoopContinue())
 
-    if not match_str(prog_str, EOL, True):
+    if not parse_eol(prog_str):
         brpt.revert_point()
         return False
     return True
@@ -739,6 +748,7 @@ def parse_return(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
+    append_to_output(Return())
     return True
 
 
@@ -749,7 +759,7 @@ def parse_expr_stmt(prog_str: str) -> bool:
     """
     brpt = BranchPoint()
 
-    if not (parse_expr(prog_str) and match_str(prog_str, EOL, True)):
+    if not (parse_expr(prog_str) and parse_eol(prog_str)):
         brpt.revert_point()
         return False
 

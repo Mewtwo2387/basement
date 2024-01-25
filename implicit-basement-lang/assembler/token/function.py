@@ -1,6 +1,8 @@
 from .token import ValueDict
 from .token import Token
 from ..data_type.types import DataType
+from ..keywords import RETURN_KEYWORD
+
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Optional
@@ -8,10 +10,11 @@ from typing import Optional
 
 @dataclass
 class Function(Token):
-    name:      str
-    ret_type:  DataType
-    arg_types: OrderedDict[str, DataType]
-    local_var_type: OrderedDict[str, DataType] = field(init=False)
+    name:           str
+    ret_type:       DataType
+    arg_types:      OrderedDict[str, DataType]
+    local_var_type: OrderedDict[str, DataType] = \
+            field(init=False, default_factory=OrderedDict)
 
     def __post_init__(self) -> None:
         self.size = self.ret_type
@@ -54,3 +57,8 @@ class FunctionCall(Token):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(\"{self.func_name}\")"
+
+
+class Return(Token):
+    def __str__(self) -> str:
+        return f"\"{RETURN_KEYWORD}\""
