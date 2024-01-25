@@ -1,4 +1,4 @@
-EOL = "\n"
+EOL = ";"
 EOF = chr(0)
 
 VAR_ATTR_STR_LIST = ["const"]

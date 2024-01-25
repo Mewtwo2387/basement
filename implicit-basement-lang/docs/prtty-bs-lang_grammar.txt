@@ -78,7 +78,7 @@ rel_op      := ">" | "<" | "==" | "!=" | ">=" | "<=" ;
 
 scope_start :=  ":"  | EOL ;
 scope_end   := "end" | EOL;
-EOL         := "\n" ;
+EOL         := ";" ;
 EOF         := "\0" ;
 
 integer     := digit_seq, [ int_type ] ;
