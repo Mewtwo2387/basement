@@ -417,13 +417,20 @@ def parseget_param_dict(prog_str: str) -> OrderedDict[str, DataType]:
     Parse and get an ordered dictionary of function parameters
     """
     param_dict = OrderedDict()
+
+    param_count = 0
     while True:
+        if param_count > 0:
+            if not match_str(prog_str, COMMA_CHAR, True):
+                break
+
         param = parseget_param(prog_str)
         if param is not None:
             arg_name, data_type = param
             param_dict[arg_name] = data_type
         else:
             break
+        param_count += 1
     return param_dict
 
 
