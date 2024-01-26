@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.2.8
+        Version: 0.3.0
 --------------------------------------------------------------------------------
 program     := { ( decl, EOL ) | func | struct }, EOF ;
 
@@ -9,7 +9,7 @@ var_decl    := [ var_attrib ], type, var_id, [ var_init ],
                { ",", var_id, [ var_init ] } ;
 var_attrib  := "const" ;
 var_id      := id, [ "[", integer, "]" ] ;
-var_init    := "=", ( literal | arr_init | struct_init ) ;
+var_init    := assign_op, literal ;
 func_decl   := type, id, "(", [ param_list ], ")",
                { ",", id, "(", [ param_list ], ")" } ;
 
@@ -47,22 +47,20 @@ if_stmt     := "if", "(", expr, ")", cmpd_stmt,
 loop_stmt   := "loop", cmpd_stmt, [ "loop" ];
 scope_block := "block", cmpd_stmt, [ "block" ] ;
 
-expr        := literal
-             | func_call
-             | var_invoke
-             | ( id, "=", ( expr | arr_init | struct_init ) )
-             | ( l_un_op, expr )
-             | ( expr, r_un_op )
-             | ( expr, bin_op, expr )
-             | ( expr, bit_op, expr )
-             | ( expr, rel_op, expr )
-             | ( "(", expr, ")" ) ;
+expr        := term, [ term_op, term ] ;
+term        := [ l_un_op ], factor, [ factor_op, factor ], [ r_un_op ] ;
+factor      := literal | var_invoke | func_call | ( "(", expr, ")" ) ;
 
-literal     := integer | float | char | string ;
+term_op     := assign_op | t_arith_op | t_bit_op | rel_op ;
+factor_op   := f_arith_op | f_bit_op ;
+
 func_call   := id, "(", [ expr, { ",", expr } ], ")" ;
 var_invoke  := id, [ "[", expr, "]" ], [ ".", var_invoke ] ;
+
+literal     := integer | float | char | string | arr_init | struct_init ;
 arr_init    := "[", [ expr, { ",", expr } ], "]" ;
 struct_init := "{", [ expr, { ",", expr } ], "}" ;
+
 l_un_op     := "+"
              | "-"
              | "~"
@@ -73,9 +71,11 @@ l_un_op     := "+"
              | "--"
              | ( "(", type, ")" );
 r_un_op     := "++" | "--" ;
-bin_op      := "+" | "-" | "*" | "/" | "%" ;
-bit_op      := "|" | "&" | "^" | ">>" | "<<" ;
-rel_op      := ">" | "<" | "==" | "!=" | ">=" | "<=" ;
+assign_op   := "=" ;
+t_arith_op  := "+" | "-" ;
+f_arith_op  := "*" | "/" | "%" ;
+t_bit_op    := "|" | "^" | "<<" | ">>" ;
+f_bit_op    := "&" ;
 
 scope_start :=  ":"  | EOL ;
 scope_end   := "end" | EOL;
@@ -98,7 +98,6 @@ ascii_char  := (? ASCII characters ?) ;
 o------------------------------------------------------------------------------o
 | Operator | Description                                       | Associativity |
 |----------|---------------------------------------------------|---------------|
-|   ( )    | Function call                                     |               |
 |   [ ]    | Array subscript                                   | left to right |
 |    .     | Struct member selection                           |               |
 |  ++ --   | Postfix increment/decrement                       |               |
