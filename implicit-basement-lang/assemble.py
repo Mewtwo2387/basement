@@ -3,8 +3,10 @@ import assembler.token.delim as tokdelim
 
 def main():
     code = """
-        function my_func() => i32:
-            return 0;
+        function my_func() => i8:
+            i8 x = 1, y = 2;
+            x = (y + 1) * 2;
+            return x;
         end function
     """ + chr(0)
     res = parse(code)

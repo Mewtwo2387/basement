@@ -6,7 +6,9 @@ from ..keywords import (
     STRUCT_L_DELIM,
     STRUCT_R_DELIM,
     STRUCT_MMB_DELIM,
-    COMMA_CHAR
+    COMMA_CHAR,
+    EXPR_GROUP_L_DELIM,
+    EXPR_GROUP_R_DELIM
 )
 
 
@@ -52,3 +54,10 @@ class ScopeEnd(Delim):
 class EndOfLine(Delim):
     def __str__(self) -> str:
         return "EOL"
+
+
+class ExprGroupDelimLeft(Delim):
+    char = EXPR_GROUP_L_DELIM
+
+class ExprGroupDelimRight(Delim):
+    char = EXPR_GROUP_R_DELIM

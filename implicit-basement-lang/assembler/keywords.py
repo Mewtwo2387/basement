@@ -49,6 +49,8 @@ DECIMAL_PT = "."
 STR_DELIM = "\""
 CHAR_DELIM = "'"
 
+ASSIGN_OP_DICT = {"ASSIGN": ASSIGN_CHAR}
+
 L_UN_OP_DICT = {
     "PLUS"    : "+",
     "MINUS"   : "-",
@@ -70,20 +72,26 @@ R_UN_OP_DICT = {
 
 
 ARITH_BIN_OP_DICT = {
-    "ADD" : "+",
-    "SUB" : "-",
-    "MUL" : "*",
-    "DIV" : "/",
-    "MOD" : "%",
+    "term" : {
+        "ADD" : "+",
+        "SUB" : "-",
+    },
+    "factor" : {
+        "MUL" : "*",
+        "DIV" : "/",
+        "MOD" : "%",
+    }
 }
 
 
 BIT_BIN_OP_DICT = {
-    "OR"    : "|",
-    "AND"   : "&",
-    "XOR"   : "^",
-    "LSHFT" : "<<",
-    "RSHFT" : ">>",
+    "term" : {
+        "OR"    : "|",
+        "XOR"   : "^",
+        "LSHFT" : "<<",
+        "RSHFT" : ">>",
+    },
+    "factor" : { "AND" : "&", }
 }
 
 
@@ -97,4 +105,19 @@ REL_BIN_OP_DICT = {
 }
 
 
-BIN_OP_DICT = (ARITH_BIN_OP_DICT | BIT_BIN_OP_DICT | REL_BIN_OP_DICT)
+BIN_OP_DICT = (
+      ARITH_BIN_OP_DICT["term"]
+    | ARITH_BIN_OP_DICT["factor"]
+    | BIT_BIN_OP_DICT["term"]
+    | BIT_BIN_OP_DICT["factor"]
+    | REL_BIN_OP_DICT
+)
+
+TERM_OP_DICT = (
+      ARITH_BIN_OP_DICT["term"] | BIT_BIN_OP_DICT["term"] | REL_BIN_OP_DICT
+    | ASSIGN_OP_DICT
+)
+
+FACTOR_OP_DICT = (
+    ARITH_BIN_OP_DICT["factor"] | BIT_BIN_OP_DICT["factor"]
+)

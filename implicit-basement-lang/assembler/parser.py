@@ -4,9 +4,18 @@ from .token.variable import Variable, VariableInvoke
 from .token.number   import Integer, Float
 from .token.string   import String
 from .token.delim    import (
-        ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
-        StructDelimLeft, StructDelimRight,StructMemberDelim,
-        Comma, ScopeStart, ScopeEnd, EndOfLine
+        ArrayDelimLeft,
+        ArrayDelimRight,
+        ArrayMemberDelim,
+        StructDelimLeft,
+        StructDelimRight,
+        StructMemberDelim,
+        Comma,
+        ScopeStart,
+        ScopeEnd,
+        EndOfLine,
+        ExprGroupDelimLeft,
+        ExprGroupDelimRight
     )
 from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
 from .token.operator import (
@@ -54,8 +63,8 @@ class BranchPoint:
     
     def revert_point(self) -> None:
         global input_idx, output_idx, output_list
-        if output_idx != 0:
-            del output_list[output_idx:]
+        if self.output_idx != 0:
+            del output_list[self.output_idx:]
 
         input_idx, output_idx = self.input_idx, self.output_idx
 
@@ -243,6 +252,7 @@ def parseget_int_data_type(prog_str: str) -> IntType | None:
 
     NOTE: No intervening whitespace
     """
+
     skip_whitespace(prog_str)
     for name, T in INT_TYPE_NAME.items():
         if match_str(prog_str, name):
@@ -291,42 +301,32 @@ def parseget_void_type(prog_str: str) -> IntType | None:
 def parse_var_init_token(prog_str: str) -> bool:
     """
     Parse a variable initializer:
-        "=", ( literal | arr_init | struct_init )
+        "=", literal
     """
     brpt = BranchPoint()
 
-    if not match_str(prog_str, ASSIGN_CHAR, True):
+    if not (parse_assign_op(prog_str) and parse_literal(prog_str)):
+        brpt.revert_point()
         return False
-    append_to_output(AssignOp())
 
-    initializer_token_func = (
-        parse_literal,
-        func_partial(parse_initializer, init_type="array"),
-        func_partial(parse_initializer, init_type="struct")
-    )
-    for func in initializer_token_func:
-        if func(prog_str):
-            return True
-
-    brpt.revert_point()
-    return False
+    return True
 
 
 def parse_literal(prog_str: str) -> bool:
     """
     Parse a literal value:
-        integer | float | char | string
+        integer | float | char | string | struct_init | array_init
     """
     lit_token_func = (
-        parseget_int_literal,
-        parseget_float_literal,
-        parseget_char_literal,
-        parseget_string_literal
+        parse_int_literal,
+        parse_float_literal,
+        parse_char_literal,
+        parse_string_literal,
+        func_partial(parse_initializer, init_type="array"),
+        func_partial(parse_initializer, init_type="struct")
     )
     for func in lit_token_func:
-        lit_token = func(prog_str)
-        if lit_token is not None:
-            append_to_output(lit_token)
+        if func(prog_str):
             return True
 
     return False
@@ -576,6 +576,9 @@ def parse_func(prog_str: str) -> bool:
 
 
 def parse_scope_start(prog_str: str) -> bool:
+    """
+    Parse a starting delimiter for a scope
+    """
     if (       match_str(prog_str, SCOPE_START, True)
             or match_str(prog_str, SCOPE_START_ALT, True)):
         append_to_output(ScopeStart())
@@ -584,6 +587,9 @@ def parse_scope_start(prog_str: str) -> bool:
 
 
 def parse_scope_end(prog_str: str) -> bool:
+    """
+    Parse an ending delimiter for a scope
+    """
     if (       match_str(prog_str, SCOPE_END, True)
             or match_str(prog_str, SCOPE_END_ALT, True)):
         append_to_output(ScopeEnd())
@@ -628,12 +634,12 @@ def parse_stmt(prog_str: str) -> bool:
         if_stmt | loop_stmt | loop_ctrl | scope_block | ( [ expr ], EOL )
     """
     parse_stmt_funcs = (
-        parse_if_stmt,
-        parse_loop_stmt,
-        parse_loop_ctrl,
-        parse_scope_block,
         parse_return,
-        parse_expr_stmt
+        parse_loop_ctrl,
+        parse_expr_stmt,
+        parse_loop_stmt,
+        parse_scope_block,
+        parse_if_stmt,
     )
     for func in parse_stmt_funcs:
         if func(prog_str):
@@ -665,15 +671,23 @@ def parse_if_stmt(prog_str: str) -> bool:
     if not parse_cmpd_stmt(prog_str):
         brpt.revert_point()
         return False
-
-    if match_str(prog_str, ELSE_KEYWORD, True):
+    
+    while match_str(prog_str, ELSE_KEYWORD, True):
         append_to_output(Else())
 
-        parse_res = (
-                parse_cmpd_stmt(prog_str)
-            or  parse_if_stmt(prog_str)
-        )
-        if not parse_res:
+        if match_str(prog_str, IF_KEYWORD, True):
+            append_to_output(If())
+    
+            parse_res = (
+                    match_str(prog_str, FUNC_L_DELIM, True)
+                and parse_expr(prog_str)
+                and match_str(prog_str, FUNC_R_DELIM, True)
+            )
+            if not parse_res:
+                brpt.revert_point()
+                return False
+        
+        if not parse_cmpd_stmt(prog_str):
             brpt.revert_point()
             return False
 
@@ -712,9 +726,10 @@ def parse_loop_ctrl(prog_str: str) -> bool:
 
     if match_str(prog_str, LOOP_BREAK_KEYWORD):
         append_to_output(LoopBreak())
-    
-    if match_str(prog_str, LOOP_CONT_KEYWORD):
+    elif match_str(prog_str, LOOP_CONT_KEYWORD):
         append_to_output(LoopContinue())
+    else:
+        return False
 
     if not parse_eol(prog_str):
         brpt.revert_point()
@@ -741,6 +756,9 @@ def parse_scope_block(prog_str: str) -> bool:
 
 
 def parse_return(prog_str: str) -> bool:
+    """
+    Parse a function return statement.
+    """
     brpt = BranchPoint()
 
     if not match_str(prog_str, RETURN_KEYWORD, True):
@@ -770,27 +788,56 @@ def parse_expr_stmt(prog_str: str) -> bool:
 
 def parse_expr(prog_str: str) -> bool:
     """
-    Parse an expression, i.e. that which reduces to a single piece of data:
-        literal
-      | func_call
-      | var_invoke
-      | var_assign
-      | ( l_un_op, expr )
-      | ( expr, r_un_op )
-      | ( expr, bin_op, expr )
-      | ( "(", expr, ")" ) 
+    Parse an expression:
+        term, [ term_op, term ]
+    """
+    brpt = BranchPoint()
+
+    if not parse_term(prog_str):
+        return False
+    
+    while parse_term_op(prog_str):
+        if not parse_term(prog_str):
+            brpt.revert_point()
+            return False
+    
+    return True
+
+
+def parse_term(prog_str: str) -> bool:
+    """
+    Parse a term in an expression:
+        [ l_un_op ], factor, [ factor_op, factor ], [ r_un_op ]
+    """
+    brpt = BranchPoint()
+
+    opt_parse_l_un_op(prog_str)
+
+    if not parse_factor(prog_str):
+        brpt.revert_point()
+        return False
+    
+    while parse_factor_op(prog_str):
+        if not parse_factor(prog_str):
+            brpt.revert_point()
+            return False
+    
+    opt_parse_r_un_op(prog_str)
+
+    return True
+
+
+def parse_factor(prog_str: str) -> bool:
+    """
+    Parse a factor in a term:
+        literal | var_invoke | func_call | ( "(", expr, ")" )
     """
     return (
             parse_literal(prog_str)
-        or  parse_func_call(prog_str)
         or  parse_var_invoke(prog_str)
-        or  parse_var_assign(prog_str)
-        or  parse_l_un_op_expr(prog_str)
-        or  parse_r_un_op_expr(prog_str)
-        or  parse_bin_op_expr(prog_str)
+        or  parse_func_call(prog_str)
         or  parse_grouped_expr(prog_str)
     )
-
 
 def parse_func_call(prog_str: str) -> bool:
     """
@@ -837,11 +884,6 @@ def parse_var_invoke(prog_str: str) -> bool:
         return False
     append_to_output(VariableInvoke(var_name))
 
-    if not (    match_str(prog_str, ARR_L_DELIM, True)
-            and parse_expr(prog_str)
-            and match_str(prog_str, ARR_R_DELIM, True)):
-        brpt.revert_point()
-    
     if match_str(prog_str, ARR_L_DELIM, True):
         append_to_output(ArrayDelimLeft())
 
@@ -862,104 +904,83 @@ def parse_var_invoke(prog_str: str) -> bool:
     return True
 
 
-def parse_var_assign(prog_str: str) -> bool:
+def parse_term_op(prog_str: str) -> bool:
     """
-    Parse an assignment expression:
-        id, "=", ( expr | arr_init | struct_init )
+    Parse a term operator.
     """
-    brpt = BranchPoint()
-
-    var_name = get_id(prog_str)
-    if len(var_name) == 0:
-        return False
-    append_to_output(VariableInvoke(var_name))
-
-    if not match_str(prog_str, ASSIGN_CHAR, True):
-        brpt.revert_point()
-        return False
-    append_to_output(AssignOp())
-
-    if not (    parse_expr(prog_str)
-            or  parse_initializer(prog_str, "array")
-            or  parse_initializer(prog_str, "struct")):
-        brpt.revert_point()
-        return False
-    return True
-
-
-def parse_l_un_op_expr(prog_str: str) -> bool:
-    """
-    Parse a left unary operation expression:
-        l_un_op, expr
-    """
-    brpt = BranchPoint()
-    
     skip_whitespace(prog_str)
-    for _, op_str in L_UN_OP_DICT:
+    for _, op_str in TERM_OP_DICT.items():
         if match_str(prog_str, op_str):
-            append_to_output(LeftUnaryOp(op_str))
-            break
-    else:
-        if match_str(prog_str, L_UN_OP__TCAST_L_DELIM):
-            to_type = parseget_data_type(prog_str)
-            if to_type is None:
-                brpt.revert_point()
-                return False
-            append_to_output(TypeCastOp(to_type))
-
-            if not match_str(prog_str, L_UN_OP__TCAST_R_DELIM, True):
-                brpt.revert_point()
-                return False
-            
-    if not parse_expr(prog_str):
-        brpt.revert_point()
-        return False
-    return True
-
-
-def parse_r_un_op_expr(prog_str: str) -> bool:
-    """
-    Parse a right unary operation expression:
-        expr, r_un_op
-    """
-    brpt = BranchPoint()
-
-    if not parse_expr(prog_str):
-        return False
-    
-    skip_whitespace(prog_str)
-    for _, op_str in R_UN_OP_DICT:
-        if match_str(prog_str, op_str):
-            append_to_output(RightUnaryOp(op_str))
+            append_to_output(BinaryOp(op_str))
             return True
-    
-    brpt.revert_point()
+
     return False
 
 
-def parse_bin_op_expr(prog_str: str) -> bool:
+def parse_assign_op(prog_str: str) -> bool:
     """
-    Parse a binary operation expression:
-        expr, bin_op, expr
+    Parse an assignment operator
+    """
+    if not match_str(prog_str, ASSIGN_CHAR, True):
+        return False
+
+    append_to_output(AssignOp())
+    return True
+
+
+def parse_factor_op(prog_str: str) -> bool:
+    """
+    Parse a factor operator.
+    """
+    skip_whitespace(prog_str)
+    for _, op_str in FACTOR_OP_DICT.items():
+        if match_str(prog_str, op_str):
+            append_to_output(BinaryOp(op_str))
+            return True
+    return False
+
+
+def opt_parse_l_un_op(prog_str: str) -> None:
+    """
+    Optionally parse a left unary operator:
+        "+" | "-" | "~" | "!" | "*" | "&" | "++" | "--" | ( "(", type, ")" )
+    """
+    brpt = BranchPoint()
+    
+    skip_whitespace(prog_str)
+    for _, op_str in L_UN_OP_DICT.items():
+        if match_str(prog_str, op_str):
+            append_to_output(LeftUnaryOp(op_str))
+            return
+
+    if match_str(prog_str, L_UN_OP__TCAST_L_DELIM):
+        to_type = parseget_data_type(prog_str)
+        if to_type is None:
+            brpt.revert_point()
+            return
+        append_to_output(TypeCastOp(to_type))
+
+        if not match_str(prog_str, L_UN_OP__TCAST_R_DELIM, True):
+            brpt.revert_point()
+            return
+    return
+
+
+def opt_parse_r_un_op(prog_str: str) -> None:
+    """
+    Optionally parse a right unary operation expression:
+        "++" | "--"
     """
     brpt = BranchPoint()
 
-    if not parse_expr(prog_str):
-        return False
-
-    for _, op_str in BIN_OP_DICT:
+    skip_whitespace(prog_str)
+    for _, op_str in R_UN_OP_DICT.items():
         if match_str(prog_str, op_str):
-            append_to_output(BinaryOp(op_str))
-            break
-    else:
-        brpt.revert_point()
-        return False
-
-    if not parse_expr(prog_str):
-        brpt.revert_point()
-        return False
-
-    return True
+            append_to_output(RightUnaryOp(op_str))
+            return 
+    
+    brpt.revert_point()
+    return
 
 
 def parse_grouped_expr(prog_str: str) -> bool:
@@ -969,13 +990,20 @@ def parse_grouped_expr(prog_str: str) -> bool:
     """
     brpt = BranchPoint()
 
-    if (    match_str(prog_str, EXPR_GROUP_L_DELIM, True)
-        and parse_expr(prog_str)
-        and match_str(prog_str, EXPR_GROUP_R_DELIM, True)):
-        return True
+    if not match_str(prog_str, EXPR_GROUP_L_DELIM, True):
+        return False
+    append_to_output(ExprGroupDelimLeft())
 
-    brpt.revert_point()
-    return False
+    if not parse_expr(prog_str):
+        brpt.revert_point()
+        return False
+
+    if not match_str(prog_str, EXPR_GROUP_R_DELIM, True):
+        brpt.revert_point()
+        return False
+    append_to_output(ExprGroupDelimRight())
+
+    return True
 
 
 def get_digit_seq(prog_str: str) -> str:
@@ -994,7 +1022,7 @@ def get_digit_seq(prog_str: str) -> str:
     return digit_seq
     
 
-def parseget_int_literal(prog_str: str) -> Token | None:
+def parse_int_literal(prog_str: str) -> bool:
     """
     Parse and get an integer literal
         dig_seq, [ int_type ]
@@ -1005,16 +1033,18 @@ def parseget_int_literal(prog_str: str) -> Token | None:
     digit_seq = get_digit_seq(prog_str)
     if len(digit_seq) == 0:
         brpt.revert_point()
-        return None
+        return False
     
     int_type = parseget_int_data_type(prog_str)
     if int_type is None:
         int_type = DEFAULT_INT_TYPE
     
-    return Integer(int(digit_seq), int_type)
+    append_to_output(Integer(int(digit_seq), int_type))
+
+    return True
 
 
-def parseget_float_literal(prog_str: str) -> Token | None:
+def parse_float_literal(prog_str: str) -> bool:
     """
     Parse and get a float literal
         dig_seq, ".", [ dig_seq ], [ float_type ]
@@ -1025,7 +1055,7 @@ def parseget_float_literal(prog_str: str) -> Token | None:
     digit_seq = get_digit_seq(prog_str)
     if (len(digit_seq) == 0) and not match_str(prog_str, DECIMAL_PT) :
         brpt.revert_point()
-        return None
+        return False
 
     digit_seq += ("." + get_digit_seq(prog_str))
 
@@ -1033,10 +1063,12 @@ def parseget_float_literal(prog_str: str) -> Token | None:
     if float_type is None:
         float_type = DEFAULT_FLOAT_TYPE
 
-    return Float(float(digit_seq), float_type)
+    append_to_output(Float(float(digit_seq), float_type))
+
+    return True
 
 
-def parseget_char_literal(prog_str: str) -> Token | None:
+def parse_char_literal(prog_str: str) -> bool:
     """
     Parse and get a character literal:
         "'", ASCII_char, "'"
@@ -1044,21 +1076,23 @@ def parseget_char_literal(prog_str: str) -> Token | None:
     brpt = BranchPoint()
 
     if not match_str(prog_str, CHAR_DELIM, True):
-        return None
+        return False
     
     char = get_id(prog_str)
     if len(char) != 1:
         brpt.revert_point()
-        return None
+        return False
 
     if not match_str(prog_str, CHAR_DELIM, True):
         brpt.revert_point()
-        return None
+        return False
     
-    return Integer(ord(char), CHAR_TYPE)
+    append_to_output(Integer(ord(char), CHAR_TYPE))
+
+    return True
 
 
-def parseget_string_literal(prog_str: str) -> Token | None:
+def parse_string_literal(prog_str: str) -> bool:
     """
     Parse and get a string literal:
         '"', { ASCII_char }, '"'
@@ -1066,12 +1100,14 @@ def parseget_string_literal(prog_str: str) -> Token | None:
     brpt = BranchPoint()
 
     if not match_str(prog_str, STR_DELIM, True):
-        return None
+        return False
     
     string = get_id(prog_str)
 
     if not match_str(prog_str, STR_DELIM, True):
         brpt.revert_point()
-        return None
+        return False
     
-    return String(string)
+    append_to_output(String(string))
+
+    return True
