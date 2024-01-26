@@ -1,5 +1,6 @@
 EOL = ";"
 EOF = chr(0)
+COMMENT_SIGN = "#"
 
 VAR_ATTR_STR_LIST = ["const"]
 POINTER_CHAR = "*"

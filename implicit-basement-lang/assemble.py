@@ -3,10 +3,8 @@ import assembler.token.delim as tokdelim
 
 def main():
     code = """
-        function my_func() => i8:
-            i8 x = 1, y = 2;
-            x = (y + 1) * 2;
-            return x;
+        function my_func(i8 x, i8 y) => i8:
+            # Comment here
         end function
     """ + chr(0)
     res = parse(code)
@@ -14,7 +12,7 @@ def main():
         output, _ = res
 
         indent = "    "
-        print("Parsed code:")
+        print("Parsed code:", "=" * 80, sep="\n")
 
         indent_lvl = 1
         to_indent = True
@@ -30,13 +28,14 @@ def main():
                     print("\n", indent * indent_lvl, sep="", end="")
                 case tokdelim.ScopeEnd():
                     indent_lvl -= 1
-                    print("\n", indent * indent_lvl, token, sep="", end="")
+                    print(f"{chr(27)}[100D", indent * indent_lvl, token, sep="")
+                    to_indent = True
                 case tokdelim.EndOfLine():
                     print(token)
                     to_indent = True
                 case _:
                     print(token, end=", ")
-        print()
+        print("\n" + "=" * 80)
     else:
         print("Error parsing")
 

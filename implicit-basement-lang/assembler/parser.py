@@ -81,7 +81,8 @@ def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
         brpt = BranchPoint()
         parsing_success =  (parse_decl(prog_str) and parse_eol(prog_str)) \
                         or (parse_func(prog_str))                         \
-                        or (parse_struct(prog_str))
+                        or (parse_struct(prog_str))                       \
+                        or (parse_comment(prog_str))
         if not parsing_success:
             brpt.revert_point()
             break
@@ -158,6 +159,25 @@ def parse_eol(prog_str: str) -> bool:
     if not match_str(prog_str, EOL, True):
         return False
     append_to_output(EndOfLine())
+
+    parse_comment(prog_str)  # Optional structure
+
+    return True
+
+
+def parse_comment(prog_str: str) -> bool:
+    """
+    Optionally parse a comment.
+    """
+    global input_idx
+
+    if not match_str(prog_str, COMMENT_SIGN, True):
+        return False
+
+    while input_idx < len(prog_str):
+        if prog_str[input_idx] == "\n":
+            break
+        input_idx += 1
     return True
 
 
@@ -641,6 +661,8 @@ def parse_stmt(prog_str: str) -> bool:
         if_stmt | loop_stmt | loop_ctrl | scope_block | ( [ expr ], EOL )
     """
     parse_stmt_funcs = (
+        parse_comment,
+        parse_eol,
         parse_return,
         parse_loop_ctrl,
         parse_expr_stmt,

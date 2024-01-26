@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.3.0
+        Version: 0.3.1
 --------------------------------------------------------------------------------
-program     := { ( decl, EOL ) | func | struct }, EOF ;
+program     := { ( decl, end_of_line ) | func | struct | comment }, EOF ;
 
 decl        := var_decl | func_decl ;
 var_decl    := [ var_attrib ], type, var_id, [ var_init ],
@@ -15,7 +15,7 @@ func_decl   := type, id, "(", [ param_list ], ")",
 
 struct      := "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
                [ "struct" ], [ id ] ;
-struct_mem  := type, id, { ",", id }, EOL ;
+struct_mem  := type, id, { ",", id }, end_of_line ;
 
 type        := ( int_type | float_type | ( "struct", id ) | "void" ), { "*" } ;
 int_type    := "u8"
@@ -34,14 +34,16 @@ func        := "function", id, "(", [ param_list ], ")", [ "=>", type ],
 param_list  := param, { param } ;
 param       := type, id, [ "[", integer, "]" ] ;
 
-cmpd_stmt   := scope_start, { ( var_decl, EOL ) | stmt }, scope_end ;
+cmpd_stmt   := scope_start, { ( var_decl, end_of_line ) | stmt }, scope_end ;
 stmt        := if_stmt
              | loop_stmt
              | loop_ctrl
              | scope_block
-             | ( [ expr ], EOL )
-             | ( "return", expr, EOL ) ;
-loop_ctrl   := ( "break" | "continue" ), EOL ;
+             | ( [ expr ], end_of_line )
+             | ( "return", expr, end_of_line )
+             | end_of_line
+             | comment ;
+loop_ctrl   := ( "break" | "continue" ), end_of_line ;
 if_stmt     := "if", "(", expr, ")", cmpd_stmt,
                [ "else", ( cmpd_stmt | if_stmt ) ], [ "if" ] ;
 loop_stmt   := "loop", cmpd_stmt, [ "loop" ];
@@ -77,8 +79,11 @@ f_arith_op  := "*" | "/" | "%" ;
 t_bit_op    := "|" | "^" | "<<" | ">>" ;
 f_bit_op    := "&" ;
 
-scope_start :=  ":"  | EOL ;
-scope_end   := "end" | EOL;
+scope_start :=  ":"  | "{" ;
+scope_end   := "end" | "}" ;
+end_of_line := EOL, [ comment ] ;
+comment     := comment_sgn, { ascii_char }, "\n" ;
+comment_sgn := "#"
 EOL         := ";" ;
 EOF         := "\0" ;
 
