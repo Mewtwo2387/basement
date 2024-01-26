@@ -11,23 +11,23 @@ class BranchControl(Token):
     keyword = None
 
     def __str__(self) -> str:
-        return f"{self.keyword}"
+        return f"\"{self.keyword}\""
 
 
-class If(Token):
+class If(BranchControl):
     keyword = IF_KEYWORD
 
 
-class Else(Token):
+class Else(BranchControl):
     keyword = ELSE_KEYWORD
 
 
-class Loop(Token):
+class Loop(BranchControl):
     keyword = LOOP_KEYWORD
 
 
-class LoopContinue(Token):
+class LoopContinue(BranchControl):
     keyword = LOOP_CONT_KEYWORD
 
-class LoopBreak(Token):
+class LoopBreak(BranchControl):
     keyword = LOOP_BREAK_KEYWORD

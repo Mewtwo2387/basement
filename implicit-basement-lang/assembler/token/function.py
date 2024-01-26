@@ -1,6 +1,6 @@
 from .token import ValueDict
 from .token import Token
-from ..data_type.types import DataType
+from ..data_type.types import DataType, get_data_type_name
 from ..keywords import RETURN_KEYWORD
 
 from collections import OrderedDict
@@ -44,6 +44,12 @@ class Function(Token):
             "size": self.size,
             "address": self.address
         }
+    
+    def __str__(self) -> str:
+        ret_type_name = get_data_type_name(self.ret_type)
+        arg_type_names = [get_data_type_name(T) + f" {arg_name}"
+                          for arg_name, T in self.arg_types.items()]
+        return f"{ret_type_name} {self.name}({', '.join(arg_type_names)})"
 
 
 @dataclass

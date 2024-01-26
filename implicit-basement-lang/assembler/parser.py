@@ -22,8 +22,8 @@ from .token.operator import (
     AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp
 )
 from .data_type.number import (
-        INT_TYPE_NAME,  
-        FLOAT_TYPE_NAME, 
+        INT_STR_TO_TYPE_DICT,  
+        FLOAT_STR_TO_TYPE_DICT, 
         VOID_TYPE_NAME,  
         VOID_TYPE,
         CHAR_TYPE,
@@ -254,7 +254,7 @@ def parseget_int_data_type(prog_str: str) -> IntType | None:
     """
 
     skip_whitespace(prog_str)
-    for name, T in INT_TYPE_NAME.items():
+    for name, T in INT_STR_TO_TYPE_DICT.items():
         if match_str(prog_str, name):
             return T
     return None
@@ -268,7 +268,7 @@ def parseget_float_data_type(prog_str: str) -> FloatType | None:
     NOTE: No intervening whitespace
     """
     skip_whitespace(prog_str)
-    for name, T in FLOAT_TYPE_NAME.items():
+    for name, T in FLOAT_STR_TO_TYPE_DICT.items():
         if match_str(prog_str, name):
             return T
     return None

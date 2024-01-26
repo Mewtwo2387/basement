@@ -1,5 +1,27 @@
-from .number import IntType, FloatType
+from .number import (
+    IntType, FloatType, VOID_TYPE, VOID_TYPE_NAME,
+    INT_NAME_DICT, FLOAT_NAME_DICT
+)
 from .pointer import PointerType
 from .struct import Struct
 
 DataType = IntType | FloatType | Struct | PointerType
+
+
+def get_data_type_name(data_type : DataType) -> str:
+    match data_type:
+        case IntType():
+            if data_type is VOID_TYPE:
+                name = VOID_TYPE_NAME
+            else:
+                name = INT_NAME_DICT[getattr(data_type, "issigned")][data_type]
+        case FloatType():
+            name = FLOAT_NAME_DICT[data_type]
+        case Struct():
+            name = f"struct {getattr(data_type, 'name')}"
+        case PointerType():
+            ref_type_name = get_data_type_name(getattr(data_type, "ref_type"))
+            name = f"{ref_type_name}*"
+        case _:
+            name = "???"
+    return name
