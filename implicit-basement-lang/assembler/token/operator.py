@@ -1,5 +1,5 @@
 from .token import Token
-from ..data_type.types import DataType
+from ..data_type.types import DataType, get_data_type_name
 from ..keywords import ASSIGN_CHAR, STRUCT_MMB_ACCESS_OP
 from dataclasses import dataclass, field
 
@@ -32,7 +32,8 @@ class TypeCastOp(AbstractOperator):
         self.to_type = to_type
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(\"{self.to_type}\")"
+        return (f"{self.__class__.__name__}"
+                f"({get_data_type_name(self.to_type)})")
 
 
 @dataclass
