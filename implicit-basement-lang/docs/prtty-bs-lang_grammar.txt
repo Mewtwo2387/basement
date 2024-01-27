@@ -1,17 +1,17 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.3.1
+        Version: 0.3.2
 --------------------------------------------------------------------------------
-program     := { ( decl, end_of_line ) | func | struct | comment }, EOF ;
+program     := { decl | func | struct | comment }, EOF ;
 
 decl        := var_decl | func_decl ;
 var_decl    := [ var_attrib ], type, var_id, [ var_init ],
-               { ",", var_id, [ var_init ] } ;
+               { ",", var_id, [ var_init ] }, end_of_line ;
 var_attrib  := "const" ;
 var_id      := id, [ "[", integer, "]" ] ;
 var_init    := assign_op, literal ;
 func_decl   := type, id, "(", [ param_list ], ")",
-               { ",", id, "(", [ param_list ], ")" } ;
+               { ",", id, "(", [ param_list ], ")" }, end_of_line ;
 
 struct      := "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
                [ "struct" ], [ id ] ;
@@ -34,18 +34,20 @@ func        := "function", id, "(", [ param_list ], ")", [ "=>", type ],
 param_list  := param, { param } ;
 param       := type, id, [ "[", integer, "]" ] ;
 
-cmpd_stmt   := scope_start, { ( var_decl, end_of_line ) | stmt }, scope_end ;
+cmpd_stmt   := scope_start, { stmt }, scope_end ;
 stmt        := if_stmt
              | loop_stmt
              | loop_ctrl
              | scope_block
-             | ( [ expr ], end_of_line )
+             | var_decl
+             | ( expr, end_of_line )
              | ( "return", expr, end_of_line )
              | end_of_line
              | comment ;
 loop_ctrl   := ( "break" | "continue" ), end_of_line ;
-if_stmt     := "if", "(", expr, ")", cmpd_stmt,
-               [ "else", ( cmpd_stmt | if_stmt ) ], [ "if" ] ;
+if_stmt     := "if", "(", expr, ")", scope_start, { stmt },
+               { "else", [ "if", "(", expr, ")" ], scope_start, { stmt } },
+               scope_end, [ "if" ] ;
 loop_stmt   := "loop", cmpd_stmt, [ "loop" ];
 scope_block := "block", cmpd_stmt, [ "block" ] ;
 

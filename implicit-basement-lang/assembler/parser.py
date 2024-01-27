@@ -79,16 +79,16 @@ def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
     #   { ( decl, EOL ) | func | struct }
     while True:
         brpt = BranchPoint()
-        parsing_success =  (parse_decl(prog_str) and parse_eol(prog_str)) \
-                        or (parse_func(prog_str))                         \
-                        or (parse_struct(prog_str))                       \
+        parsing_success =  (parse_decl(prog_str))   \
+                        or (parse_func(prog_str))   \
+                        or (parse_struct(prog_str)) \
                         or (parse_comment(prog_str))
         if not parsing_success:
             brpt.revert_point()
             break
 
     # Match the symbol:  EOF
-    if not match_str(prog_str, EOF):
+    if not match_str(prog_str, EOF, True):
         return None
 
     return output_list, struct_dict
@@ -223,7 +223,11 @@ def parse_var_decl(prog_str: str) -> bool:
             brpt_loop.revert_point()
             break
 
-    return var_token_count > 0
+    if (not parse_eol(prog_str)) or (var_token_count == 0):
+        brpt.revert_point()
+        return False
+
+    return True
 
 
 def parseget_var_attrib_str(prog_str: str) -> str | None:
@@ -397,6 +401,8 @@ def parse_func_decl(prog_str: str) -> bool:
     Parse a function declaration:
         type, id, "(", param_list, ")", { ",", id, "(", param_list, ")" }
     """
+    brpt = BranchPoint()
+
     ret_type = parseget_data_type(prog_str)
     if ret_type is None:
         return False
@@ -428,8 +434,12 @@ def parse_func_decl(prog_str: str) -> bool:
             FunctionDeclaration(func_name, ret_type, param_dict) 
         )
         func_token_count += 1
+    
+    if not parse_eol(prog_str) or (func_token_count == 0):
+        brpt.revert_point()
+        return False
 
-    return func_token_count > 0
+    return True
 
 
 def parseget_param_dict(prog_str: str) -> OrderedDict[str, DataType]:
@@ -665,6 +675,7 @@ def parse_stmt(prog_str: str) -> bool:
         parse_eol,
         parse_return,
         parse_loop_ctrl,
+        parse_var_decl,
         parse_expr_stmt,
         parse_loop_stmt,
         parse_scope_block,
@@ -688,38 +699,49 @@ def parse_if_stmt(prog_str: str) -> bool:
         return False
     append_to_output(If())
     
-    parse_res = (
+    if_cond_parse_res = (
             match_str(prog_str, FUNC_L_DELIM, True)
         and parse_expr(prog_str)
         and match_str(prog_str, FUNC_R_DELIM, True)
     )
-    if not parse_res:
+    if not if_cond_parse_res:
         brpt.revert_point()
         return False
 
-    if not parse_cmpd_stmt(prog_str):
+    # Parse statements
+    if not parse_scope_start(prog_str):
         brpt.revert_point()
         return False
-    
+    while parse_stmt(prog_str):
+        pass
+
     while match_str(prog_str, ELSE_KEYWORD, True):
+        # Insert an invisible ending scope delimter
+        append_to_output(ScopeEnd())
         append_to_output(Else())
 
+        # Parse for an optional else if statement
         if match_str(prog_str, IF_KEYWORD, True):
-            append_to_output(If())
-    
-            parse_res = (
+            elif_cond_parse_res = (
                     match_str(prog_str, FUNC_L_DELIM, True)
                 and parse_expr(prog_str)
                 and match_str(prog_str, FUNC_R_DELIM, True)
             )
-            if not parse_res:
+            if not elif_cond_parse_res:
                 brpt.revert_point()
                 return False
         
-        if not parse_cmpd_stmt(prog_str):
+        # Parse statements for the else/else-if construct.
+        if not parse_scope_start(prog_str):
             brpt.revert_point()
             return False
+        while parse_stmt(prog_str):
+            pass
 
+    if not parse_scope_end(prog_str):
+        brpt.revert_point()
+        return False
+    
     match_str(prog_str, END_IF_KEYWORD, True)   # Optional structure
 
     return True
