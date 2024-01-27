@@ -33,6 +33,7 @@ from .data_type.number import (
     )
 from .data_type.struct import Struct
 from .data_type.pointer import PointerType
+from .data_type.array import Array
 from .data_type.types import DataType
 
 from .error import ParseError
@@ -188,7 +189,7 @@ def parse_decl(prog_str: str) -> bool:
 def parse_var_decl(prog_str: str) -> bool:
     """
     Parse a variable declaration:
-        [ var_attrib ], type, var_id, [ var_init ], { var_id, [ var_init ] },
+        [ var_attrib ], type, id, [ var_init ], { id, [ var_init ] },
         EOL
     """
     brpt = BranchPoint()
@@ -242,7 +243,8 @@ def parseget_var_attrib_str(prog_str: str) -> str | None:
 def parseget_data_type(prog_str: str) -> DataType | None:
     """
     Parse data type and obtain the output token:
-        ( int_type | float_type | ( "struct", id ) | "void" ), { "*" }
+        ( int_type | float_type | ( "struct", id ) | "void" ),
+        [ "[", integer, "]" ]{ "*" }
     """
     brpt = BranchPoint()
 
@@ -259,6 +261,18 @@ def parseget_data_type(prog_str: str) -> DataType | None:
     else:
         brpt.revert_point()
         return None
+
+    if match_str(prog_str, ARR_L_DELIM, True):
+        # Get the length of the array
+        skip_whitespace(prog_str)
+        arr_len_str = get_digit_seq(prog_str)
+
+        if len(arr_len_str) == 0 or not match_str(prog_str, ARR_R_DELIM, True):
+            brpt.revert_point()
+            return None
+
+        data_type = Array(data_type, int(arr_len_str))
+
 
     while match_str(prog_str, POINTER_CHAR, True):
         data_type = PointerType(data_type)

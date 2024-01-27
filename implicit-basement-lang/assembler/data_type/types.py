@@ -2,10 +2,11 @@ from .number import (
     IntType, FloatType, VOID_TYPE, VOID_TYPE_NAME,
     INT_NAME_DICT, FLOAT_NAME_DICT
 )
+from .array import Array
 from .pointer import PointerType
 from .struct import Struct
 
-DataType = IntType | FloatType | Struct | PointerType
+DataType = IntType | FloatType | Struct | Array | PointerType
 
 
 def get_data_type_name(data_type : DataType) -> str:
@@ -22,6 +23,10 @@ def get_data_type_name(data_type : DataType) -> str:
         case PointerType():
             ref_type_name = get_data_type_name(getattr(data_type, "ref_type"))
             name = f"{ref_type_name}*"
+        case Array():
+            ref_type_name = get_data_type_name(getattr(data_type, "elem_type"))
+            array_length = getattr(data_type, "length")
+            name = f"{ref_type_name}[{array_length}]"
         case _:
             name = "???"
     return name
