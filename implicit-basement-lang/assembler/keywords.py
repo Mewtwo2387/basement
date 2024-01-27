@@ -65,6 +65,8 @@ L_UN_OP_DICT = {
 L_UN_OP__TCAST_L_DELIM = "("
 L_UN_OP__TCAST_R_DELIM = ")"
 
+AMBIGIOUS_L_UN_OPS = {"PLUS", "MINUS", "REF", "DEREF"}
+
 
 R_UN_OP_DICT = {
     "INC" : "++",

@@ -639,7 +639,7 @@ def parse_cmpd_stmt(prog_str: str) -> bool:
     while True:
         brpt_loop = BranchPoint()
 
-        if parse_var_decl(prog_str) and parse_eol(prog_str):
+        if parse_var_decl(prog_str):
             parsed_rule_count += 1
             continue
 
@@ -851,11 +851,12 @@ def parse_expr(prog_str: str) -> bool:
 def parse_term(prog_str: str) -> bool:
     """
     Parse a term in an expression:
-        [ l_un_op ], factor, [ factor_op, factor ], [ r_un_op ]
+        { l_un_op }, factor, [ factor_op, factor ], { r_un_op }
     """
     brpt = BranchPoint()
 
-    opt_parse_l_un_op(prog_str)
+    while parse_l_un_op(prog_str):
+        pass
 
     if not parse_factor(prog_str):
         brpt.revert_point()
@@ -866,7 +867,8 @@ def parse_term(prog_str: str) -> bool:
             brpt.revert_point()
             return False
     
-    opt_parse_r_un_op(prog_str)
+    while parse_r_un_op(prog_str):
+        pass
 
     return True
 
@@ -984,7 +986,24 @@ def parse_factor_op(prog_str: str) -> bool:
     return False
 
 
-def opt_parse_l_un_op(prog_str: str) -> None:
+# Token types that cannot be to the left of ambigious left unary operators.
+_INVALID_PREV_TOK__L_UN_OP = {
+    Integer, Float, String, FunctionCall, VariableInvoke, ExprGroupDelimRight,
+    RightUnaryOp
+}
+
+def is_valid_for_l_un_op() -> bool:
+    """
+    Check if a left unary operator is valid given the previous tokens:
+        It is valid if there are no operands to the left of the unary operator.
+        Since operands can be enclosed with parentheses, there must not be a
+        right parenthesis to the left of the operator.
+    """
+    return (   (output_idx == 0)
+            or (not type(output_list[-1]) in _INVALID_PREV_TOK__L_UN_OP))
+
+
+def parse_l_un_op(prog_str: str) -> bool:
     """
     Optionally parse a left unary operator:
         "+" | "-" | "~" | "!" | "*" | "&" | "++" | "--" | ( "(", type, ")" )
@@ -992,25 +1011,32 @@ def opt_parse_l_un_op(prog_str: str) -> None:
     brpt = BranchPoint()
     
     skip_whitespace(prog_str)
-    for _, op_str in L_UN_OP_DICT.items():
-        if match_str(prog_str, op_str):
-            append_to_output(LeftUnaryOp(op_str))
-            return
+    for op_name, op_str in L_UN_OP_DICT.items():
+        if not match_str(prog_str, op_str):
+            continue
+
+        if (op_name in AMBIGIOUS_L_UN_OPS) and (not is_valid_for_l_un_op()):
+            continue
+
+        append_to_output(LeftUnaryOp(op_str))
+        return True
 
     if match_str(prog_str, L_UN_OP__TCAST_L_DELIM):
         to_type = parseget_data_type(prog_str)
         if to_type is None:
             brpt.revert_point()
-            return
+            return False
         append_to_output(TypeCastOp(to_type))
 
         if not match_str(prog_str, L_UN_OP__TCAST_R_DELIM, True):
             brpt.revert_point()
-            return
-    return
+            return False
+        return True
+
+    return False
 
 
-def opt_parse_r_un_op(prog_str: str) -> None:
+def parse_r_un_op(prog_str: str) -> bool:
     """
     Optionally parse a right unary operation expression:
         "++" | "--"
@@ -1021,10 +1047,10 @@ def opt_parse_r_un_op(prog_str: str) -> None:
     for _, op_str in R_UN_OP_DICT.items():
         if match_str(prog_str, op_str):
             append_to_output(RightUnaryOp(op_str))
-            return 
+            return True
     
     brpt.revert_point()
-    return
+    return False
 
 
 def parse_grouped_expr(prog_str: str) -> bool:
