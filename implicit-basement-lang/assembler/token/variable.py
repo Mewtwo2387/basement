@@ -1,5 +1,5 @@
 from .token import ValueDict, Token
-from ..data_type.types import DataType
+from ..data_type.types import DataType, get_data_type_name
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -20,6 +20,10 @@ class Variable(Token):
     
     def get_value(self) -> ValueDict:
         return {"size": self.size, "address": self.address}
+    
+    def __str__(self) -> str:
+        return (f"{self.__class__.__name__}(\"{self.name}\", "
+                f"type={get_data_type_name(self.data_type)})")
 
 
 @dataclass
