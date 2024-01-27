@@ -240,46 +240,6 @@ def parseget_var_attrib_str(prog_str: str) -> str | None:
     return None
 
 
-def parseget_data_type(prog_str: str) -> DataType | None:
-    """
-    Parse data type and obtain the output token:
-        ( int_type | float_type | ( "struct", id ) | "void" ),
-        [ "[", integer, "]" ]{ "*" }
-    """
-    brpt = BranchPoint()
-
-    get_data_type_func_list = (
-        parseget_int_data_type,
-        parseget_float_data_type,
-        parseget_struct_type,
-        parseget_void_type
-    )
-    for func in get_data_type_func_list:
-        data_type = func(prog_str)
-        if data_type is not None:
-            break
-    else:
-        brpt.revert_point()
-        return None
-
-    if match_str(prog_str, ARR_L_DELIM, True):
-        # Get the length of the array
-        skip_whitespace(prog_str)
-        arr_len_str = get_digit_seq(prog_str)
-
-        if len(arr_len_str) == 0 or not match_str(prog_str, ARR_R_DELIM, True):
-            brpt.revert_point()
-            return None
-
-        data_type = Array(data_type, int(arr_len_str))
-
-
-    while match_str(prog_str, POINTER_CHAR, True):
-        data_type = PointerType(data_type)
-
-    return data_type
-
-
 def parseget_int_data_type(prog_str: str) -> IntType | None:
     """
     Parse integer data type and obtain the resulting token:
@@ -333,6 +293,46 @@ def parseget_void_type(prog_str: str) -> IntType | None:
     return None
 
 
+_DATA_TYPE_PARSEGET_FUNCS = (
+    parseget_int_data_type,
+    parseget_float_data_type,
+    parseget_struct_type,
+    parseget_void_type
+)
+def parseget_data_type(prog_str: str) -> DataType | None:
+    """
+    Parse data type and obtain the output token:
+        ( int_type | float_type | ( "struct", id ) | "void" ),
+        [ "[", integer, "]" ]{ "*" }
+    """
+    brpt = BranchPoint()
+
+    for func in _DATA_TYPE_PARSEGET_FUNCS:
+        data_type = func(prog_str)
+        if data_type is not None:
+            break
+    else:
+        brpt.revert_point()
+        return None
+
+    if match_str(prog_str, ARR_L_DELIM, True):
+        # Get the length of the array
+        skip_whitespace(prog_str)
+        arr_len_str = get_digit_seq(prog_str)
+
+        if len(arr_len_str) == 0 or not match_str(prog_str, ARR_R_DELIM, True):
+            brpt.revert_point()
+            return None
+
+        data_type = Array(data_type, int(arr_len_str))
+
+
+    while match_str(prog_str, POINTER_CHAR, True):
+        data_type = PointerType(data_type)
+
+    return data_type
+
+
 def parse_var_init_token(prog_str: str) -> bool:
     """
     Parse a variable initializer:
@@ -345,26 +345,6 @@ def parse_var_init_token(prog_str: str) -> bool:
         return False
 
     return True
-
-
-def parse_literal(prog_str: str) -> bool:
-    """
-    Parse a literal value:
-        integer | float | char | string | struct_init | array_init
-    """
-    lit_token_func = (
-        parse_int_literal,
-        parse_float_literal,
-        parse_char_literal,
-        parse_string_literal,
-        func_partial(parse_initializer, init_type="array"),
-        func_partial(parse_initializer, init_type="struct")
-    )
-    for func in lit_token_func:
-        if func(prog_str):
-            return True
-
-    return False
 
 
 def parse_initializer(prog_str: str, init_type: str) -> bool:
@@ -676,29 +656,6 @@ def parse_cmpd_stmt(prog_str: str) -> bool:
     return True
 
 
-def parse_stmt(prog_str: str) -> bool:
-    """
-    Parse a statement:
-        if_stmt | loop_stmt | loop_ctrl | scope_block | var_decl
-    |  ( [ expr ], EOL )
-    """
-    parse_stmt_funcs = (
-        parse_comment,
-        parse_eol,
-        parse_return,
-        parse_loop_ctrl,
-        parse_var_decl,
-        parse_expr_stmt,
-        parse_loop_stmt,
-        parse_scope_block,
-        parse_if_stmt,
-    )
-    for func in parse_stmt_funcs:
-        if func(prog_str):
-            return True
-    return False
-
-
 def parse_if_stmt(prog_str: str) -> bool:
     """
     Parse an if/if-else/if-else-if statement:
@@ -848,6 +805,29 @@ def parse_expr_stmt(prog_str: str) -> bool:
         return False
 
     return True
+
+
+_STMT_PARSE_FUNCS = (
+    parse_comment,
+    parse_eol,
+    parse_return,
+    parse_loop_ctrl,
+    parse_var_decl,
+    parse_expr_stmt,
+    parse_loop_stmt,
+    parse_scope_block,
+    parse_if_stmt,
+)
+def parse_stmt(prog_str: str) -> bool:
+    """
+    Parse a statement:
+        if_stmt | loop_stmt | loop_ctrl | scope_block | var_decl
+    |  ( [ expr ], EOL )
+    """
+    for func in _STMT_PARSE_FUNCS:
+        if func(prog_str):
+            return True
+    return False
 
 
 def parse_expr(prog_str: str) -> bool:
@@ -1175,3 +1155,23 @@ def parse_string_literal(prog_str: str) -> bool:
     append_to_output(String(string))
 
     return True
+
+
+_LITERAL_PARSE_FUNCS = (
+    parse_int_literal,
+    parse_float_literal,
+    parse_char_literal,
+    parse_string_literal,
+    func_partial(parse_initializer, init_type="array"),
+    func_partial(parse_initializer, init_type="struct")
+)
+def parse_literal(prog_str: str) -> bool:
+    """
+    Parse a literal value:
+        integer | float | char | string | struct_init | array_init
+    """
+    for func in _LITERAL_PARSE_FUNCS:
+        if func(prog_str):
+            return True
+
+    return False
