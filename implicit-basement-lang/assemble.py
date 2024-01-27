@@ -1,15 +1,21 @@
+import os
+
 from assembler.parser import parse
 import assembler.token.delim as tokdelim
 
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+
+
 def main():
-    code = """
-        function my_func(i8 x, i8 y) => i8:
-            # Comment here
-        end function
-    """ + chr(0)
-    res = parse(code)
-    if isinstance(res, tuple):
-        output, _ = res
+    file_name = f"{SCRIPT_DIR}/test/a.bs"
+    with open(file_name, "r") as file:
+        code = file.read() + chr(0)
+
+    parse_result = parse(code)
+
+    if isinstance(parse_result, tuple):
+        output, _ = parse_result
 
         indent = "    "
         print("Parsed code:", "=" * 80, sep="\n")
