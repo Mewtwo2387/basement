@@ -72,11 +72,8 @@ class BranchPoint:
 def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
     """
     Parse a program, i.e. of the following symbols:
-        { ( decl, EOL ) | func | struct }, EOF
+        { decl | func | struct }, EOF
     """
-
-    # Match the following symbols:
-    #   { ( decl, EOL ) | func | struct }
     while True:
         brpt = BranchPoint()
         parsing_success =  (parse_decl(prog_str))   \
@@ -87,7 +84,6 @@ def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
             brpt.revert_point()
             break
 
-    # Match the symbol:  EOF
     if not match_str(prog_str, EOF, True):
         return None
 
@@ -192,7 +188,8 @@ def parse_decl(prog_str: str) -> bool:
 def parse_var_decl(prog_str: str) -> bool:
     """
     Parse a variable declaration:
-        [ var_attrib ], type, var_id, [ var_init ], { var_id, [ var_init ] }
+        [ var_attrib ], type, var_id, [ var_init ], { var_id, [ var_init ] },
+        EOL
     """
     brpt = BranchPoint()
 
@@ -399,7 +396,7 @@ def parse_initializer(prog_str: str, init_type: str) -> bool:
 def parse_func_decl(prog_str: str) -> bool:
     """
     Parse a function declaration:
-        type, id, "(", param_list, ")", { ",", id, "(", param_list, ")" }
+        type, id, "(", param_list, ")", { ",", id, "(", param_list, ")" }, EOL
     """
     brpt = BranchPoint()
 
@@ -668,7 +665,8 @@ def parse_cmpd_stmt(prog_str: str) -> bool:
 def parse_stmt(prog_str: str) -> bool:
     """
     Parse a statement:
-        if_stmt | loop_stmt | loop_ctrl | scope_block | ( [ expr ], EOL )
+        if_stmt | loop_stmt | loop_ctrl | scope_block | var_decl
+    |  ( [ expr ], EOL )
     """
     parse_stmt_funcs = (
         parse_comment,
@@ -690,8 +688,9 @@ def parse_stmt(prog_str: str) -> bool:
 def parse_if_stmt(prog_str: str) -> bool:
     """
     Parse an if/if-else/if-else-if statement:
-        "if", "(", expr, ")", cmpd_stmt, [ "else", ( cmpd_stmt | if_stmt ) ],
-        [ "if" ]
+        "if", "(", expr, ")", scope_start, { stmt },
+        { "else", [ "if", "(", expr, ")" ], scope_start, { stmt } },
+        scope_end, [ "if" ]
     """
     brpt = BranchPoint()
 
