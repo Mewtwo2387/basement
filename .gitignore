@@ -6,6 +6,7 @@ project_keqei/js/node_modules
 incursion/.venv
 implicit-basement-lang/blvm/obj/
 implicit-basement-lang/blvm/blvm
+implicit-basement-lang/test/
 project_keqei/js/node_modules
 *.pyc
 __pycache__/
