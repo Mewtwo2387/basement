@@ -639,15 +639,12 @@ def parse_cmpd_stmt(prog_str: str) -> bool:
     while True:
         brpt_loop = BranchPoint()
 
-        if parse_var_decl(prog_str):
+        if parse_var_decl(prog_str) or parse_stmt(prog_str):
             parsed_rule_count += 1
             continue
 
         brpt_loop.revert_point()
-
-        if not parse_stmt(prog_str):
-            break
-        parsed_rule_count += 1
+        break
 
     if (parsed_rule_count == 0) or (not parse_scope_end(prog_str)):
         brpt.revert_point()
@@ -1056,22 +1053,23 @@ def parse_r_un_op(prog_str: str) -> bool:
 def parse_grouped_expr(prog_str: str) -> bool:
     """
     Parse a grouped expression:
-        "(", expr, ")"
+        [ "(" ], expr, [ ")" ]
     """
     brpt = BranchPoint()
 
-    if not match_str(prog_str, EXPR_GROUP_L_DELIM, True):
-        return False
-    append_to_output(ExprGroupDelimLeft())
+    has_delim = match_str(prog_str, EXPR_GROUP_L_DELIM, True)
+    if has_delim:
+        append_to_output(ExprGroupDelimLeft())
 
     if not parse_expr(prog_str):
         brpt.revert_point()
         return False
 
-    if not match_str(prog_str, EXPR_GROUP_R_DELIM, True):
-        brpt.revert_point()
-        return False
-    append_to_output(ExprGroupDelimRight())
+    if has_delim:
+        if not match_str(prog_str, EXPR_GROUP_R_DELIM, True):
+            brpt.revert_point()
+            return False
+        append_to_output(ExprGroupDelimRight())
 
     return True
 
