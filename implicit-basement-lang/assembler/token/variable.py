@@ -1,7 +1,11 @@
 from .token import ValueDict, Token
+from .delim import Delim
 from ..data_type.types import DataType, get_data_type_name
 from dataclasses import dataclass, field
 from typing import Optional
+
+
+VAR_ATTR_STR_LIST = ["const"]
 
 
 @dataclass

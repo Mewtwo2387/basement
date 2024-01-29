@@ -1,11 +1,19 @@
 from .token import ValueDict
 from .token import Token
 from ..data_type.types import DataType, get_data_type_name
-from ..keywords import RETURN_KEYWORD
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Optional
+
+
+FUNCTION_KEYWORD = "function"
+FUNC_L_DELIM = "("
+FUNC_R_DELIM = ")"
+FUNC_ARG_DELIM = ","
+FUNC_RET_SYMBOL = "=>"
+
+RETURN_KEYWORD = "return"
 
 
 @dataclass

@@ -1,7 +1,8 @@
 import os
 
 from assembler.parser import parse
-import assembler.token.delim as tokdelim
+from assembler.token.scope_elem import ScopeStart, ScopeEnd
+from assembler.token.delim import EndOfLine
 
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -28,15 +29,15 @@ def main():
 
             to_indent = False
             match token:
-                case tokdelim.ScopeStart():
+                case ScopeStart():
                     print("\n", indent * indent_lvl, token, sep="", end="")
                     indent_lvl += 1
                     print("\n", indent * indent_lvl, sep="", end="")
-                case tokdelim.ScopeEnd():
+                case ScopeEnd():
                     indent_lvl -= 1
                     print(f"{chr(27)}[100D", indent * indent_lvl, token, sep="")
                     to_indent = True
-                case tokdelim.EndOfLine():
+                case EndOfLine():
                     print(token)
                     to_indent = True
                 case _:

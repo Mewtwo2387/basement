@@ -1,22 +1,18 @@
-from .token.token import Token
+from .token.token    import Token
 from .token.function import Function, FunctionDeclaration, FunctionCall, Return
 from .token.variable import Variable, VariableInvoke
 from .token.number   import Integer, Float
 from .token.string   import String
 from .token.delim    import (
-        ArrayDelimLeft,
-        ArrayDelimRight,
-        ArrayMemberDelim,
-        StructDelimLeft,
-        StructDelimRight,
-        StructMemberDelim,
-        Comma,
-        ScopeStart,
-        ScopeEnd,
-        EndOfLine,
-        ExprGroupDelimLeft,
-        ExprGroupDelimRight
+        Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
     )
+from .token.struct_elem import (
+    StructDelimLeft, StructDelimRight, StructMemberDelim
+)
+from .token.array_elem import (
+    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim
+)
+from .token.scope_elem import ScopeStart, ScopeEnd
 from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
 from .token.operator import (
     AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp
@@ -937,7 +933,7 @@ def parse_var_invoke(prog_str: str) -> bool:
 
         append_to_output(ArrayDelimRight())
     
-    if match_str(prog_str, STRUCT_MMB_ACCESS_OP, True):
+    if match_str(prog_str, OP_MMB_ACCESS_CHAR, True):
         append_to_output(MemberAccessOp())
 
         if not parse_var_invoke(prog_str):
@@ -964,7 +960,7 @@ def parse_assign_op(prog_str: str) -> bool:
     """
     Parse an assignment operator
     """
-    if not match_str(prog_str, ASSIGN_CHAR, True):
+    if not match_str(prog_str, OP_ASSIGN_CHAR, True):
         return False
 
     append_to_output(AssignOp())
@@ -1018,14 +1014,14 @@ def parse_l_un_op(prog_str: str) -> bool:
         append_to_output(LeftUnaryOp(op_str))
         return True
 
-    if match_str(prog_str, L_UN_OP__TCAST_L_DELIM):
+    if match_str(prog_str, OP_TCAST_L_DELIM):
         to_type = parseget_data_type(prog_str)
         if to_type is None:
             brpt.revert_point()
             return False
         append_to_output(TypeCastOp(to_type))
 
-        if not match_str(prog_str, L_UN_OP__TCAST_R_DELIM, True):
+        if not match_str(prog_str, OP_TCAST_R_DELIM, True):
             brpt.revert_point()
             return False
         return True

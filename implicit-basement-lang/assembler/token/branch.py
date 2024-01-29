@@ -1,11 +1,15 @@
 from .token import Token
-from ..keywords import (
-    IF_KEYWORD,
-    ELSE_KEYWORD,
-    LOOP_KEYWORD,
-    LOOP_CONT_KEYWORD,
-    LOOP_BREAK_KEYWORD
-)
+
+
+IF_KEYWORD = "if"
+ELSE_KEYWORD = "else"
+END_IF_KEYWORD = "if"
+
+LOOP_KEYWORD = "loop"
+END_LOOP_KEYWORD = "loop"
+LOOP_CONT_KEYWORD = "continue"
+LOOP_BREAK_KEYWORD = "break"
+
 
 class BranchControl(Token):
     keyword = None
