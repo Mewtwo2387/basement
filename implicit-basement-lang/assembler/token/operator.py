@@ -30,55 +30,6 @@ class OpOrder:
         return self.precedence == other.precedence and self.assoc == other.assoc
 
 
-class AssignOp(Token):
-    def __str__(self) -> str:
-        return f"\"{OP_ASSIGN_CHAR}\""
-
-class MemberAccessOp(Token):
-    def __str__(self) -> str:
-        return f"\"{OP_MMB_ACCESS_CHAR}\""
-
-
-@dataclass
-class AbstractOperator(Token):
-    op_str: str
-    arity:  int = field(init=False)
-    precedence: OpOrder = field(init=False)
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(\"{self.op_str}\")"
-
-@dataclass
-class LeftUnaryOp(AbstractOperator):
-    def __post_init__(self):
-        self.arity = 1
-
-@dataclass
-class TypeCastOp(AbstractOperator):
-    op_str: str = field(init=False, default="typecast")
-
-    def __init__(self, to_type: DataType):
-        self.to_type = to_type
-    
-    def __post_init__(self):
-        self.arity = 1
-
-    def __str__(self) -> str:
-        return (f"{self.__class__.__name__}"
-                f"({get_data_type_name(self.to_type)})")
-
-
-@dataclass
-class RightUnaryOp(AbstractOperator):
-    def __post_init__(self):
-        self.arity = 1
-
-@dataclass
-class BinaryOp(AbstractOperator):
-    def __post_init__(self):
-        self.arity = 2
-
-
 # Operator names: Left Unary Operators
 OP_UN_PLUS  = "UNARY PLUS"
 OP_UN_MINUS = "UNARY MINUS"
@@ -187,6 +138,8 @@ FACTOR_OP_DICT = (
     ARITH_BIN_OP_DICT["factor"] | BIT_BIN_OP_DICT["factor"]
 )
 
+_OP_STR_DICT = TERM_OP_DICT | FACTOR_OP_DICT | L_UN_OP_DICT | R_UN_OP_DICT
+
 
 OP_PRECEDENCE = {
     OP_ASSIGN     : OpOrder( 1, OP_ASSOC_R2L),
@@ -219,3 +172,59 @@ OP_PRECEDENCE = {
     OP_POST_DEC   : OpOrder(11, OP_ASSOC_L2R),
     OP_MMB_ACCESS : OpOrder(11, OP_ASSOC_L2R),
 }
+
+
+@dataclass
+class AbstractOperator(Token):
+    name:  str
+    arity: int = field(init=False)
+    precedence: OpOrder = field(init=False)
+
+    def __str__(self) -> str:
+        return (f"{self.__class__.__name__}"
+                f"(\"{_OP_STR_DICT[self.name]}\")")
+
+@dataclass
+class LeftUnaryOp(AbstractOperator):
+    def __post_init__(self):
+        self.arity = 1
+
+@dataclass
+class TypeCastOp(AbstractOperator):
+    name: str = field(init=False, default=OP_TCAST)
+
+    def __init__(self, to_type: DataType):
+        self.to_type = to_type
+    
+    def __post_init__(self):
+        self.arity = 1
+
+    def __str__(self) -> str:
+        return (f"{self.__class__.__name__}"
+                f"({get_data_type_name(self.to_type)})")
+
+
+@dataclass
+class RightUnaryOp(AbstractOperator):
+    def __post_init__(self):
+        self.arity = 1
+
+
+@dataclass
+class BinaryOp(AbstractOperator):
+    def __post_init__(self):
+        self.arity = 2
+
+@dataclass
+class AssignOp(AbstractOperator):
+    name: str = field(init=False, default=OP_ASSIGN)
+
+    def __str__(self) -> str:
+        return f"\"{OP_ASSIGN_CHAR}\""
+
+@dataclass
+class MemberAccessOp(AbstractOperator):
+    name: str = field(init=False, default=OP_MMB_ACCESS)
+
+    def __str__(self) -> str:
+        return f"\"{OP_MMB_ACCESS_CHAR}\""

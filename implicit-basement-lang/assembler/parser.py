@@ -948,9 +948,9 @@ def parse_term_op(prog_str: str) -> bool:
     Parse a term operator.
     """
     skip_whitespace(prog_str)
-    for _, op_str in TERM_OP_DICT.items():
+    for op_name, op_str in TERM_OP_DICT.items():
         if match_str(prog_str, op_str):
-            append_to_output(BinaryOp(op_str))
+            append_to_output(BinaryOp(op_name))
             return True
 
     return False
@@ -972,9 +972,9 @@ def parse_factor_op(prog_str: str) -> bool:
     Parse a factor operator.
     """
     skip_whitespace(prog_str)
-    for _, op_str in FACTOR_OP_DICT.items():
+    for op_name, op_str in FACTOR_OP_DICT.items():
         if match_str(prog_str, op_str):
-            append_to_output(BinaryOp(op_str))
+            append_to_output(BinaryOp(op_name))
             return True
     return False
 
@@ -1011,7 +1011,7 @@ def parse_l_un_op(prog_str: str) -> bool:
         if (op_name in AMBIGIOUS_L_UN_OPS) and (not is_valid_for_l_un_op()):
             continue
 
-        append_to_output(LeftUnaryOp(op_str))
+        append_to_output(LeftUnaryOp(op_name))
         return True
 
     if match_str(prog_str, OP_TCAST_L_DELIM):
@@ -1037,9 +1037,9 @@ def parse_r_un_op(prog_str: str) -> bool:
     brpt = BranchPoint()
 
     skip_whitespace(prog_str)
-    for _, op_str in R_UN_OP_DICT.items():
+    for op_name, op_str in R_UN_OP_DICT.items():
         if match_str(prog_str, op_str):
-            append_to_output(RightUnaryOp(op_str))
+            append_to_output(RightUnaryOp(op_name))
             return True
     
     brpt.revert_point()
