@@ -27,5 +27,11 @@ class EndOfLine(Delim):
 class ExprGroupDelimLeft(Delim):
     char = EXPR_GROUP_L_DELIM
 
+    def __str__(self) -> str:
+        return f"Expr{self.char}"
+
 class ExprGroupDelimRight(Delim):
     char = EXPR_GROUP_R_DELIM
+
+    def __str__(self) -> str:
+        return f"{self.char}Expr"

@@ -1,9 +1,12 @@
 from .token.token    import Token
-from .token.function import Function, FunctionDeclaration, FunctionCall, Return
 from .token.variable import Variable, VariableInvoke
 from .token.number   import Integer, Float
 from .token.string   import String
-from .token.delim    import (
+from .token.function import (
+    Function, FunctionDeclaration, FunctionCall, Return,
+    ArgBracketLeft, ArgBracketRight, ArgDelim
+)
+from .token.delim import (
         Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
     )
 from .token.struct_elem import (
@@ -407,13 +410,13 @@ def parse_func_decl(prog_str: str) -> bool:
             brpt_loop.revert_point()
             return False
 
-        if not match_str(prog_str, FUNC_L_DELIM, True):
+        if not match_str(prog_str, FUNC_ARG_L_BRACKET, True):
             brpt_loop.revert_point()
             return False
         
         param_dict = parseget_param_dict(prog_str)
 
-        if not match_str(prog_str, FUNC_R_DELIM, True):
+        if not match_str(prog_str, FUNC_ARG_R_BRACKET, True):
             brpt_loop.revert_point()
             break
 
@@ -564,13 +567,13 @@ def parse_func(prog_str: str) -> bool:
         brpt.revert_point()
         return False
     
-    if not match_str(prog_str, FUNC_L_DELIM, True):
+    if not match_str(prog_str, FUNC_ARG_L_BRACKET, True):
         brpt.revert_point()
         return False
 
     param_dict = parseget_param_dict(prog_str)
 
-    if not match_str(prog_str, FUNC_R_DELIM, True):
+    if not match_str(prog_str, FUNC_ARG_R_BRACKET, True):
         brpt.revert_point()
         return False
     
@@ -663,9 +666,9 @@ def parse_if_stmt(prog_str: str) -> bool:
     append_to_output(If())
     
     if_cond_parse_res = (
-            match_str(prog_str, FUNC_L_DELIM, True)
+            match_str(prog_str, EXPR_GROUP_L_DELIM, True)
         and parse_expr(prog_str)
-        and match_str(prog_str, FUNC_R_DELIM, True)
+        and match_str(prog_str, EXPR_GROUP_R_DELIM, True)
     )
     if not if_cond_parse_res:
         brpt.revert_point()
@@ -686,9 +689,9 @@ def parse_if_stmt(prog_str: str) -> bool:
         # Parse for an optional else if statement
         if match_str(prog_str, IF_KEYWORD, True):
             elif_cond_parse_res = (
-                    match_str(prog_str, FUNC_L_DELIM, True)
+                    match_str(prog_str, EXPR_GROUP_L_DELIM, True)
                 and parse_expr(prog_str)
-                and match_str(prog_str, FUNC_R_DELIM, True)
+                and match_str(prog_str, EXPR_GROUP_R_DELIM, True)
             )
             if not elif_cond_parse_res:
                 brpt.revert_point()
@@ -891,23 +894,26 @@ def parse_func_call(prog_str: str) -> bool:
     
     append_to_output(FunctionCall(func_name))
 
-    if not match_str(prog_str, FUNC_L_DELIM, True):
+    if not match_str(prog_str, FUNC_ARG_L_BRACKET, True):
         brpt.revert_point()
         return False
+    append_to_output(ArgBracketLeft())
     
     expr_count = 0
     while True:
         if expr_count > 0:
             if not match_str(prog_str, COMMA_CHAR, True):
                 break
-            append_to_output(Comma())
+            append_to_output(ArgDelim())
 
         if parse_expr(prog_str):
             expr_count += 1
 
-    if not match_str(prog_str, FUNC_R_DELIM, True):
+    if not match_str(prog_str, FUNC_ARG_R_BRACKET, True):
         brpt.revert_point()
         return False
+    append_to_output(ArgBracketRight())
+
     return True
 
 

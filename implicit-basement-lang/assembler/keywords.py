@@ -36,8 +36,8 @@ from .token.scope_elem import (
 )
 from .token.function import (
     FUNCTION_KEYWORD,
-    FUNC_L_DELIM,
-    FUNC_R_DELIM,
+    FUNC_ARG_L_BRACKET,
+    FUNC_ARG_R_BRACKET,
     FUNC_ARG_DELIM,
     FUNC_RET_SYMBOL,
     RETURN_KEYWORD

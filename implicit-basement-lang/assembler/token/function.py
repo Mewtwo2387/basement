@@ -8,8 +8,8 @@ from typing import Optional
 
 
 FUNCTION_KEYWORD = "function"
-FUNC_L_DELIM = "("
-FUNC_R_DELIM = ")"
+FUNC_ARG_L_BRACKET = "("
+FUNC_ARG_R_BRACKET = ")"
 FUNC_ARG_DELIM = ","
 FUNC_RET_SYMBOL = "=>"
 
@@ -67,10 +67,25 @@ class FunctionDeclaration(Function):
 
 @dataclass
 class FunctionCall(Token):
-    func_name : str
+    name : str
 
     def __str__(self) -> str:
-        return f"{self.__class__.__name__}(\"{self.func_name}\")"
+        return f"{self.__class__.__name__}(\"{self.name}\")"
+
+
+class ArgBracketLeft(Token):
+    def __str__(self) -> str:
+        return f"Func("
+
+
+class ArgBracketRight(Token):
+    def __str__(self) -> str:
+        return f")Func"
+
+
+class ArgDelim(Token):
+    def __str__(self) -> str:
+        return f'Func","'
 
 
 class Return(Token):
