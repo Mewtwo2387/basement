@@ -873,8 +873,8 @@ def parse_factor(prog_str: str) -> bool:
     """
     return (
             parse_literal(prog_str)
-        or  parse_var_invoke(prog_str)
         or  parse_func_call(prog_str)
+        or  parse_var_invoke(prog_str)
         or  parse_grouped_expr(prog_str)
     )
 
