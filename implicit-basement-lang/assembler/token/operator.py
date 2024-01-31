@@ -178,7 +178,10 @@ OP_PRECEDENCE = {
 class AbstractOperator(Token):
     name:  str
     arity: int = field(init=False)
-    precedence: OpOrder = field(init=False)
+    order: OpOrder = field(init=False)
+
+    def __post_init__(self):
+        self.order = OP_PRECEDENCE[self.name]
 
     def __str__(self) -> str:
         return (f"{self.__class__.__name__}"
@@ -187,6 +190,7 @@ class AbstractOperator(Token):
 @dataclass
 class LeftUnaryOp(AbstractOperator):
     def __post_init__(self):
+        super().__post_init__()
         self.arity = 1
 
 @dataclass
@@ -197,6 +201,7 @@ class TypeCastOp(AbstractOperator):
         self.to_type = to_type
     
     def __post_init__(self):
+        super().__post_init__()
         self.arity = 1
 
     def __str__(self) -> str:
@@ -207,12 +212,14 @@ class TypeCastOp(AbstractOperator):
 @dataclass
 class RightUnaryOp(AbstractOperator):
     def __post_init__(self):
+        super().__post_init__()
         self.arity = 1
 
 
 @dataclass
 class BinaryOp(AbstractOperator):
     def __post_init__(self):
+        super().__post_init__()
         self.arity = 2
 
 @dataclass
