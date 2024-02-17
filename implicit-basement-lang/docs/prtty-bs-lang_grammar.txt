@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.4.2
+        Version: 0.4.3
 --------------------------------------------------------------------------------
 program     := { decl | func | struct | comment }, EOF ;
 
@@ -53,7 +53,7 @@ scope_block := "block", cmpd_stmt, [ "block" ] ;
 
 expr        := term, [ term_op, term ] ;
 term        := { l_un_op }, factor, [ factor_op, factor ], { r_un_op } ;
-factor      := literal | var_invoke | func_call | ( [ "(" ], expr, [ ")" ] ) ;
+factor      := literal | var_invoke | func_call | (  "(" , expr, ")"  ) ;
 
 term_op     := assign_op | t_arith_op | t_bit_op | rel_op ;
 factor_op   := f_arith_op | f_bit_op ;

@@ -1059,23 +1059,22 @@ def parse_r_un_op(prog_str: str) -> bool:
 def parse_grouped_expr(prog_str: str) -> bool:
     """
     Parse a grouped expression:
-        [ "(" ], expr, [ ")" ]
+        "(", expr, ")"
     """
     brpt = BranchPoint()
 
-    has_delim = match_str(prog_str, EXPR_GROUP_L_DELIM, True)
-    if has_delim:
-        append_to_output(ExprGroupDelimLeft())
+    if not match_str(prog_str, EXPR_GROUP_L_DELIM, True):
+        return False
+    append_to_output(ExprGroupDelimLeft())
 
     if not parse_expr(prog_str):
         brpt.revert_point()
         return False
 
-    if has_delim:
-        if not match_str(prog_str, EXPR_GROUP_R_DELIM, True):
-            brpt.revert_point()
-            return False
-        append_to_output(ExprGroupDelimRight())
+    if not match_str(prog_str, EXPR_GROUP_R_DELIM, True):
+        brpt.revert_point()
+        return False
+    append_to_output(ExprGroupDelimRight())
 
     return True
 
