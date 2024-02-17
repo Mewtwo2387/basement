@@ -416,15 +416,15 @@ def parse_func_decl(prog_str: str) -> bool:
         if not match_str(prog_str, FUNC_ARG_L_BRACKET, True):
             brpt_loop.revert_point()
             return False
-        
-        param_dict = parseget_param_dict(prog_str)
+
+        arg_list = parseget_param_list(prog_str)
 
         if not match_str(prog_str, FUNC_ARG_R_BRACKET, True):
             brpt_loop.revert_point()
             break
 
         append_to_output(
-            FunctionDeclaration(func_name, ret_type, param_dict) 
+            FunctionDeclaration(func_name, ret_type, arg_list) 
         )
         func_token_count += 1
     
@@ -435,11 +435,11 @@ def parse_func_decl(prog_str: str) -> bool:
     return True
 
 
-def parseget_param_dict(prog_str: str) -> OrderedDict[str, DataType]:
+def parseget_param_list(prog_str: str) -> list[Variable]:
     """
     Parse and get an ordered dictionary of function parameters
     """
-    param_dict = OrderedDict()
+    param_dict = []
 
     param_count = 0
     while True:
@@ -450,7 +450,7 @@ def parseget_param_dict(prog_str: str) -> OrderedDict[str, DataType]:
         param = parseget_param(prog_str)
         if param is not None:
             arg_name, data_type = param
-            param_dict[arg_name] = data_type
+            param_dict.append(Variable(arg_name, data_type))
         else:
             break
         param_count += 1
@@ -574,7 +574,7 @@ def parse_func(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    param_dict = parseget_param_dict(prog_str)
+    param_list = parseget_param_list(prog_str)
 
     if not match_str(prog_str, FUNC_ARG_R_BRACKET, True):
         brpt.revert_point()
@@ -587,7 +587,7 @@ def parse_func(prog_str: str) -> bool:
             brpt.revert_point()
             return False
 
-    append_to_output( Function(func_name, ret_type, param_dict) )
+    append_to_output( Function(func_name, ret_type, param_list) )
 
     if not parse_cmpd_stmt(prog_str):
         brpt.revert_point()

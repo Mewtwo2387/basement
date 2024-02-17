@@ -1,8 +1,8 @@
 from .token import ValueDict
 from .token import Token
+from .variable import Variable
 from ..data_type.types import DataType, get_data_type_name
 
-from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -20,31 +20,30 @@ RETURN_KEYWORD = "return"
 class Function(Token):
     name:           str
     ret_type:       DataType
-    arg_types:      OrderedDict[str, DataType]
-    local_var_type: OrderedDict[str, DataType] = \
-            field(init=False, default_factory=OrderedDict)
+    arg_list:       list[Variable]
+    local_var_dict: dict[str, Variable] = field(init=False)
 
     def __post_init__(self) -> None:
         self.size = self.ret_type
 
     def update(
             self, *,
-            address: Optional[int] = None,
-            local_var: Optional[OrderedDict[str, DataType]] = None
+            address:   Optional[int] = None,
+            local_var: Optional[list[Variable]] = None
         ) -> None:
         if address is not None:
             self.address = address
 
         if local_var is not None:
-            if not isinstance(local_var, dict):
+            if not isinstance(local_var, list):
                 raise TypeError("Invalid type for 'local_var'")
 
-            for id, var_tok in local_var.items():
-                if id in self.local_var_type:
+            for var_token in local_var:
+                if var_token.name in self.local_var_dict:
                     raise ValueError(f"Local variable '{id}' "
                                      f"is already defined in {self.name}")
-                self.local_var_type[id] = var_tok
-                self.size += var_tok
+                self.local_var_dict[var_token.name] = var_token
+                self.size += var_token.data_type
 
     def get_value(self) -> ValueDict:
         return {
@@ -55,8 +54,8 @@ class Function(Token):
     
     def __str__(self) -> str:
         ret_type_name = get_data_type_name(self.ret_type)
-        arg_type_names = [get_data_type_name(T) + f" {arg_name}"
-                          for arg_name, T in self.arg_types.items()]
+        arg_type_names = [get_data_type_name(arg.data_type) + f" {arg.name}"
+                          for arg in self.arg_list]
         return f"{ret_type_name} {self.name}({', '.join(arg_type_names)})"
 
 
