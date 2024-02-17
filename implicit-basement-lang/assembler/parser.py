@@ -1,5 +1,6 @@
 from .token.array_elem import (
-    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim
+    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
+    ArraySubscriptDelimLeft, ArraySubscriptDelimRight
 )
 from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
 from .token.delim import (
@@ -932,14 +933,14 @@ def parse_var_invoke(prog_str: str) -> bool:
     append_to_output(VariableInvoke(var_name))
 
     if match_str(prog_str, ARR_L_DELIM, True):
-        append_to_output(ArrayDelimLeft())
+        append_to_output(ArraySubscriptDelimLeft())
 
         if not (    parse_expr(prog_str)
                 and match_str(prog_str, ARR_R_DELIM, True)):
             brpt.revert_point()
             return False
 
-        append_to_output(ArrayDelimRight())
+        append_to_output(ArraySubscriptDelimRight())
     
     if match_str(prog_str, OP_MMB_ACCESS_CHAR, True):
         append_to_output(MemberAccessOp())

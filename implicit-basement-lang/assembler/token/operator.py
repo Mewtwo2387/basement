@@ -95,6 +95,10 @@ OP_ASSIGN_CHAR = "="
 OP_MMB_ACCESS = "MEMBER ACCESS"
 OP_MMB_ACCESS_CHAR = "."
 
+# --- Array Subscripting Operator ---
+OP_ARR_SUBSCR = "ARRAY SUBSCRIPT"
+OP_ARR_SUBSCR_CHAR = "ArrSubscr" # NOTE: This operator has no overt symbol
+
 ARITH_BIN_OP_DICT = {
     "term" : {
         OP_ADD : "+",
@@ -138,7 +142,15 @@ FACTOR_OP_DICT = (
     ARITH_BIN_OP_DICT["factor"] | BIT_BIN_OP_DICT["factor"]
 )
 
-_OP_STR_DICT = TERM_OP_DICT | FACTOR_OP_DICT | L_UN_OP_DICT | R_UN_OP_DICT
+ARR_SUBSCR_DICT = {OP_ARR_SUBSCR : OP_ARR_SUBSCR_CHAR}
+
+_OP_STR_DICT = (
+      TERM_OP_DICT
+    | FACTOR_OP_DICT
+    | L_UN_OP_DICT
+    | R_UN_OP_DICT
+    | ARR_SUBSCR_DICT
+)
 
 
 OP_PRECEDENCE = {
@@ -171,6 +183,7 @@ OP_PRECEDENCE = {
     OP_POST_INC   : OpOrder(11, OP_ASSOC_L2R),
     OP_POST_DEC   : OpOrder(11, OP_ASSOC_L2R),
     OP_MMB_ACCESS : OpOrder(11, OP_ASSOC_L2R),
+    OP_ARR_SUBSCR : OpOrder(11, OP_ASSOC_L2R),
 }
 
 
