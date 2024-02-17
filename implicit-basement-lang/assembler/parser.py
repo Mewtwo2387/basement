@@ -66,7 +66,7 @@ class BranchPoint:
     
     def revert_point(self) -> None:
         global input_idx, output_idx, output_list
-        if self.output_idx != 0:
+        if len(output_list) > 0:
             del output_list[self.output_idx:]
 
         input_idx, output_idx = self.input_idx, self.output_idx
