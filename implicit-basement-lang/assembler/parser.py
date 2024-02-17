@@ -1,25 +1,27 @@
-from .token.token    import Token
-from .token.variable import Variable, VariableInvoke
-from .token.number   import Integer, Float
-from .token.string   import String
+from .token.array_elem import (
+    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim
+)
+from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
+from .token.delim import (
+    Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
+)
 from .token.function import (
     Function, FunctionDeclaration, FunctionCall, Return,
     ArgBracketLeft, ArgBracketRight, ArgDelim
 )
-from .token.delim import (
-        Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
-    )
-from .token.struct_elem import (
-    StructDelimLeft, StructDelimRight, StructMemberDelim
-)
-from .token.array_elem import (
-    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim
-)
-from .token.scope_elem import ScopeStart, ScopeEnd
-from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
+from .token.number   import Integer, Float
 from .token.operator import (
     AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp
 )
+from .token.scope_elem import ScopeStart, ScopeEnd
+from .token.string   import String
+from .token.struct_elem import (
+    StructDelimLeft, StructDelimRight, StructMemberDelim
+)
+from .token.token    import Token
+from .token.variable import Variable, VariableInvoke
+
+from .data_type.array import Array
 from .data_type.number import (
         INT_STR_TO_TYPE_DICT,  
         FLOAT_STR_TO_TYPE_DICT, 
@@ -30,20 +32,20 @@ from .data_type.number import (
         DEFAULT_FLOAT_TYPE,
         IntType, FloatType
     )
-from .data_type.struct import Struct
 from .data_type.pointer import PointerType
-from .data_type.array import Array
+from .data_type.struct import Struct
 from .data_type.types import DataType
 
 from .error import ParseError
 
 from .keywords import *
 
-from dataclasses import dataclass, field
-from itertools import zip_longest
-from functools import partial as func_partial
 from collections import OrderedDict
+from dataclasses import dataclass, field
+from functools import partial as func_partial
+from itertools import zip_longest
 from typing import Optional
+
 
 struct_dict: dict[str, Struct] = {}
 
