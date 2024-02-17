@@ -593,14 +593,15 @@ def parse_func(prog_str: str) -> bool:
         brpt.revert_point()
         return False
     
-    match_str(prog_str, FUNCTION_KEYWORD, True)   # Optional structure
+    # Optional structure
+    if not match_str(prog_str, FUNCTION_KEYWORD, True):
+        return True
+
+    brpt_ending_kw = BranchPoint()
 
     closing_func_name = get_id(prog_str)
-    if (len(closing_func_name) > 0) and (closing_func_name != func_name):
-            raise ParseError(
-                 'Name mismatch in function declaration: '
-                f'"{func_name}" != "{closing_func_name}"'
-            )
+    if closing_func_name != func_name:
+        brpt_ending_kw.revert_point()
 
     return True
 
