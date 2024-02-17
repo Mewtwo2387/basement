@@ -2,6 +2,8 @@ from .token import Token
 from ..data_type.types import DataType, get_data_type_name
 from dataclasses import dataclass, field
 
+from collections import OrderedDict
+
 
 OP_ASSOC_NIL = -1
 OP_ASSOC_L2R = 0
@@ -123,19 +125,30 @@ BIT_BIN_OP_DICT = {
 }
 
 
-REL_BIN_OP_DICT = {
-    OP_LESS : "<",
-    OP_LEQ  : "<=",
-    OP_GRTR : ">",
-    OP_GEQ  : ">=",
-    OP_EQ   : "==",
-    OP_NEQ  : "!=",
-}
+# NOTE: OrderedDict is used here to test "<="/">=" first before ">" and "<"
+REL_BIN_OP_DICT = OrderedDict([
+    (OP_LEQ,  "<="),
+    (OP_GEQ,  ">="),
+    (OP_EQ,   "=="),
+    (OP_NEQ,  "!="),
+    (OP_LESS, "<" ),
+    (OP_GRTR, ">" ),
+])
 
 
+__OTHER_BIN_OPS = OrderedDict([
+    (OP_ASSIGN,     OP_ASSIGN_CHAR),
+    (OP_MMB_ACCESS, OP_MMB_ACCESS_CHAR)
+])
+
+
+# NOTE: The assignment operator which has similar onset character with some
+#       relation operators goes AFTER the relation operation dict.
 TERM_OP_DICT = (
-      ARITH_BIN_OP_DICT["term"] | BIT_BIN_OP_DICT["term"] | REL_BIN_OP_DICT
-    | { OP_ASSIGN : OP_ASSIGN_CHAR, OP_MMB_ACCESS : OP_MMB_ACCESS_CHAR }
+      ARITH_BIN_OP_DICT["term"]
+    | BIT_BIN_OP_DICT["term"]
+    | REL_BIN_OP_DICT
+    | __OTHER_BIN_OPS
 )
 
 FACTOR_OP_DICT = (
