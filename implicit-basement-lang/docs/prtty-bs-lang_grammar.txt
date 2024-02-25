@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.4.3
+        Version: 0.4.4
 --------------------------------------------------------------------------------
 program     := { decl | func | struct | comment }, EOF ;
 
@@ -41,7 +41,7 @@ stmt        := if_stmt
              | scope_block
              | var_decl
              | ( expr, end_of_line )
-             | ( "return", expr, end_of_line )
+             | ( "return", [ expr ], end_of_line )
              | end_of_line
              | comment ;
 loop_ctrl   := ( "break" | "continue" ), end_of_line ;

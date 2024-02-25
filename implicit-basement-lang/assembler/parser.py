@@ -778,18 +778,20 @@ def parse_scope_block(prog_str: str) -> bool:
 
 def parse_return(prog_str: str) -> bool:
     """
-    Parse a function return statement.
+    Parse a function return statement:
+        "return", [ expr ], EOL
     """
     brpt = BranchPoint()
 
     if not match_str(prog_str, RETURN_KEYWORD, True):
         return False
     append_to_output(Return())
+    
+    parse_expr(prog_str)  # Optional structure
 
-    if not parse_expr_stmt(prog_str):
+    if not parse_eol(prog_str):
         brpt.revert_point()
         return False
-
     return True
 
 
