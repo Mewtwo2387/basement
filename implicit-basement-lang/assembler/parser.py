@@ -700,6 +700,7 @@ def parse_if_stmt(prog_str: str) -> bool:
             if not elif_cond_parse_res:
                 brpt.revert_point()
                 return False
+            append_to_output(If())
         
         # Parse statements for the else/else-if construct.
         if not parse_scope_start(prog_str):
