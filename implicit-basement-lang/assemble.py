@@ -1,7 +1,6 @@
-from assembler.parser import parse
-from assembler.token.delim import EndOfLine
+from assembler.tokenizer import tokenize
 from assembler.token.scope_elem import ScopeStart, ScopeEnd
-import assembler.semantics as semantics
+import assembler.parser as parser
 
 import os
 from math import log10
@@ -15,7 +14,7 @@ def main():
     with open(file_name, "r") as file:
         code = file.read() + chr(0)
 
-    parse_result = parse(code)
+    parse_result = tokenize(code)
 
     if isinstance(parse_result, tuple):
         output, struct_dict = parse_result
@@ -25,7 +24,7 @@ def main():
         list_tokens(output)
         print("\n" + divider)
 
-        rpn_tokens = semantics.analyze_semantics(output, struct_dict)
+        rpn_tokens = parser.parse(output, struct_dict)
         list_tokens(rpn_tokens)
         print("\n" + divider)
 

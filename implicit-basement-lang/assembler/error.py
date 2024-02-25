@@ -1,6 +1,6 @@
-class ParseError(Exception):
+class TokenizeError(Exception):
     pass
 
 
-class SemanticError(Exception):
+class ParseError(Exception):
     pass

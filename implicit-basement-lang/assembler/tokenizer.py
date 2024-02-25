@@ -38,7 +38,7 @@ from .data_type.pointer import PointerType
 from .data_type.struct import Struct
 from .data_type.types import DataType
 
-from .error import ParseError
+from .error import TokenizeError
 
 from .keywords import *
 
@@ -73,9 +73,9 @@ class BranchPoint:
         input_idx, output_idx = self.input_idx, self.output_idx
 
 
-def parse(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
+def tokenize(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
     """
-    Parse a program, i.e. of the following symbols:
+    Tokenize a program, i.e. of the following symbols:
         { decl | func | struct }, EOF
     """
     while True:
@@ -362,7 +362,7 @@ def parse_initializer(prog_str: str, init_type: str) -> bool:
         cls_l_delim, cls_r_delim = StructDelimLeft, StructDelimRight
         cls_mmb_delim = StructMemberDelim
     else:
-        raise ParseError("[Internal error] Invalid init type")
+        raise TokenizeError("[Internal error] Invalid init type")
     
     brpt = BranchPoint()
 
@@ -517,7 +517,7 @@ def parse_struct(prog_str: str) -> bool:
 
     closing_struct_name = get_id(prog_str)
     if (len(closing_struct_name) > 0) and (closing_struct_name != struct_name):
-        raise ParseError(
+        raise TokenizeError(
                  'Name mismatch in struct declaration: '
                 f'"{struct_name}" != "{closing_struct_name}"'
             )
