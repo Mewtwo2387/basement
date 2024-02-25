@@ -263,8 +263,6 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     | ArraySubscriptDelimLeft()
             ):
                 operator_stack.append(token)
-                if isinstance(token, ArraySubscriptDelimLeft):
-                    output_queue.append(token)
 
             case (      ExprGroupDelimRight()
                       | ArgBracketRight()
@@ -275,7 +273,6 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     op_token = operator_stack[-1]
                     if (not isinstance(op_token, AbstractOperator)) :
                         if isinstance(op_token, ArraySubscriptDelimLeft):
-                            output_queue.append(token)
                             output_queue.append(BinaryOp(OP_ARR_SUBSCR))
 
                         # Discard the left bracket
