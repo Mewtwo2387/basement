@@ -7,12 +7,13 @@ from .token.delim import (
     Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
 )
 from .token.function import (
-    Function, FunctionDeclaration, FunctionCall, Return,
+    Function, FunctionDeclaration, Return,
     ArgBracketLeft, ArgBracketRight, ArgDelim
 )
 from .token.number   import Integer, Float
 from .token.operator import (
-    AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp
+    AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp,
+    FunctionCall
 )
 from .token.scope_elem import ScopeStart, ScopeEnd
 from .token.string   import String

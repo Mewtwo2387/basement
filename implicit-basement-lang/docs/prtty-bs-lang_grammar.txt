@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.4.4
+        Version: 0.4.5
 --------------------------------------------------------------------------------
 program     := { decl | func | struct | comment }, EOF ;
 
@@ -105,6 +105,7 @@ ascii_char  := (? ASCII characters ?) ;
 o------------------------------------------------------------------------------o
 | Operator | Description                                       | Associativity |
 |----------|---------------------------------------------------|---------------|
+|   ( )    | Function call                                     |               |
 |   [ ]    | Array subscript                                   | left to right |
 |    .     | Struct member selection                           |               |
 |  ++ --   | Postfix increment/decrement                       |               |

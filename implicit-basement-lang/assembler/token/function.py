@@ -64,14 +64,6 @@ class FunctionDeclaration(Function):
     pass
 
 
-@dataclass
-class FunctionCall(Token):
-    name : str
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(\"{self.name}\")"
-
-
 class ArgBracketLeft(Token):
     def __str__(self) -> str:
         return f"Func("

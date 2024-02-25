@@ -101,6 +101,11 @@ OP_MMB_ACCESS_CHAR = "."
 OP_ARR_SUBSCR = "ARRAY SUBSCRIPT"
 OP_ARR_SUBSCR_CHAR = "ArrSubscr" # NOTE: This operator has no overt symbol
 
+# --- Function Call Operator ---
+OP_FUNC_CALL = "FUNCTION CALL"
+OP_FUNC_CALL_CHAR = "FuncCall"   # NOTE: This operator has no overt symbol
+
+
 ARITH_BIN_OP_DICT = {
     "term" : {
         OP_ADD : "+",
@@ -138,7 +143,8 @@ REL_BIN_OP_DICT = OrderedDict([
 
 __OTHER_BIN_OPS = OrderedDict([
     (OP_ASSIGN,     OP_ASSIGN_CHAR),
-    (OP_MMB_ACCESS, OP_MMB_ACCESS_CHAR)
+    (OP_MMB_ACCESS, OP_MMB_ACCESS_CHAR),
+    (OP_FUNC_CALL,  OP_FUNC_CALL_CHAR),
 ])
 
 
@@ -197,6 +203,7 @@ OP_PRECEDENCE = {
     OP_POST_DEC   : OpOrder(11, OP_ASSOC_L2R),
     OP_MMB_ACCESS : OpOrder(11, OP_ASSOC_L2R),
     OP_ARR_SUBSCR : OpOrder(11, OP_ASSOC_L2R),
+    OP_FUNC_CALL  : OpOrder(11, OP_ASSOC_L2R),
 }
 
 
@@ -261,3 +268,11 @@ class MemberAccessOp(AbstractOperator):
 
     def __str__(self) -> str:
         return f"\"{OP_MMB_ACCESS_CHAR}\""
+
+@dataclass
+class FunctionCall(AbstractOperator):
+    func_name: str
+    name:      str  = field(init=False, default=OP_FUNC_CALL)
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(\"{self.func_name}\")"
