@@ -43,15 +43,17 @@ OP_PRE_INC  = "PRE-INCREMENT"
 OP_PRE_DEC  = "PRE-DECREMENT"
 OP_TCAST    = "TYPE CAST"
 
+# NOTE: Front the increment and decrement operators to disambiguate it from the
+#       unary plus and minus operators respectively.
 L_UN_OP_DICT = {
+    OP_PRE_INC  : "++",
+    OP_PRE_DEC  : "--",
     OP_UN_PLUS  : "+",
     OP_UN_MINUS : "-",
     OP_BIT_NOT  : "~",
     OP_LGC_NOT  : "!",
     OP_DEREF    : "*",
     OP_REF      : "&",
-    OP_PRE_INC  : "++",
-    OP_PRE_DEC  : "--",
 }
 OP_TCAST_L_DELIM = "("
 OP_TCAST_R_DELIM = ")"
