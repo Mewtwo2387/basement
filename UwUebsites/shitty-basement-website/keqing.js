@@ -86,6 +86,6 @@ class item{
     }
 }
 
-items = [new item('yanfei',0.1,1,0), new item('herta',1,10,1), new item('motor',8,120,2), new item('turbine',32,1600,3), new item('typhoon',128,24000,4)]
+items = [new item('yanfei',0.1,1,0), new item('herta',1,10,1), new item('motor',8,120,2), new item('turbine',32,1600,3), new item('typhoon',128,24000,4), new item('hurricane',500,400000,5), new item('vortex',2000,8e6,6), new item('spiral galaxy',8888,160e6,7), new item('pulsar',27777,3.33e9,8), new item('black hole',77777,66.6e9,9)]
 
 setInterval(tick,100)
