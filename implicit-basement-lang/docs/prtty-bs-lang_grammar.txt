@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.4.5
+        Version: 0.4.6
 --------------------------------------------------------------------------------
 program     := { decl | func | struct | comment }, EOF ;
 
@@ -13,7 +13,7 @@ func_decl   := type, id, "(", [ param_list ], ")",
                { ",", id, "(", [ param_list ], ")" }, end_of_line ;
 
 struct      := "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
-               [ "struct" ], [ id ] ;
+               [ "struct", id ] ;
 struct_mem  := type, id, { ",", id }, end_of_line ;
 
 type        := ( int_type | float_type | ( "struct", id ) | "void" ), 
@@ -30,7 +30,7 @@ int_type    := "u8"
 float_type  := "f32" | "f64" ;
 
 func        := "function", id, "(", [ param_list ], ")", [ "=>", type ],
-               cmpd_stmt, [ "function" ], [ id ] ;
+               cmpd_stmt, [ "function", id ] ;
 param_list  := param, { param } ;
 param       := type, id, [ "[", integer, "]" ] ;
 

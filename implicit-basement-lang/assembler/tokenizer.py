@@ -479,7 +479,7 @@ def parse_struct(prog_str: str) -> bool:
     """
     Parse a `struct` declaration:
         "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
-        [ "struct" ], [ id ]
+        [ "struct", id ]
     """
     brpt = BranchPoint()
     if not match_str(prog_str, STRUCT_KEYWORD, True):
@@ -513,14 +513,16 @@ def parse_struct(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    match_str(prog_str, STRUCT_KEYWORD, True)   # Optional structure
-
-    closing_struct_name = get_id(prog_str)
-    if (len(closing_struct_name) > 0) and (closing_struct_name != struct_name):
-        raise TokenizeError(
-                 'Name mismatch in struct declaration: '
-                f'"{struct_name}" != "{closing_struct_name}"'
-            )
+    match_str(prog_str, STRUCT_KEYWORD, True)
+    
+    # Optional structure: [ "struct", id ]
+    if match_str(prog_str, STRUCT_KEYWORD, True):
+        closing_struct_name = get_id(prog_str)
+        if closing_struct_name != struct_name:
+            raise TokenizeError(
+                    'Name mismatch in struct declaration: '
+                    f'"{struct_name}" != "{closing_struct_name}"'
+                )
 
     struct = Struct(struct_name, struct_mmb_dict)
     struct_dict[struct_name] = struct
@@ -559,7 +561,7 @@ def parse_func(prog_str: str) -> bool:
     """
     Parse a function:
         "function", id, "(", [ param_list ], ")", [ "=>", type ], cmpd_stmt,
-        [ "function" ], [ id ]
+        [ "function", id ]
     """
     brpt = BranchPoint()
 
@@ -594,16 +596,14 @@ def parse_func(prog_str: str) -> bool:
         brpt.revert_point()
         return False
     
-    # Optional structure
-    if not match_str(prog_str, FUNCTION_KEYWORD, True):
-        return True
-
-    brpt_ending_kw = BranchPoint()
-
-    closing_func_name = get_id(prog_str)
-    if closing_func_name != func_name:
-        brpt_ending_kw.revert_point()
-
+    # Optional structure: [ "function", id ]
+    if match_str(prog_str, FUNCTION_KEYWORD, True):
+        closing_func_name = get_id(prog_str)
+        if closing_func_name != func_name:
+            raise TokenizeError(
+                    'Name mismatch in function declaration: '
+                    f'"{func_name}" != "{closing_func_name}"'
+                )
     return True
 
 
