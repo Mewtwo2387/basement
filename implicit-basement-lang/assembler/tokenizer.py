@@ -152,16 +152,21 @@ def get_id(prog_str: str) -> str:
     return prog_str[idx_start:input_idx]
 
 
+def match_eol(prog_str: str) -> bool:
+    if not match_str(prog_str, EOL, True):
+        return False
+    parse_comment(prog_str)  # Optional structure
+    return True
+
+
 def parse_eol(prog_str: str) -> bool:
     """
     Parse an end of line (EOL) character
     """
-    if not match_str(prog_str, EOL, True):
+    if not match_eol(prog_str):
         return False
+
     append_to_output(EndOfLine())
-
-    parse_comment(prog_str)  # Optional structure
-
     return True
 
 
@@ -500,6 +505,10 @@ def parse_struct(prog_str: str) -> bool:
         if struct_mmb_tuple is None:
             break
         else:
+            if not match_eol(prog_str):
+                brpt.revert_point()
+                return False
+
             data_type, mmb_name_list = struct_mmb_tuple
             for mmb_name in mmb_name_list:
                 struct_mmb_dict[mmb_name] = data_type
@@ -513,8 +522,6 @@ def parse_struct(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    match_str(prog_str, STRUCT_KEYWORD, True)
-    
     # Optional structure: [ "struct", id ]
     if match_str(prog_str, STRUCT_KEYWORD, True):
         closing_struct_name = get_id(prog_str)
@@ -534,7 +541,7 @@ def parseget_struct_mmb_tuple(prog_str: str) \
         -> tuple[DataType, list[str]] | None:
     """
     Parse and obtain a struct member:
-        type, id, { ",", id }, EOL
+        type, id, { ",", id }
     """
     brpt = BranchPoint()
 
