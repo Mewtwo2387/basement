@@ -80,10 +80,10 @@ def tokenize(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
     """
     while True:
         brpt = BranchPoint()
-        parsing_success =  (parse_decl(prog_str))   \
-                        or (parse_func(prog_str))   \
-                        or (parse_struct(prog_str)) \
-                        or (parse_comment(prog_str))
+        parsing_success =  (parse_comment(prog_str)) \
+                        or (parse_decl(prog_str))    \
+                        or (parse_func(prog_str))    \
+                        or (parse_struct(prog_str))
         if not parsing_success:
             brpt.revert_point()
             break
