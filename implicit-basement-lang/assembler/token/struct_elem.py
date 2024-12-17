@@ -1,5 +1,4 @@
 from .delim import Delim
-from .token import Token
 
 
 STRUCT_KEYWORD = "struct"
