@@ -25,6 +25,7 @@ class Function(Token):
 
     def __post_init__(self) -> None:
         self.size = self.ret_type
+        self.local_var_dict = {}
 
     def update(
             self, *,

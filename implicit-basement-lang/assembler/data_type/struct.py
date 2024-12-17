@@ -7,6 +7,10 @@ from typing import Union
 _DataType = IntType | FloatType | PointerType
 
 class Struct(int):
+    size:   int
+    name:   str
+    fields: OrderedDict[str, Union[_DataType, "Struct"]]
+
     def __new__(cls, name: str,
                 member_types: OrderedDict[str, Union[_DataType, "Struct"]]):
         size_tuple = tuple(T for T in member_types.values())

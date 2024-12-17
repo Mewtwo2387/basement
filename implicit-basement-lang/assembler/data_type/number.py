@@ -1,4 +1,7 @@
 class IntType(int):
+    size:     int
+    issigned: bool
+
     def __new__(cls, size, issigned: bool):
         obj = super().__new__(cls, size)
         setattr(obj, "size", obj)
@@ -7,6 +10,8 @@ class IntType(int):
 
 
 class FloatType(int):
+    size: int
+
     def __new__(cls, size):
         obj = super().__new__(cls, size)
         setattr(obj, "size", obj)
