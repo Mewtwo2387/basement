@@ -1,4 +1,5 @@
 from assembler.tokenizer import tokenize
+from assembler.token.function import Function
 from assembler.token.scope_elem import ScopeStart, ScopeEnd
 import assembler.parser as parser
 
@@ -24,9 +25,27 @@ def main():
         list_tokens(output)
         print("\n" + divider)
 
-        rpn_tokens = parser.parse(output, struct_dict)
+        rpn_tokens = parser.parse(output)
         list_tokens(rpn_tokens)
         print("\n" + divider)
+
+        print("Structs:")
+        for name, struct_obj in struct_dict.items():
+            print(f"\t{name}:")
+            for field, field_size in struct_obj.fields.items():
+                print(f"\t\t{field}: {field_size} byte(s)")
+            print(f"\t(Total byte size: {struct_obj})")
+        print("\n" + divider)
+
+        print("Functions:")
+        if rpn_tokens is not None:
+            for token in rpn_tokens:
+                if not isinstance(token, Function):
+                    continue
+                print(f"\t{token.name} => {token.ret_type} byte(s):")
+                for var_name, var_obj in token.local_var_dict.items():
+                    print(f"\t\t{var_name}: {var_obj.size} byte(s)")
+                print(f"\t(Total byte size: {token.size})")
 
     else:
         print("Error parsing")

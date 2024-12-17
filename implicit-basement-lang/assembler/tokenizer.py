@@ -4,7 +4,7 @@ from .token.array_elem import (
 )
 from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
 from .token.delim import (
-    Comma, EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
+    EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
 )
 from .token.function import (
     Function, FunctionDeclaration, Return,
@@ -218,18 +218,21 @@ def parse_var_decl(prog_str: str) -> bool:
         if var_token_count > 0:
             if not match_str(prog_str, COMMA_CHAR, True):
                 break
-            append_to_output(Comma())
 
         var_name = get_id(prog_str)
-        if len(var_name) > 0:
-            append_to_output( Variable(var_name, var_type) )
-            var_token_count += 1
-            parse_var_init_token(prog_str)  # An optional structure
-        else:
+        if len(var_name) == 0:
             brpt_loop.revert_point()
             break
 
-    if (not parse_eol(prog_str)) or (var_token_count == 0):
+        append_to_output( Variable(var_name, var_type) )
+        append_to_output( EndOfLine() )
+
+        var_token_count += 1
+
+        # Defer the parsing of variable initializer.
+        parse_var_init_token(prog_str, var_name)  # An optional structure
+
+    if (not match_eol(prog_str)) or (var_token_count == 0):
         brpt.revert_point()
         return False
 
@@ -341,16 +344,20 @@ def parseget_data_type(prog_str: str) -> DataType | None:
     return data_type
 
 
-def parse_var_init_token(prog_str: str) -> bool:
+def parse_var_init_token(prog_str: str, var_name: str) -> bool:
     """
     Parse a variable initializer:
         "=", literal
     """
     brpt = BranchPoint()
 
+    append_to_output( VariableInvoke(var_name) )
+
     if not (parse_assign_op(prog_str) and parse_literal(prog_str)):
         brpt.revert_point()
         return False
+
+    append_to_output( EndOfLine() )
 
     return True
 

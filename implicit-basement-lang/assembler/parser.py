@@ -4,7 +4,7 @@ from .token.array_elem import (
 )
 from .token.branch     import If, Else, Loop, LoopBreak, LoopContinue
 from .token.delim import (
-    ExprGroupDelimLeft, ExprGroupDelimRight, Comma, EndOfLine
+    ExprGroupDelimLeft, ExprGroupDelimRight, EndOfLine
 )
 from .token.function   import (
     Function, FunctionDeclaration,
@@ -88,8 +88,7 @@ def var_in_scope(curr_scope: ScopeType, var_token: VariableInvoke) -> bool:
     )
 
 
-def parse(input_tokens: list[Token], struct_dict: dict[str, Struct]) \
-        -> list[Token] | None:
+def parse(input_tokens: list[Token]) -> list[Token] | None:
     init_global_scope()
     curr_scope: ScopeType = scope
 
@@ -180,14 +179,14 @@ def parse(input_tokens: list[Token], struct_dict: dict[str, Struct]) \
                 # Variable
                 case Variable():
                     curr_scope[token.name] = token
-                    line_tokens.append(token)
 
-                # End of lines
-                case Comma() | EndOfLine():
+                # End of line
+                case EndOfLine():
                     output_tokens.extend(
                         convert_to_rpn(curr_scope, line_tokens)
                     )
-                    output_tokens.append(token)
+                    if line_tokens:
+                        output_tokens.append(token)
                     line_tokens = []
 
                 case _:
@@ -197,6 +196,7 @@ def parse(input_tokens: list[Token], struct_dict: dict[str, Struct]) \
             e.args = (f"[Token #{tok_idx}] " + "".join(e.args), )
             raise e
 
+    update_func_local_vars()
     return output_tokens
 
 
@@ -302,3 +302,28 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
     while operator_stack:
         output_queue.append( operator_stack.pop() )
     return output_queue
+
+
+def update_func_local_vars():
+    for func_name, func_obj in func_dict.items():
+        local_var_list: list[Variable] = []
+        func_scope = scope[SCOPE_KEY_PREFIX__FUNC + func_name]
+        if isinstance(func_scope, Variable):
+            raise ParseError("Expected a scope object, got variable")
+
+        local_scope_list: list[ScopeType] = [func_scope]
+        while local_scope_list:
+            curr_scope = local_scope_list.pop()
+            for name, value in curr_scope.items():
+                if name == SCOPE_RETURN_KEY:
+                    continue
+
+                match value:
+                    case Variable():
+                        local_var_list.append(value)
+                    case OrderedDict():
+                        local_scope_list.append(value)
+                    case _:
+                        raise ParseError("Invalid scope element")
+
+        func_obj.update(local_var=local_var_list)

@@ -15,6 +15,7 @@ class Delim(Token):
         return f"\"{self.char}\""
 
 
+# NOTE: Unused. Here in case, we need it.
 class Comma(Delim):
     char = COMMA_CHAR
 
