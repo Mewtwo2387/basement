@@ -36,3 +36,6 @@ class ArraySubscriptDelimRight(Delim):
 
 class ArrayMemberDelim(Delim):
     char = ARR_MMB_DELIM
+
+    def __str__(self) -> str:
+        return f"Array{self.char}"

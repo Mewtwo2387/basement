@@ -378,7 +378,7 @@ def parse_initializer(prog_str: str, init_type: str) -> bool:
     
     brpt = BranchPoint()
 
-    if not match_str(prog_str, ARR_L_DELIM, True):
+    if not match_str(prog_str, cls_l_delim.char, True):
         return False
     append_to_output(cls_l_delim())
 
@@ -386,7 +386,7 @@ def parse_initializer(prog_str: str, init_type: str) -> bool:
         while True:
             brpt_arr_mem = BranchPoint()
 
-            if not match_str(prog_str, ARR_MMB_DELIM, True):
+            if not match_str(prog_str, cls_mmb_delim.char, True):
                 break
             append_to_output(cls_mmb_delim())
 
@@ -394,9 +394,10 @@ def parse_initializer(prog_str: str, init_type: str) -> bool:
                 brpt_arr_mem.revert_point()
                 break
 
-    if not match_str(prog_str, ARR_R_DELIM, True):
+    if not match_str(prog_str, cls_r_delim.char, True):
         brpt.revert_point()
         return False
+
     append_to_output(cls_r_delim())
 
     return True

@@ -2,6 +2,9 @@ from .token.array_elem import (
     ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
     ArraySubscriptDelimLeft, ArraySubscriptDelimRight
 )
+from .token.struct_elem import (
+    StructDelimLeft, StructDelimRight, StructMemberDelim
+)
 from .token.branch     import If, Else, Loop, LoopBreak, LoopContinue
 from .token.delim import (
     ExprGroupDelimLeft, ExprGroupDelimRight, EndOfLine
@@ -206,6 +209,7 @@ OperatorStack = list[     AbstractOperator
                         | ArgBracketLeft
                         | ArrayDelimLeft
                         | ArraySubscriptDelimLeft
+                        | StructDelimLeft
                     ]
 
 def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
@@ -261,19 +265,35 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     | ArgBracketLeft()
                     | ArrayDelimLeft()
                     | ArraySubscriptDelimLeft()
+                    | StructDelimLeft()
             ):
                 operator_stack.append(token)
+
+                init_delims = (ArrayDelimLeft, StructDelimLeft)
+                tok_instance_of_f = token_isinstance_func_build(token)
+                if any( map(tok_instance_of_f, init_delims) ):
+                    output_queue.append( token )
 
             case (      ExprGroupDelimRight()
                       | ArgBracketRight()
                       | ArrayDelimRight()
                       | ArraySubscriptDelimRight()
+                      | StructDelimRight()
             ):
                 while operator_stack:
                     op_token = operator_stack[-1]
-                    if (not isinstance(op_token, AbstractOperator)) :
+                    op_instance_of_f = token_isinstance_func_build(op_token)
+                    left_init_delims = (ArrayDelimLeft, StructDelimLeft)
+
+                    if (not isinstance(op_token, AbstractOperator)):  # Not an operator
                         if isinstance(op_token, ArraySubscriptDelimLeft):
                             output_queue.append(BinaryOp(OP_ARR_SUBSCR))
+
+                        # For the array and struct initializers, leave the
+                        # left and right delimiters to build them in the
+                        # code generation step.
+                        if any(map(op_instance_of_f, left_init_delims)):
+                            output_queue.append( token )  # Append the RIGHT delim token
 
                         # Discard the left bracket
                         operator_stack.pop()
@@ -283,12 +303,17 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                 else:
                     raise ParseError("Imbalanced left bracket")
 
-            case ArgDelim() | ArrayMemberDelim():
+            case (    ArgDelim()
+                    | ArrayMemberDelim()
+                    | StructMemberDelim()
+            ):
+                left_delims = (ArgBracketLeft, ArrayDelimLeft, StructDelimLeft)
                 while operator_stack:
                     op_token = operator_stack[-1]
-                    if (   isinstance(op_token, ArgBracketLeft)
-                        or isinstance(op_token, ArrayDelimLeft) ):
-                            break
+                    op_instance_of_f = token_isinstance_func_build(op_token)
+
+                    if any(map(op_instance_of_f, left_delims)):
+                        break
                     output_queue.append( operator_stack.pop() )
                 else:
                     raise ParseError("Missing left bracket")
@@ -302,6 +327,10 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
     while operator_stack:
         output_queue.append( operator_stack.pop() )
     return output_queue
+
+
+def token_isinstance_func_build(token: Token):
+    return lambda T: isinstance(token, T)
 
 
 def update_func_local_vars():
