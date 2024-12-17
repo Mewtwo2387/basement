@@ -3,15 +3,15 @@ from assembler.token.function import Function
 from assembler.token.scope_elem import ScopeStart, ScopeEnd
 import assembler.parser as parser
 
-import os
+from pathlib import Path
 from math import log10
 
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+SCRIPT_DIR = Path(__file__).parent
 
 
 def main():
-    file_name = f"{SCRIPT_DIR}/test/a.bs"
+    file_name = SCRIPT_DIR / "test/a.bs"
     with open(file_name, "r") as file:
         code = file.read() + chr(0)
 
