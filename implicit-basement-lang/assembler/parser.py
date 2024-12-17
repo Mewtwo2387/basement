@@ -22,7 +22,7 @@ from .token.scope_elem import ScopeStart, ScopeEnd
 from .token.token      import Token
 from .token.variable   import Variable, VariableInvoke
 
-from .data_type.struct import Struct
+from .data_type.struct_decl import StructDecl
 
 from .error import ParseError
 
@@ -356,3 +356,10 @@ def update_func_local_vars():
                         raise ParseError("Invalid scope element")
 
         func_obj.update(local_var=local_var_list)
+
+
+def build_initializer(tokens: list[Token]) -> list[Token]:
+    for token in tokens:
+        pass
+    
+    return []

@@ -1,12 +1,12 @@
-from .number import SIZE_TYPE, IntType
+from .number import SIZE_TYPE
+from .data_type import DataType
 
 
 POINTER_CHAR = "*"
 
 
-class PointerType(int):
-    size:     int
-    ref_type: IntType
+class PointerType(DataType):
+    ref_type: DataType
 
     def __new__(cls, ref_type):
         obj = super().__new__(cls, SIZE_TYPE)

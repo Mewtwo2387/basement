@@ -1,5 +1,7 @@
-class IntType(int):
-    size:     int
+from .data_type import DataType
+
+
+class IntType(DataType):
     issigned: bool
 
     def __new__(cls, size, issigned: bool):
@@ -9,9 +11,7 @@ class IntType(int):
         return obj
 
 
-class FloatType(int):
-    size: int
-
+class FloatType(DataType):
     def __new__(cls, size):
         obj = super().__new__(cls, size)
         setattr(obj, "size", obj)

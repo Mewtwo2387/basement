@@ -35,7 +35,7 @@ from .data_type.number import (
         IntType, FloatType
     )
 from .data_type.pointer import PointerType
-from .data_type.struct import Struct
+from .data_type.struct_decl import StructDecl
 from .data_type.types import DataType
 
 from .error import TokenizeError
@@ -49,7 +49,7 @@ from itertools import zip_longest
 from typing import Optional
 
 
-struct_dict: dict[str, Struct] = {}
+struct_dict: dict[str, StructDecl] = {}
 
 input_idx: int = 0
 output_list: list[Token] = []
@@ -73,7 +73,7 @@ class BranchPoint:
         input_idx, output_idx = self.input_idx, self.output_idx
 
 
-def tokenize(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
+def tokenize(prog_str: str) -> tuple[list[Token], dict[str, StructDecl]] | None:
     """
     Tokenize a program, i.e. of the following symbols:
         { decl | func | struct }, EOF
@@ -83,7 +83,7 @@ def tokenize(prog_str: str) -> tuple[list[Token], dict[str, Struct]] | None:
         parsing_success =  (parse_comment(prog_str)) \
                         or (parse_decl(prog_str))    \
                         or (parse_func(prog_str))    \
-                        or (parse_struct(prog_str))
+                        or (parse_struct_decl(prog_str))
         if not parsing_success:
             brpt.revert_point()
             break
@@ -280,7 +280,7 @@ def parseget_float_data_type(prog_str: str) -> FloatType | None:
     return None
 
 
-def parseget_struct_type(prog_str: str) -> Struct | None:
+def parseget_struct_type(prog_str: str) -> StructDecl | None:
     """
     Parse struct type and obtain the resulting token:
         "struct", id
@@ -488,7 +488,7 @@ def parseget_param(prog_str: str) -> tuple[str, DataType] | None:
     return arg_name, data_type
 
 
-def parse_struct(prog_str: str) -> bool:
+def parse_struct_decl(prog_str: str) -> bool:
     """
     Parse a `struct` declaration:
         "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
@@ -539,7 +539,7 @@ def parse_struct(prog_str: str) -> bool:
                     f'"{struct_name}" != "{closing_struct_name}"'
                 )
 
-    struct = Struct(struct_name, struct_mmb_dict)
+    struct = StructDecl(struct_name, struct_mmb_dict)
     struct_dict[struct_name] = struct
 
     return True
