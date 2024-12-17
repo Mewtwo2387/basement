@@ -210,7 +210,7 @@ OP_PRECEDENCE = {
 
 
 @dataclass
-class AbstractOperator(Token):
+class Operator(Token):
     name:  str
     arity: int = field(init=False)
     order: OpOrder = field(init=False)
@@ -223,20 +223,18 @@ class AbstractOperator(Token):
                 f"(\"{_OP_STR_DICT[self.name]}\")")
 
 @dataclass
-class LeftUnaryOp(AbstractOperator):
+class LeftUnaryOp(Operator):
     def __post_init__(self):
         super().__post_init__()
         self.arity = 1
 
 @dataclass
-class TypeCastOp(AbstractOperator):
+class TypeCastOp(Operator):
     name: str = field(init=False, default=OP_TCAST)
 
     def __init__(self, to_type: DataType):
-        self.to_type = to_type
-    
-    def __post_init__(self):
         super().__post_init__()
+        self.to_type = to_type
         self.arity = 1
 
     def __str__(self) -> str:
@@ -245,34 +243,34 @@ class TypeCastOp(AbstractOperator):
 
 
 @dataclass
-class RightUnaryOp(AbstractOperator):
+class RightUnaryOp(Operator):
     def __post_init__(self):
         super().__post_init__()
         self.arity = 1
 
 
 @dataclass
-class BinaryOp(AbstractOperator):
+class BinaryOp(Operator):
     def __post_init__(self):
         super().__post_init__()
         self.arity = 2
 
 @dataclass
-class AssignOp(AbstractOperator):
+class AssignOp(Operator):
     name: str = field(init=False, default=OP_ASSIGN)
 
     def __str__(self) -> str:
         return f"\"{OP_ASSIGN_CHAR}\""
 
 @dataclass
-class MemberAccessOp(AbstractOperator):
+class MemberAccessOp(Operator):
     name: str = field(init=False, default=OP_MMB_ACCESS)
 
     def __str__(self) -> str:
         return f"\"{OP_MMB_ACCESS_CHAR}\""
 
 @dataclass
-class FunctionCall(AbstractOperator):
+class FunctionCall(Operator):
     func_name: str
     name:      str  = field(init=False, default=OP_FUNC_CALL)
 

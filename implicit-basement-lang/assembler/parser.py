@@ -16,7 +16,7 @@ from .token.function   import (
 from .token.number     import Integer, Float
 from .token.operator import (
     LeftUnaryOp, RightUnaryOp, BinaryOp, TypeCastOp, AssignOp, MemberAccessOp,
-    AbstractOperator, FunctionCall, OP_ARR_SUBSCR
+    Operator, FunctionCall, OP_ARR_SUBSCR
 )
 from .token.scope_elem import ScopeStart, ScopeEnd
 from .token.token      import Token
@@ -203,7 +203,7 @@ def parse(input_tokens: list[Token]) -> list[Token] | None:
     return output_tokens
 
 
-OperatorStack = list[     AbstractOperator
+OperatorStack = list[     Operator
                         | FunctionCall
                         | ExprGroupDelimLeft
                         | ArgBracketLeft
@@ -252,7 +252,7 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                 while operator_stack:
                     op_token = operator_stack[-1]
 
-                    if (not isinstance(op_token, AbstractOperator)):
+                    if (not isinstance(op_token, Operator)):
                         break
 
                     if op_token.order > token.order:
@@ -285,7 +285,7 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     op_instance_of_f = token_isinstance_func_build(op_token)
                     left_init_delims = (ArrayDelimLeft, StructDelimLeft)
 
-                    if (not isinstance(op_token, AbstractOperator)):  # Not an operator
+                    if (not isinstance(op_token, Operator)):
                         if isinstance(op_token, ArraySubscriptDelimLeft):
                             output_queue.append(BinaryOp(OP_ARR_SUBSCR))
 
