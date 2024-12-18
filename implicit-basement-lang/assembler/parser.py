@@ -317,7 +317,8 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     output_queue.append( operator_stack.pop() )
                 else:
                     raise ParseError("Missing left bracket")
-                output_queue.append(token)
+                if not isinstance(token, ArgDelim):
+                    output_queue.append(token)
 
             case _:
                 raise ParseError(
