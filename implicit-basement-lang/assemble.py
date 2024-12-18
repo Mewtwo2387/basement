@@ -18,23 +18,23 @@ def main():
     parse_result = tokenize(code)
 
     if isinstance(parse_result, tuple):
-        output, struct_dict = parse_result
+        output, structs = parse_result
 
         divider = "=" * 80
         print("Parsed code:", divider, sep="\n")
         list_tokens(output)
         print("\n" + divider)
 
-        rpn_tokens = parser.parse(output)
+        rpn_tokens = parser.parse(output, structs)
         list_tokens(rpn_tokens)
         print("\n" + divider)
 
         print("Structs:")
-        for name, struct_obj in struct_dict.items():
-            print(f"\t{name}:")
-            for field, field_size in struct_obj.fields.items():
+        for struct in structs:
+            print(f"\t{struct.name}:")
+            for field, field_size in struct.fields.items():
                 print(f"\t\t{field}: {field_size} byte(s)")
-            print(f"\t(Total byte size: {struct_obj})")
+            print(f"\t(Total byte size: {struct})")
         print("\n" + divider)
 
         print("Functions:")

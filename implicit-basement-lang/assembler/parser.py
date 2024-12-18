@@ -91,7 +91,22 @@ def var_in_scope(curr_scope: ScopeType, var_token: VariableInvoke) -> bool:
     )
 
 
-def parse(input_tokens: list[Token]) -> list[Token] | None:
+def is_struct_field_defined(
+            field_token: VariableInvoke,
+            structs:     tuple[StructDecl, ...]
+        ) -> bool:
+    
+    all_fields = {s.name: {field for field in s.fields} for s in structs}
+    field_in_structs = [
+        field_token.name in f_set for f_set in all_fields.values()
+    ]
+    return any(field_in_structs)
+
+
+def parse(
+            input_tokens: list[Token],
+            struct_list: tuple[StructDecl, ...]
+        ) -> list[Token] | None:
     init_global_scope()
     curr_scope: ScopeType = scope
 
@@ -127,7 +142,7 @@ def parse(input_tokens: list[Token]) -> list[Token] | None:
                     # For the if condition case
                     if line_tokens:
                         output_tokens.extend(
-                            convert_to_rpn(curr_scope, line_tokens)
+                            convert_to_rpn(curr_scope, line_tokens, struct_list)
                         )
 
                     if dest_scope_name not in curr_scope:
@@ -186,7 +201,7 @@ def parse(input_tokens: list[Token]) -> list[Token] | None:
                 # End of line
                 case EndOfLine():
                     output_tokens.extend(
-                        convert_to_rpn(curr_scope, line_tokens)
+                        convert_to_rpn(curr_scope, line_tokens, struct_list)
                     )
                     if line_tokens:
                         output_tokens.append(token)
@@ -212,8 +227,11 @@ OperatorStack = list[     Operator
                         | StructDelimLeft
                     ]
 
-def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
-        -> list[Token]:
+def convert_to_rpn(
+            curr_scope:  ScopeType,
+            token_list:  list[Token],
+            struct_list: tuple[StructDecl, ...]
+        ) -> list[Token]:
     """
     Convert a sequence of tokens to its equivalent sequence in RPN.
     This is an implementation of the Shunting Yard algorithm.
@@ -221,7 +239,8 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
     operator_stack: OperatorStack = []
     output_queue = []
 
-    for token in token_list:
+    var_is_struct_field = False
+    for i, token in enumerate(token_list):
         match token:
             case (      Integer()
                       | Float()
@@ -229,10 +248,12 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                       | Variable()
             ):
                 if (        isinstance(token, VariableInvoke)
-                    and not var_in_scope(curr_scope, token) ):
-                    raise ParseError(
-                        f"Variable \"{token.name}\" is not defined"
-                    )
+                        and not var_is_struct_field):
+                    if not var_in_scope(curr_scope, token):
+                        raise ParseError(
+                            f"Variable \"{token.name}\" is not defined"
+                        )
+                var_is_struct_field = False
                 output_queue.append(token)
 
             case (    LeftUnaryOp()
@@ -248,6 +269,23 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                         raise ParseError(
                             f"Function \"{token.func_name}\" is not defined"
                         )
+                
+                if isinstance(token, FieldAccessOp):
+                    if i >= len(token_list):
+                        raise ParseError("Expected a struct field member")
+                    field_token = token_list[i + 1]
+                    if not isinstance(field_token, VariableInvoke):
+                        raise ParseError(
+                            "Expects a name struct field name for the "
+                            "struct field access operator."
+                        )
+
+                    if not is_struct_field_defined(field_token, struct_list):
+                        raise ParseError(
+                            f"The field name '{field_token.name}' is not "
+                            "a member of any struct."
+                        )
+                    var_is_struct_field = True
 
                 while operator_stack:
                     op_token = operator_stack[-1]
