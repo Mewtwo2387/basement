@@ -12,7 +12,7 @@ from .token.function import (
 )
 from .token.number   import Integer, Float
 from .token.operator import (
-    AssignOp, MemberAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp,
+    AssignOp, FieldAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp,
     FunctionCall
 )
 from .token.scope_elem import ScopeStart, ScopeEnd
@@ -491,7 +491,7 @@ def parseget_param(prog_str: str) -> tuple[str, DataType] | None:
 def parse_struct_decl(prog_str: str) -> bool:
     """
     Parse a `struct` declaration:
-        "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
+        "struct", id, scope_start, struct_field, { struct_field }, scope_end,
         [ "struct", id ]
     """
     brpt = BranchPoint()
@@ -507,25 +507,25 @@ def parse_struct_decl(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    struct_mmb_dict = OrderedDict()
+    struct_field_dict = OrderedDict()
     while True:
-        struct_mmb_tuple = parseget_struct_mmb_tuple(prog_str)
-        if struct_mmb_tuple is None:
+        struct_field_tuple = parseget_struct_field_tuple(prog_str)
+        if struct_field_tuple is None:
             break
         else:
             if not match_eol(prog_str):
                 brpt.revert_point()
                 return False
 
-            data_type, mmb_name_list = struct_mmb_tuple
+            data_type, mmb_name_list = struct_field_tuple
             for mmb_name in mmb_name_list:
-                struct_mmb_dict[mmb_name] = data_type
+                struct_field_dict[mmb_name] = data_type
     
-    if len(struct_mmb_dict) == 0:
+    if len(struct_field_dict) == 0:
         brpt.revert_point()
         return False
 
-    if (   (len(struct_mmb_dict) == 0)
+    if (   (len(struct_field_dict) == 0)
         or (not match_str(prog_str, STRUCT_R_DELIM, True)) ):
         brpt.revert_point()
         return False
@@ -539,16 +539,16 @@ def parse_struct_decl(prog_str: str) -> bool:
                     f'"{struct_name}" != "{closing_struct_name}"'
                 )
 
-    struct = StructDecl(struct_name, struct_mmb_dict)
+    struct = StructDecl(struct_name, struct_field_dict)
     struct_dict[struct_name] = struct
 
     return True
 
 
-def parseget_struct_mmb_tuple(prog_str: str) \
+def parseget_struct_field_tuple(prog_str: str) \
         -> tuple[DataType, list[str]] | None:
     """
-    Parse and obtain a struct member:
+    Parse and obtain a struct field:
         type, id, { ",", id }
     """
     brpt = BranchPoint()
@@ -962,8 +962,8 @@ def parse_var_invoke(prog_str: str) -> bool:
 
         append_to_output(ArraySubscriptDelimRight())
     
-    if match_str(prog_str, OP_MMB_ACCESS_CHAR, True):
-        append_to_output(MemberAccessOp())
+    if match_str(prog_str, OP_FIELD_ACCESS_CHAR, True):
+        append_to_output(FieldAccessOp())
 
         if not parse_var_invoke(prog_str):
             brpt.revert_point()

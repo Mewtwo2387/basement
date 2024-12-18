@@ -1,8 +1,9 @@
-from .token import Token
-from ..data_type.types import DataType, get_data_type_name
+from collections import OrderedDict
 from dataclasses import dataclass, field
 
-from collections import OrderedDict
+from .token import Token
+from ..data_type.types import DataType, get_data_type_name
+from .variable import VariableInvoke
 
 
 OP_ASSOC_NIL = -1
@@ -96,8 +97,8 @@ OP_ASSIGN = "ASSIGN"
 OP_ASSIGN_CHAR = "="
 
 # --- Member Access Operator ---
-OP_MMB_ACCESS = "MEMBER ACCESS"
-OP_MMB_ACCESS_CHAR = "."
+OP_FIELD_ACCESS = "STRUCT FIELD ACCESS"
+OP_FIELD_ACCESS_CHAR = "."
 
 # --- Array Subscripting Operator ---
 OP_ARR_SUBSCR = "ARRAY SUBSCRIPT"
@@ -144,9 +145,9 @@ REL_BIN_OP_DICT = OrderedDict([
 
 
 __OTHER_BIN_OPS = OrderedDict([
-    (OP_ASSIGN,     OP_ASSIGN_CHAR),
-    (OP_MMB_ACCESS, OP_MMB_ACCESS_CHAR),
-    (OP_FUNC_CALL,  OP_FUNC_CALL_CHAR),
+    (OP_ASSIGN,       OP_ASSIGN_CHAR),
+    (OP_FIELD_ACCESS, OP_FIELD_ACCESS_CHAR),
+    (OP_FUNC_CALL,    OP_FUNC_CALL_CHAR),
 ])
 
 
@@ -175,37 +176,37 @@ _OP_STR_DICT = (
 
 
 OP_PRECEDENCE = {
-    OP_ASSIGN     : OpOrder( 1, OP_ASSOC_R2L),
-    OP_OR         : OpOrder( 2, OP_ASSOC_L2R),
-    OP_XOR        : OpOrder( 3, OP_ASSOC_L2R),
-    OP_AND        : OpOrder( 4, OP_ASSOC_L2R),
-    OP_EQ         : OpOrder( 5, OP_ASSOC_L2R),
-    OP_NEQ        : OpOrder( 5, OP_ASSOC_L2R),
-    OP_LESS       : OpOrder( 6, OP_ASSOC_L2R),
-    OP_LEQ        : OpOrder( 6, OP_ASSOC_L2R),
-    OP_GRTR       : OpOrder( 6, OP_ASSOC_L2R),
-    OP_GEQ        : OpOrder( 6, OP_ASSOC_L2R),
-    OP_LSHFT      : OpOrder( 7, OP_ASSOC_L2R),
-    OP_RSHFT      : OpOrder( 7, OP_ASSOC_L2R),
-    OP_ADD        : OpOrder( 8, OP_ASSOC_L2R),
-    OP_SUB        : OpOrder( 8, OP_ASSOC_L2R),
-    OP_MUL        : OpOrder( 9, OP_ASSOC_L2R),
-    OP_DIV        : OpOrder( 9, OP_ASSOC_L2R),
-    OP_MOD        : OpOrder( 9, OP_ASSOC_L2R),
-    OP_REF        : OpOrder(10, OP_ASSOC_R2L),
-    OP_DEREF      : OpOrder(10, OP_ASSOC_R2L),
-    OP_TCAST      : OpOrder(10, OP_ASSOC_R2L),
-    OP_BIT_NOT    : OpOrder(10, OP_ASSOC_R2L),
-    OP_LGC_NOT    : OpOrder(10, OP_ASSOC_R2L),
-    OP_UN_PLUS    : OpOrder(10, OP_ASSOC_R2L),
-    OP_UN_MINUS   : OpOrder(10, OP_ASSOC_R2L),
-    OP_PRE_INC    : OpOrder(10, OP_ASSOC_R2L),
-    OP_PRE_DEC    : OpOrder(10, OP_ASSOC_R2L),
-    OP_POST_INC   : OpOrder(11, OP_ASSOC_L2R),
-    OP_POST_DEC   : OpOrder(11, OP_ASSOC_L2R),
-    OP_MMB_ACCESS : OpOrder(11, OP_ASSOC_L2R),
-    OP_ARR_SUBSCR : OpOrder(11, OP_ASSOC_L2R),
-    OP_FUNC_CALL  : OpOrder(11, OP_ASSOC_L2R),
+    OP_ASSIGN       : OpOrder( 1, OP_ASSOC_R2L),
+    OP_OR           : OpOrder( 2, OP_ASSOC_L2R),
+    OP_XOR          : OpOrder( 3, OP_ASSOC_L2R),
+    OP_AND          : OpOrder( 4, OP_ASSOC_L2R),
+    OP_EQ           : OpOrder( 5, OP_ASSOC_L2R),
+    OP_NEQ          : OpOrder( 5, OP_ASSOC_L2R),
+    OP_LESS         : OpOrder( 6, OP_ASSOC_L2R),
+    OP_LEQ          : OpOrder( 6, OP_ASSOC_L2R),
+    OP_GRTR         : OpOrder( 6, OP_ASSOC_L2R),
+    OP_GEQ          : OpOrder( 6, OP_ASSOC_L2R),
+    OP_LSHFT        : OpOrder( 7, OP_ASSOC_L2R),
+    OP_RSHFT        : OpOrder( 7, OP_ASSOC_L2R),
+    OP_ADD          : OpOrder( 8, OP_ASSOC_L2R),
+    OP_SUB          : OpOrder( 8, OP_ASSOC_L2R),
+    OP_MUL          : OpOrder( 9, OP_ASSOC_L2R),
+    OP_DIV          : OpOrder( 9, OP_ASSOC_L2R),
+    OP_MOD          : OpOrder( 9, OP_ASSOC_L2R),
+    OP_REF          : OpOrder(10, OP_ASSOC_R2L),
+    OP_DEREF        : OpOrder(10, OP_ASSOC_R2L),
+    OP_TCAST        : OpOrder(10, OP_ASSOC_R2L),
+    OP_BIT_NOT      : OpOrder(10, OP_ASSOC_R2L),
+    OP_LGC_NOT      : OpOrder(10, OP_ASSOC_R2L),
+    OP_UN_PLUS      : OpOrder(10, OP_ASSOC_R2L),
+    OP_UN_MINUS     : OpOrder(10, OP_ASSOC_R2L),
+    OP_PRE_INC      : OpOrder(10, OP_ASSOC_R2L),
+    OP_PRE_DEC      : OpOrder(10, OP_ASSOC_R2L),
+    OP_POST_INC     : OpOrder(11, OP_ASSOC_L2R),
+    OP_POST_DEC     : OpOrder(11, OP_ASSOC_L2R),
+    OP_FIELD_ACCESS : OpOrder(11, OP_ASSOC_L2R),
+    OP_ARR_SUBSCR   : OpOrder(11, OP_ASSOC_L2R),
+    OP_FUNC_CALL    : OpOrder(11, OP_ASSOC_L2R),
 }
 
 
@@ -263,11 +264,11 @@ class AssignOp(Operator):
         return f"\"{OP_ASSIGN_CHAR}\""
 
 @dataclass
-class MemberAccessOp(Operator):
-    name: str = field(init=False, default=OP_MMB_ACCESS)
+class FieldAccessOp(Operator):
+    name: str = field(init=False, default=OP_FIELD_ACCESS)
 
     def __str__(self) -> str:
-        return f"\"{OP_MMB_ACCESS_CHAR}\""
+        return f"\"{OP_FIELD_ACCESS_CHAR}\""
 
 @dataclass
 class FunctionCall(Operator):

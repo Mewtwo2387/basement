@@ -6,7 +6,7 @@ from .token.operator import (
     R_UN_OP_DICT,
     TERM_OP_DICT,
     FACTOR_OP_DICT,
-    OP_MMB_ACCESS_CHAR,
+    OP_FIELD_ACCESS_CHAR,
     OP_ASSIGN_CHAR,
 )
 from .token.delim import (

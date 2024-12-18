@@ -15,7 +15,7 @@ from .token.function   import (
 )
 from .token.number     import Integer, Float
 from .token.operator import (
-    LeftUnaryOp, RightUnaryOp, BinaryOp, TypeCastOp, AssignOp, MemberAccessOp,
+    LeftUnaryOp, RightUnaryOp, BinaryOp, TypeCastOp, AssignOp, FieldAccessOp,
     Operator, FunctionCall, OP_ARR_SUBSCR
 )
 from .token.scope_elem import ScopeStart, ScopeEnd
@@ -240,7 +240,7 @@ def convert_to_rpn(curr_scope: OrderedDict, token_list: list[Token]) \
                     | BinaryOp()
                     | TypeCastOp()
                     | AssignOp()
-                    | MemberAccessOp()
+                    | FieldAccessOp()
                     | FunctionCall()
             ):
                 if (    isinstance(token, FunctionCall)
