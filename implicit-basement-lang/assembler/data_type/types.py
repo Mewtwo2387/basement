@@ -1,8 +1,5 @@
 from .data_type import DataType
-from .number import (
-    IntType, FloatType, VOID_TYPE, VOID_TYPE_NAME,
-    INT_NAME_DICT, FLOAT_NAME_DICT
-)
+from .number import IntType, FloatType
 from .array import Array
 from .pointer import PointerType
 from .struct_decl import StructDecl
@@ -10,13 +7,8 @@ from .struct_decl import StructDecl
 
 def get_data_type_name(data_type : DataType) -> str:
     match data_type:
-        case IntType():
-            if data_type is VOID_TYPE:
-                name = VOID_TYPE_NAME
-            else:
-                name = INT_NAME_DICT[getattr(data_type, "issigned")][data_type]
-        case FloatType():
-            name = FLOAT_NAME_DICT[data_type]
+        case IntType() | FloatType():
+            name = data_type.name
         case StructDecl():
             name = f"struct {getattr(data_type, 'name')}"
         case PointerType():

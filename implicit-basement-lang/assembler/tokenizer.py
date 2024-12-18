@@ -25,9 +25,8 @@ from .token.variable import Variable, VariableInvoke
 
 from .data_type.array import Array
 from .data_type.number import (
-        INT_STR_TO_TYPE_DICT,  
-        FLOAT_STR_TO_TYPE_DICT, 
-        VOID_TYPE_NAME,  
+        INT_TYPES,  
+        FLOAT_TYPES,
         VOID_TYPE,
         CHAR_TYPE,
         DEFAULT_INT_TYPE,
@@ -260,8 +259,8 @@ def parseget_int_data_type(prog_str: str) -> IntType | None:
     """
 
     skip_whitespace(prog_str)
-    for name, T in INT_STR_TO_TYPE_DICT.items():
-        if match_str(prog_str, name):
+    for T in INT_TYPES:
+        if match_str(prog_str, T.name):
             return T
     return None
 
@@ -274,8 +273,8 @@ def parseget_float_data_type(prog_str: str) -> FloatType | None:
     NOTE: No intervening whitespace
     """
     skip_whitespace(prog_str)
-    for name, T in FLOAT_STR_TO_TYPE_DICT.items():
-        if match_str(prog_str, name):
+    for T in FLOAT_TYPES:
+        if match_str(prog_str, T.name):
             return T
     return None
 
@@ -299,7 +298,7 @@ def parseget_void_type(prog_str: str) -> IntType | None:
     Parse void type and obtain the resulting token:
         "void"
     """
-    if match_str(prog_str, VOID_TYPE_NAME, True):
+    if match_str(prog_str, VOID_TYPE.name, True):
         return VOID_TYPE
     return None
 

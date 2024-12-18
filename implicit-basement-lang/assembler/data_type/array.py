@@ -1,5 +1,6 @@
 from .data_type import DataType
 
+
 class Array(DataType):
     elem_type: DataType
     length:    int
@@ -9,4 +10,8 @@ class Array(DataType):
         setattr(obj, "elem_type", elem_type)
         setattr(obj, "length", length)
         setattr(obj, "size", elem_type * length)
+
+        name = f"{elem_type.name}[]"
+        setattr(obj, "name", name)
+
         return obj
