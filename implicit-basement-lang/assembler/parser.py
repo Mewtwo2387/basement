@@ -14,7 +14,6 @@ from .token.function    import (Function,
                                 ArgDelim,
                                 Return)
 from .token.number   import Integer, Float
-from .token.struct   import Struct
 from .token.operator import (Operator,
                              LeftUnaryOp,
                              RightUnaryOp,
