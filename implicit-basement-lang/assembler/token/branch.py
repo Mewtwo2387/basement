@@ -12,7 +12,7 @@ LOOP_BREAK_KEYWORD = "break"
 
 
 class BranchControl(Token):
-    keyword = None
+    keyword: str = ""
 
     def __str__(self) -> str:
         return f"\"{self.keyword}\""

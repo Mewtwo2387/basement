@@ -11,6 +11,9 @@ class Data(Token):
     value: Any
     type:  DataType
 
+    def __post_init__(self):
+        self.size = self.type.size
+
     def get_value(self) -> ValueDict:
         return {"value": self.value, "type": self.type}
 
