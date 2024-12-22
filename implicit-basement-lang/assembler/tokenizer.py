@@ -201,8 +201,6 @@ def parse_var_decl(prog_str: str) -> bool:
     brpt = BranchPoint()
 
     var_attrib_str = parseget_var_attrib_str(prog_str)
-    if var_attrib_str is not None:
-        pass    # TODO: Do something about variable attributes
 
     var_type = parseget_data_type(prog_str)
     if var_type is None:
@@ -222,7 +220,7 @@ def parse_var_decl(prog_str: str) -> bool:
             brpt_loop.revert_point()
             break
 
-        append_to_output( Variable(var_name, var_type) )
+        append_to_output( Variable(var_name, var_type, var_attrib_str) )
         append_to_output( EndOfLine() )
 
         var_token_count += 1
