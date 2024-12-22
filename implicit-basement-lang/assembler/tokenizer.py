@@ -21,16 +21,14 @@ from .token.initializer import InitDelimLeft, InitDelimRight, InitMemberDelim
 from .token.token       import Token
 from .token.variable    import Variable, VariableInvoke
 
-from .data_type.array  import Array
-from .data_type.number import (
-        INT_TYPES,  
-        FLOAT_TYPES,
-        VOID_TYPE,
-        CHAR_TYPE,
-        DEFAULT_INT_TYPE,
-        DEFAULT_FLOAT_TYPE,
-        IntType, FloatType
-    )
+from .data_type.number import (INT_TYPES,
+                               FLOAT_TYPES,
+                               VOID_TYPE,
+                               CHAR_TYPE,
+                               DEFAULT_INT_TYPE,
+                               DEFAULT_FLOAT_TYPE,
+                               IntType,
+                               FloatType)
 from .data_type.pointer     import PointerType
 from .data_type.struct_decl import StructDecl
 from .data_type.types       import DataType
@@ -310,7 +308,7 @@ def parseget_data_type(prog_str: str) -> DataType | None:
     """
     Parse data type and obtain the output token:
         ( int_type | float_type | ( "struct", id ) | "void" ),
-        [ "[", integer, "]" ]{ "*" }
+        [ "[", "]" ], { "*" }
     """
     brpt = BranchPoint()
 
@@ -323,15 +321,11 @@ def parseget_data_type(prog_str: str) -> DataType | None:
         return None
 
     if match_str(prog_str, ARR_L_DELIM, True):
-        # Get the length of the array
-        skip_whitespace(prog_str)
-        arr_len_str = get_digit_seq(prog_str)
-
-        if len(arr_len_str) == 0 or not match_str(prog_str, ARR_R_DELIM, True):
+        if not match_str(prog_str, ARR_R_DELIM, True):
             brpt.revert_point()
             return None
-
-        data_type = Array(data_type, int(arr_len_str))
+        # Just like good ol' C, arrays are pointer under the hood.
+        data_type = PointerType(data_type)
 
 
     while match_str(prog_str, POINTER_CHAR, True):

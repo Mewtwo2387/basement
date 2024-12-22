@@ -1,6 +1,5 @@
 from .data_type import DataType
 from .number import IntType, FloatType
-from .array import Array
 from .pointer import PointerType
 from .struct_decl import StructDecl
 
@@ -14,10 +13,6 @@ def get_data_type_name(data_type : DataType) -> str:
         case PointerType():
             ref_type_name = get_data_type_name(getattr(data_type, "ref_type"))
             name = f"{ref_type_name}*"
-        case Array():
-            ref_type_name = get_data_type_name(getattr(data_type, "elem_type"))
-            array_length = getattr(data_type, "length")
-            name = f"{ref_type_name}[{array_length}]"
         case _:
             name = "???"
     return name
