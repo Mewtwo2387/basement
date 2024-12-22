@@ -15,7 +15,7 @@ from .token.delim import (
     EXPR_GROUP_R_DELIM,
     EOL
 )
-from .token.struct_elem import (
+from .token.struct import (
     STRUCT_KEYWORD,
     STRUCT_L_DELIM,
     STRUCT_R_DELIM,
@@ -24,7 +24,11 @@ from .token.struct_elem import (
 from .token.array_elem import (
     ARR_L_DELIM,
     ARR_R_DELIM,
-    ARR_MMB_DELIM
+)
+from .token.initializer import (
+    INITIALIZER_L_DELIM,
+    INITIALIZER_R_DELIM,
+    INITIALIZER_MMB_DELIM
 )
 from .token.scope_elem import (
     SCOPE_START,

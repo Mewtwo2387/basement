@@ -1,29 +1,27 @@
-from .token.array_elem import (
-    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
-    ArraySubscriptDelimLeft, ArraySubscriptDelimRight
-)
-from .token.branch import If, Else, Loop, LoopContinue, LoopBreak
-from .token.delim import (
-    EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
-)
-from .token.function import (
-    Function, FunctionDeclaration, Return,
-    ArgBracketLeft, ArgBracketRight, ArgDelim
-)
+from .token.branch   import If, Else, Loop, LoopContinue, LoopBreak
+from .token.delim    import EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
+from .token.function import (Function,
+                             FunctionDeclaration,
+                             Return,
+                             ArgBracketLeft,
+                             ArgBracketRight,
+                             ArgDelim)
 from .token.number   import Integer, Float
-from .token.operator import (
-    AssignOp, FieldAccessOp, LeftUnaryOp, RightUnaryOp, TypeCastOp, BinaryOp,
-    FunctionCall
-)
-from .token.scope_elem import ScopeStart, ScopeEnd
-from .token.string   import String
-from .token.struct_elem import (
-    StructDelimLeft, StructDelimRight, StructMemberDelim
-)
-from .token.token    import Token
-from .token.variable import Variable, VariableInvoke
+from .token.operator import (AssignOp,
+                             FieldAccessOp,
+                             LeftUnaryOp,
+                             RightUnaryOp,
+                             TypeCastOp,
+                             BinaryOp,
+                             FunctionCall)
+from .token.scope_elem  import ScopeStart, ScopeEnd
+from .token.string      import String
+from .token.array_elem  import ArraySubscriptDelimLeft, ArraySubscriptDelimRight
+from .token.initializer import InitDelimLeft, InitDelimRight, InitMemberDelim
+from .token.token       import Token
+from .token.variable    import Variable, VariableInvoke
 
-from .data_type.array import Array
+from .data_type.array  import Array
 from .data_type.number import (
         INT_TYPES,  
         FLOAT_TYPES,
@@ -33,9 +31,9 @@ from .data_type.number import (
         DEFAULT_FLOAT_TYPE,
         IntType, FloatType
     )
-from .data_type.pointer import PointerType
+from .data_type.pointer     import PointerType
 from .data_type.struct_decl import StructDecl
-from .data_type.types import DataType
+from .data_type.types       import DataType
 
 from .error import TokenizeError
 
@@ -362,43 +360,35 @@ def parse_var_init_token(prog_str: str, var_name: str) -> bool:
     return True
 
 
-def parse_initializer(prog_str: str, init_type: str) -> bool:
+def parse_initializer(prog_str: str) -> bool:
     """
     Parse a general initializer:
         left_delim, [ expr, { mmb_delim, expr } ], right_delim
     """
-    if init_type.casefold() == "array":
-        cls_l_delim, cls_r_delim = ArrayDelimLeft, ArrayDelimRight
-        cls_mmb_delim = ArrayMemberDelim
-    elif init_type.casefold() == "struct":
-        cls_l_delim, cls_r_delim = StructDelimLeft, StructDelimRight
-        cls_mmb_delim = StructMemberDelim
-    else:
-        raise TokenizeError("[Internal error] Invalid init type")
-    
+
     brpt = BranchPoint()
 
-    if not match_str(prog_str, cls_l_delim.char, True):
+    if not match_str(prog_str, INITIALIZER_L_DELIM, True):
         return False
-    append_to_output(cls_l_delim())
+    append_to_output(InitDelimLeft())
 
     if parse_expr(prog_str):
         while True:
             brpt_arr_mem = BranchPoint()
 
-            if not match_str(prog_str, cls_mmb_delim.char, True):
+            if not match_str(prog_str, INITIALIZER_MMB_DELIM, True):
                 break
-            append_to_output(cls_mmb_delim())
+            append_to_output(InitMemberDelim())
 
             if not parse_expr(prog_str):
                 brpt_arr_mem.revert_point()
                 break
 
-    if not match_str(prog_str, cls_r_delim.char, True):
+    if not match_str(prog_str, INITIALIZER_R_DELIM, True):
         brpt.revert_point()
         return False
 
-    append_to_output(cls_r_delim())
+    append_to_output(InitDelimRight())
 
     return True
 
@@ -1210,8 +1200,7 @@ _LITERAL_PARSE_FUNCS = (
     parse_float_literal,
     parse_char_literal,
     parse_string_literal,
-    func_partial(parse_initializer, init_type="array"),
-    func_partial(parse_initializer, init_type="struct")
+    parse_initializer
 )
 def parse_literal(prog_str: str) -> bool:
     """

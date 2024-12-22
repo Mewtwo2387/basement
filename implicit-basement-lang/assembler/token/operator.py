@@ -3,7 +3,6 @@ from dataclasses import dataclass, field
 
 from .token import Token
 from ..data_type.types import DataType, get_data_type_name
-from .variable import VariableInvoke
 
 
 OP_ASSOC_NIL = -1
@@ -108,6 +107,10 @@ OP_ARR_SUBSCR_CHAR = "ArrSubscr" # NOTE: This operator has no overt symbol
 OP_FUNC_CALL = "FUNCTION CALL"
 OP_FUNC_CALL_CHAR = "FuncCall"   # NOTE: This operator has no overt symbol
 
+# --- Store to Memory Operator ---
+OP_STORE = "STORE"
+OP_STORE_CHAR = "Store to memory"  # NOTE: This operator has no overt symbol
+
 
 ARITH_BIN_OP_DICT = {
     "term" : {
@@ -146,6 +149,7 @@ REL_BIN_OP_DICT = OrderedDict([
 
 __OTHER_BIN_OPS = OrderedDict([
     (OP_ASSIGN,       OP_ASSIGN_CHAR),
+    (OP_STORE,        OP_STORE_CHAR),
     (OP_FIELD_ACCESS, OP_FIELD_ACCESS_CHAR),
     (OP_FUNC_CALL,    OP_FUNC_CALL_CHAR),
 ])
@@ -177,6 +181,7 @@ _OP_STR_DICT = (
 
 OP_PRECEDENCE = {
     OP_ASSIGN       : OpOrder( 1, OP_ASSOC_R2L),
+    OP_STORE        : OpOrder( 1, OP_ASSOC_R2L),
     OP_OR           : OpOrder( 2, OP_ASSOC_L2R),
     OP_XOR          : OpOrder( 3, OP_ASSOC_L2R),
     OP_AND          : OpOrder( 4, OP_ASSOC_L2R),
@@ -213,7 +218,7 @@ OP_PRECEDENCE = {
 @dataclass
 class Operator(Token):
     name:  str
-    arity: int = field(init=False)
+    arity: int     = field(init=False)
     order: OpOrder = field(init=False)
 
     def __post_init__(self):
@@ -223,6 +228,7 @@ class Operator(Token):
         return (f"{self.__class__.__name__}"
                 f"(\"{_OP_STR_DICT[self.name]}\")")
 
+
 @dataclass
 class LeftUnaryOp(Operator):
     def __post_init__(self):
@@ -231,7 +237,8 @@ class LeftUnaryOp(Operator):
 
 @dataclass
 class TypeCastOp(Operator):
-    name: str = field(init=False, default=OP_TCAST)
+    name:    str = field(init=False, default=OP_TCAST)
+    to_type: DataType
 
     def __init__(self, to_type: DataType):
         super().__post_init__()
@@ -261,14 +268,22 @@ class AssignOp(Operator):
     name: str = field(init=False, default=OP_ASSIGN)
 
     def __str__(self) -> str:
-        return f"\"{OP_ASSIGN_CHAR}\""
+        return f"\"{_OP_STR_DICT[self.name]}\""
+
+@dataclass
+class SendToMemOp(Operator):
+    name: str = field(init=False, default=OP_STORE)
+
+    def __str__(self) -> str:
+        return f"  [{_OP_STR_DICT[self.name]}]"
+    
 
 @dataclass
 class FieldAccessOp(Operator):
     name: str = field(init=False, default=OP_FIELD_ACCESS)
 
     def __str__(self) -> str:
-        return f"\"{OP_FIELD_ACCESS_CHAR}\""
+        return f"\"{_OP_STR_DICT[self.name]}\""
 
 @dataclass
 class FunctionCall(Operator):

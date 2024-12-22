@@ -1,26 +1,34 @@
-from .token.array_elem import (
-    ArrayDelimLeft, ArrayDelimRight, ArrayMemberDelim,
-    ArraySubscriptDelimLeft, ArraySubscriptDelimRight
-)
-from .token.struct_elem import (
-    StructDelimLeft, StructDelimRight, StructMemberDelim
-)
-from .token.branch     import If, Else, Loop, LoopBreak, LoopContinue
-from .token.delim import (
-    ExprGroupDelimLeft, ExprGroupDelimRight, EndOfLine
-)
-from .token.function   import (
-    Function, FunctionDeclaration,
-    ArgBracketLeft, ArgBracketRight, ArgDelim, Return
-)
-from .token.number     import Integer, Float
-from .token.operator import (
-    LeftUnaryOp, RightUnaryOp, BinaryOp, TypeCastOp, AssignOp, FieldAccessOp,
-    Operator, FunctionCall, OP_ARR_SUBSCR
-)
-from .token.scope_elem import ScopeStart, ScopeEnd
-from .token.token      import Token
-from .token.variable   import Variable, VariableInvoke
+from .token.array_elem  import (ArraySubscriptDelimLeft,
+                                ArraySubscriptDelimRight)
+from .token.initializer import (InitDelimLeft,
+                                InitDelimRight,
+                                InitMemberDelim)
+from .token.branch      import  If, Else, Loop, LoopBreak, LoopContinue
+from .token.delim       import (ExprGroupDelimLeft,
+                                ExprGroupDelimRight,
+                                EndOfLine)
+from .token.function    import (Function,
+                                FunctionDeclaration,
+                                ArgBracketLeft,
+                                ArgBracketRight,
+                                ArgDelim,
+                                Return)
+from .token.number   import Integer, Float
+from .token.struct   import Struct
+from .token.operator import (Operator,
+                             LeftUnaryOp,
+                             RightUnaryOp,
+                             BinaryOp,
+                             TypeCastOp,
+                             AssignOp,
+                             FieldAccessOp,
+                             FunctionCall,
+                             SendToMemOp,
+                             OP_ARR_SUBSCR)
+from .token.scope_elem   import ScopeStart, ScopeEnd
+from .token.token        import Token
+from .token.variable     import Variable, VariableInvoke
+from .token.memory_block import MemoryBlock, MemoryBlockOffset
 
 from .data_type.struct_decl import StructDecl
 
@@ -220,9 +228,8 @@ OperatorStack = list[     Operator
                         | FunctionCall
                         | ExprGroupDelimLeft
                         | ArgBracketLeft
-                        | ArrayDelimLeft
                         | ArraySubscriptDelimLeft
-                        | StructDelimLeft
+                        | InitDelimLeft
                     ]
 
 def convert_to_rpn(
@@ -238,7 +245,10 @@ def convert_to_rpn(
     output_queue = []
 
     var_is_struct_field = False
-    for i, token in enumerate(token_list):
+
+    tok_idx = 0
+    while tok_idx < len(token_list):
+        token = token_list[tok_idx]
         match token:
             case (      Integer()
                       | Float()
@@ -268,22 +278,10 @@ def convert_to_rpn(
                             f"Function \"{token.func_name}\" is not defined"
                         )
                 
-                if isinstance(token, FieldAccessOp):
-                    if i >= len(token_list):
-                        raise ParseError("Expected a struct field member")
-                    field_token = token_list[i + 1]
-                    if not isinstance(field_token, VariableInvoke):
-                        raise ParseError(
-                            "Expects a name struct field name for the "
-                            "struct field access operator."
-                        )
-
-                    if not is_struct_field_defined(field_token, struct_list):
-                        raise ParseError(
-                            f"The field name '{field_token.name}' is not "
-                            "a member of any struct."
-                        )
-                    var_is_struct_field = True
+                # For the struct field access operator
+                var_is_struct_field = next_tok_is_struct_field(token_list,
+                                                               tok_idx,
+                                                               struct_list)
 
                 while operator_stack:
                     op_token = operator_stack[-1]
@@ -297,39 +295,34 @@ def convert_to_rpn(
                     break
                 operator_stack.append(token)
 
+            case InitDelimLeft():
+                tok_idx += 1   # Proceed to the struct init
+                res = build_struct_init(curr_scope,
+                                        struct_list,
+                                        token_list,
+                                        tok_idx)
+                struct_init_tokens, tok_idx = res
+                output_queue.extend( struct_init_tokens )
+            case InitDelimRight():
+                raise ParseError("Misplaced right struct delimiter")
+            case InitDelimRight():
+                raise ParseError("Misplaced struct init member delimiter")
+
             case (    ExprGroupDelimLeft()
                     | ArgBracketLeft()
-                    | ArrayDelimLeft()
                     | ArraySubscriptDelimLeft()
-                    | StructDelimLeft()
             ):
                 operator_stack.append(token)
 
-                init_delims = (ArrayDelimLeft, StructDelimLeft)
-                tok_instance_of_f = token_isinstance_func_build(token)
-                if any( map(tok_instance_of_f, init_delims) ):
-                    output_queue.append( token )
-
             case (      ExprGroupDelimRight()
                       | ArgBracketRight()
-                      | ArrayDelimRight()
                       | ArraySubscriptDelimRight()
-                      | StructDelimRight()
             ):
                 while operator_stack:
                     op_token = operator_stack[-1]
-                    op_instance_of_f = token_isinstance_func_build(op_token)
-                    left_init_delims = (ArrayDelimLeft, StructDelimLeft)
-
                     if (not isinstance(op_token, Operator)):
                         if isinstance(op_token, ArraySubscriptDelimLeft):
                             output_queue.append(BinaryOp(OP_ARR_SUBSCR))
-
-                        # For the array and struct initializers, leave the
-                        # left and right delimiters to build them in the
-                        # code generation step.
-                        if any(map(op_instance_of_f, left_init_delims)):
-                            output_queue.append( token )  # Append the RIGHT delim token
 
                         # Discard the left bracket
                         operator_stack.pop()
@@ -339,16 +332,10 @@ def convert_to_rpn(
                 else:
                     raise ParseError("Imbalanced left bracket")
 
-            case (    ArgDelim()
-                    | ArrayMemberDelim()
-                    | StructMemberDelim()
-            ):
-                left_delims = (ArgBracketLeft, ArrayDelimLeft, StructDelimLeft)
+            case ArgDelim():
                 while operator_stack:
                     op_token = operator_stack[-1]
-                    op_instance_of_f = token_isinstance_func_build(op_token)
-
-                    if any(map(op_instance_of_f, left_delims)):
+                    if isinstance(op_token, ArgBracketLeft):
                         break
                     output_queue.append( operator_stack.pop() )
                 else:
@@ -361,13 +348,107 @@ def convert_to_rpn(
                     f"Invalid token encountered in converting to "
                     f"RPN expression: \"{token.__class__.__name__}\""
                 )
+
+        tok_idx += 1
+    
     while operator_stack:
         output_queue.append( operator_stack.pop() )
     return output_queue
 
 
-def token_isinstance_func_build(token: Token):
-    return lambda T: isinstance(token, T)
+def next_tok_is_struct_field(token_list:  list[Token],
+                             tok_idx:     int,
+                             struct_list: list[StructDecl]) -> bool:
+
+    if not isinstance(token_list[tok_idx], FieldAccessOp):
+        return False
+    
+    if tok_idx >= len(token_list):
+        raise ParseError("Expected a struct field member")
+    
+    field_token = token_list[tok_idx + 1]   # Peek at the next token
+    if not isinstance(field_token, VariableInvoke):
+        raise ParseError(
+            "Expects a name struct field name for the struct field access"
+            " operator."
+        ) 
+    if not is_struct_field_defined(field_token, struct_list):
+        raise ParseError(
+            f"The field name '{field_token.name}' is not a member of "
+            "any struct."
+        )
+
+    return True
+
+
+def build_struct_init(
+            curr_scope:  ScopeType,
+            struct_list: list[StructDecl],
+            token_list:  list[Token],
+            tok_idx:     int
+        ) -> tuple[list[Token], int]:
+
+    init_expr_end_types = (InitDelimRight, InitMemberDelim)
+
+    _tok_idx = tok_idx
+    nesting_lvl = 1
+
+    mem_block = MemoryBlock()
+    addr_offset = 0
+
+    struct_init_tokens          : list[Token] = [mem_block]
+    struct_field_init_token_list: list[Token] = []
+
+    while _tok_idx < len(token_list):
+        token = token_list[_tok_idx]
+        _tok_idx += 1
+
+        if isinstance(token, InitDelimLeft):
+            nesting_lvl += 1
+        if isinstance(token, init_expr_end_types):
+            nesting_lvl -= 1
+
+        if nesting_lvl == 0:
+            rpn_tokens = convert_to_rpn(curr_scope,
+                                        struct_field_init_token_list,
+                                        struct_list)
+            # Add an offset point here
+            struct_init_tokens.append(MemoryBlockOffset(mem_block, addr_offset))
+            struct_init_tokens.extend(rpn_tokens)
+            # Add the send to memory operator here
+            struct_init_tokens.append(SendToMemOp())
+
+            field_expr_token_size = calc_expr_token_size(rpn_tokens)
+            addr_offset += field_expr_token_size
+            mem_block.update(expr_size=field_expr_token_size)
+
+            # If the right delimiter is reached, the parsing ends
+            if isinstance(token, InitDelimRight):
+                _tok_idx += 1  # Skip the right delimiter
+                break
+
+            # But if a struct init member delimeter (the comma) is reached,
+            # Reset the nesting level to parse the next expression
+            nesting_lvl += 1  
+            struct_field_init_token_list = []
+            continue
+
+        struct_field_init_token_list.append(token)
+
+    return struct_init_tokens, _tok_idx
+
+
+def calc_expr_token_size(token_list: list[Token]) -> int:
+    size = 0    
+    for token in token_list:
+        if isinstance(token, TypeCastOp):
+            curr_size = token.to_type.size
+        else:
+            curr_size = token.size
+
+        if curr_size > size:
+            size = curr_size
+    return size
 
 
 def update_func_local_vars():
@@ -393,10 +474,3 @@ def update_func_local_vars():
                         raise ParseError("Invalid scope element")
 
         func_obj.update(local_var=local_var_list)
-
-
-def build_initializer(tokens: list[Token]) -> list[Token]:
-    for token in tokens:
-        pass
-    
-    return []
