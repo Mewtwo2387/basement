@@ -73,7 +73,7 @@ class BranchPoint:
 
 
 def tokenize(prog_str: str) \
-        -> tuple[list[Token], tuple[StructDecl, ...]] | None:
+        -> tuple[list[Token], list[StructDecl]] | None:
     """
     Tokenize a program, i.e. of the following symbols:
         { decl | func | struct }, EOF
@@ -91,7 +91,7 @@ def tokenize(prog_str: str) \
     if not match_str(prog_str, EOF, True):
         return None
 
-    return output_list, tuple(struct_dict.values())
+    return output_list, list(struct_dict.values())
 
 
 def skip_whitespace(prog_str: str) -> None:

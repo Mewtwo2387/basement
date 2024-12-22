@@ -93,7 +93,7 @@ def var_in_scope(curr_scope: ScopeType, var_token: VariableInvoke) -> bool:
 
 def is_struct_field_defined(
             field_token: VariableInvoke,
-            structs:     tuple[StructDecl, ...]
+            structs:     list[StructDecl]
         ) -> bool:
     
     all_fields = {s.name: {field for field in s.fields} for s in structs}
@@ -103,10 +103,8 @@ def is_struct_field_defined(
     return any(field_in_structs)
 
 
-def parse(
-            input_tokens: list[Token],
-            struct_list: tuple[StructDecl, ...]
-        ) -> list[Token] | None:
+def parse(input_tokens: list[Token], struct_list: list[StructDecl]) \
+        -> list[Token] | None:
     init_global_scope()
     curr_scope: ScopeType = scope
 
@@ -230,7 +228,7 @@ OperatorStack = list[     Operator
 def convert_to_rpn(
             curr_scope:  ScopeType,
             token_list:  list[Token],
-            struct_list: tuple[StructDecl, ...]
+            struct_list: list[StructDecl]
         ) -> list[Token]:
     """
     Convert a sequence of tokens to its equivalent sequence in RPN.
