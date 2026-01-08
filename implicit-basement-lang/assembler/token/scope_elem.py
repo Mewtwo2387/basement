@@ -2,10 +2,7 @@ from .delim import Delim
 
 
 SCOPE_START = ":"
-SCOPE_START_ALT = "{"
 SCOPE_END = "end"
-SCOPE_END_ALT = "}"
-
 SCOPE_BLOCK_KEYWORD = "block"
 END_SCOPE_BLOCK_KEYWORD = "block"
 

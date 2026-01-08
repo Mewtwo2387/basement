@@ -7,6 +7,9 @@ EOL = ";"
 EXPR_GROUP_L_DELIM = "("
 EXPR_GROUP_R_DELIM = ")"
 
+STRUCT_KEYWORD = "struct"
+STRUCT_MMB_DELIM = ","
+
 
 class Delim(Token):
     char = None

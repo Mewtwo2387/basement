@@ -13,13 +13,9 @@ from .token.delim import (
     COMMA_CHAR,
     EXPR_GROUP_L_DELIM,
     EXPR_GROUP_R_DELIM,
-    EOL
-)
-from .token.struct import (
     STRUCT_KEYWORD,
-    STRUCT_L_DELIM,
-    STRUCT_R_DELIM,
     STRUCT_MMB_DELIM,
+    EOL
 )
 from .token.array_elem import (
     ARR_L_DELIM,
@@ -33,8 +29,6 @@ from .token.initializer import (
 from .token.scope_elem import (
     SCOPE_START,
     SCOPE_END,
-    SCOPE_START_ALT,
-    SCOPE_END_ALT,
     SCOPE_BLOCK_KEYWORD,
     END_SCOPE_BLOCK_KEYWORD
 )

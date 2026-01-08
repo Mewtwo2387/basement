@@ -485,7 +485,7 @@ def parse_struct_decl(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    if not match_str(prog_str, STRUCT_L_DELIM, True):
+    if not match_str(prog_str, SCOPE_START, True):
         brpt.revert_point()
         return False
 
@@ -507,19 +507,15 @@ def parse_struct_decl(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    if (   (len(struct_field_dict) == 0)
-        or (not match_str(prog_str, STRUCT_R_DELIM, True)) ):
+    if (       (len(struct_field_dict) == 0)
+            or (not match_str(prog_str, SCOPE_END, True)) ):
         brpt.revert_point()
         return False
 
-    # Optional structure: [ "struct", id ]
-    if match_str(prog_str, STRUCT_KEYWORD, True):
-        closing_struct_name = get_id(prog_str)
-        if closing_struct_name != struct_name:
-            raise TokenizeError(
-                    'Name mismatch in struct declaration: '
-                    f'"{struct_name}" != "{closing_struct_name}"'
-                )
+    # Optional structure: [ "struct" ], [ id ]
+    closing_struct_res = match_str(prog_str, STRUCT_KEYWORD, True)
+    if closing_struct_res:
+        match_str(prog_str, struct_name, True)
 
     struct = StructDecl(struct_name, struct_field_dict)
     struct_dict[struct_name] = struct
@@ -592,15 +588,12 @@ def parse_func(prog_str: str) -> bool:
     if not parse_cmpd_stmt(prog_str):
         brpt.revert_point()
         return False
-    
-    # Optional structure: [ "function", id ]
-    if match_str(prog_str, FUNCTION_KEYWORD, True):
-        closing_func_name = get_id(prog_str)
-        if closing_func_name != func_name:
-            raise TokenizeError(
-                    'Name mismatch in function declaration: '
-                    f'"{func_name}" != "{closing_func_name}"'
-                )
+
+    # Optional structure: [ "function" ], [ id ]
+    closing_func_res = match_str(prog_str, FUNCTION_KEYWORD, True)
+    if closing_func_res:
+        match_str(prog_str, func_name, True)
+
     return True
 
 
@@ -608,8 +601,7 @@ def parse_scope_start(prog_str: str) -> bool:
     """
     Parse a starting delimiter for a scope
     """
-    if (       match_str(prog_str, SCOPE_START, True)
-            or match_str(prog_str, SCOPE_START_ALT, True)):
+    if match_str(prog_str, SCOPE_START, True):
         append_to_output(ScopeStart())
         return True
     return False
@@ -619,8 +611,7 @@ def parse_scope_end(prog_str: str) -> bool:
     """
     Parse an ending delimiter for a scope
     """
-    if (       match_str(prog_str, SCOPE_END, True)
-            or match_str(prog_str, SCOPE_END_ALT, True)):
+    if match_str(prog_str, SCOPE_END, True):
         append_to_output(ScopeEnd())
         return True
     return False
@@ -716,7 +707,8 @@ def parse_if_stmt(prog_str: str) -> bool:
         brpt.revert_point()
         return False
     
-    match_str(prog_str, END_IF_KEYWORD, True)   # Optional structure
+    # Optional structure:  [ "if" ]
+    match_str(prog_str, END_IF_KEYWORD, True)
 
     return True
 
@@ -736,7 +728,9 @@ def parse_loop_stmt(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    match_str(prog_str, END_LOOP_KEYWORD, True)  # Optional structure
+    # Optional structure:  [ "loop" ]
+    match_str(prog_str, END_LOOP_KEYWORD, True)
+
     return True
 
 
