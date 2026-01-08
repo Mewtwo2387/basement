@@ -6,6 +6,9 @@ class Instruction:
     code: int
     name: str
 
+    def bytes(self) -> bytes:
+        return self.code.to_bytes(byteorder="little")
+
 
 ## ---------- CPU State/Miscellaneous instructions ---------- ##
 ABORT = Instruction(0x00, "abort")
