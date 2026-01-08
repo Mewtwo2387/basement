@@ -50,7 +50,6 @@ from .token.branch import (
     LOOP_BREAK_KEYWORD
 )
 from .token.variable import VAR_ATTR_STR_LIST
-from .data_type.pointer import POINTER_CHAR
 
 
 EOF = chr(0)

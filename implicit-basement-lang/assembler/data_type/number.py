@@ -36,6 +36,15 @@ U_INTSIZE = IntType(8, False, "usize")
 FLOAT32 = FloatType(4, "f32")
 FLOAT64 = FloatType(8, "f64")
 
+POINTER_TYPE = IntType(8, False, "ptr")
+VOID_TYPE    = IntType(0, True, "void")
+
+DEFAULT_INT_TYPE   = S_INT32
+DEFAULT_FLOAT_TYPE = FLOAT32
+CHAR_TYPE = S_INT8
+SIZE_TYPE = U_INT64
+
+
 INT_TYPES = (
     S_INT8,
     S_INT16,
@@ -45,16 +54,10 @@ INT_TYPES = (
     U_INT16,
     U_INT32,
     U_INT64,
-    U_INTSIZE
+    U_INTSIZE,
 )
 FLOAT_TYPES = (FLOAT32, FLOAT64)
 
-VOID_TYPE = IntType(0, True, "void")
-
-DEFAULT_INT_TYPE   = S_INT32
-DEFAULT_FLOAT_TYPE = FLOAT32
-CHAR_TYPE = S_INT8
-SIZE_TYPE = U_INT64
 
 NumberType = IntType | FloatType
 

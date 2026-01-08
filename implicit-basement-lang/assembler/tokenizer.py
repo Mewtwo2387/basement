@@ -23,23 +23,20 @@ from .token.variable    import Variable, VariableInvoke
 
 from .data_type.number import (INT_TYPES,
                                FLOAT_TYPES,
-                               VOID_TYPE,
                                CHAR_TYPE,
+                               VOID_TYPE,
+                               POINTER_TYPE,
                                DEFAULT_INT_TYPE,
                                DEFAULT_FLOAT_TYPE,
                                IntType,
                                FloatType)
-from .data_type.pointer     import PointerType
 from .data_type.struct_decl import StructDecl
 from .data_type.types       import DataType
-
-from .error import TokenizeError
 
 from .keywords import *
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from functools import partial as func_partial
 from itertools import zip_longest
 from typing import Optional
 
@@ -248,7 +245,8 @@ def parseget_var_attrib_str(prog_str: str) -> str | None:
 def parseget_int_data_type(prog_str: str) -> IntType | None:
     """
     Parse integer data type and obtain the resulting token:
-        ( ( "u" | "i" ), ( "8" | "16" | "32" | "64" ) ) | ( "usize" )
+          ( ( "u" | "i" ), ( "8" | "16" | "32" | "64" ) ) | ( "usize" )
+        | ( "ptr" )
 
     NOTE: No intervening whitespace
     """
@@ -298,17 +296,27 @@ def parseget_void_type(prog_str: str) -> IntType | None:
     return None
 
 
+def parseget_ptr_type(prog_str: str) -> IntType | None:
+    """
+    Parse pointer type and obtain the resulting token:
+        "ptr"
+    """
+    if match_str(prog_str, POINTER_TYPE.name, True):
+        return POINTER_TYPE
+    return None
+
+
 _DATA_TYPE_PARSEGET_FUNCS = (
     parseget_int_data_type,
     parseget_float_data_type,
     parseget_struct_type,
-    parseget_void_type
+    parseget_void_type,
+    parseget_ptr_type
 )
 def parseget_data_type(prog_str: str) -> DataType | None:
     """
     Parse data type and obtain the output token:
-        ( int_type | float_type | ( "struct", id ) | "void" ),
-        [ "[", "]" ], { "*" }
+        ( int_type | float_type | ( "struct", id ) | "void" | "ptr" )
     """
     brpt = BranchPoint()
 
@@ -319,17 +327,6 @@ def parseget_data_type(prog_str: str) -> DataType | None:
     else:
         brpt.revert_point()
         return None
-
-    if match_str(prog_str, ARR_L_DELIM, True):
-        if not match_str(prog_str, ARR_R_DELIM, True):
-            brpt.revert_point()
-            return None
-        # Just like good ol' C, arrays are pointer under the hood.
-        data_type = PointerType(data_type)
-
-
-    while match_str(prog_str, POINTER_CHAR, True):
-        data_type = PointerType(data_type)
 
     return data_type
 

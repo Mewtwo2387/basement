@@ -1,6 +1,5 @@
 from .data_type import DataType
 from .number import IntType, FloatType
-from .pointer import PointerType
 from .struct_decl import StructDecl
 
 
@@ -10,9 +9,6 @@ def get_data_type_name(data_type : DataType) -> str:
             name = data_type.name
         case StructDecl():
             name = f"struct {getattr(data_type, 'name')}"
-        case PointerType():
-            ref_type_name = get_data_type_name(getattr(data_type, "ref_type"))
-            name = f"{ref_type_name}*"
         case _:
             name = "???"
     return name
