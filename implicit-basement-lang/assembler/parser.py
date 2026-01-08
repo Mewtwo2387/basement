@@ -397,8 +397,8 @@ def build_initializer(
     _tok_idx = tok_idx
     nesting_lvl = 1
 
-    struct_init_tokens          : list[Token] = []
-    struct_field_init_token_list: list[Token] = []
+    output_tokens      : list[Token] = []
+    init_mmb_token_list: list[Token] = []
 
     while _tok_idx < len(token_list):
         token = token_list[_tok_idx]
@@ -411,9 +411,9 @@ def build_initializer(
 
         if nesting_lvl == 0:
             # Convert the initializer member expr into RPN.
-            struct_init_tokens.extend(
+            output_tokens.extend(
                     convert_to_rpn(curr_scope,
-                                   struct_field_init_token_list,
+                                   init_mmb_token_list,
                                    struct_list)
                     )
 
@@ -422,15 +422,15 @@ def build_initializer(
                 _tok_idx += 1  # Skip the right delimiter
                 break
 
-            # But if a struct init member delimeter (the comma) is reached,
+            # But if an init member delimeter (the comma) is reached,
             # Reset the nesting level to parse the next expression
             nesting_lvl += 1  
-            struct_field_init_token_list = []
+            init_mmb_token_list = []
             continue
 
-        struct_field_init_token_list.append(token)
+        init_mmb_token_list.append(token)
 
-    return struct_init_tokens, _tok_idx
+    return output_tokens, _tok_idx
 
 
 def calc_expr_token_size(token_list: list[Token]) -> int:
