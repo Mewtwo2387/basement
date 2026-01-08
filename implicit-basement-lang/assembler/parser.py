@@ -22,12 +22,10 @@ from .token.operator import (Operator,
                              AssignOp,
                              FieldAccessOp,
                              FunctionCall,
-                             SendToMemOp,
                              OP_ARR_SUBSCR)
 from .token.scope_elem   import ScopeStart, ScopeEnd
 from .token.token        import Token
 from .token.variable     import Variable, VariableInvoke
-from .token.memory_block import MemoryBlock, MemoryBlockOffset
 
 from .data_type.struct_decl import StructDecl
 
@@ -296,7 +294,7 @@ def convert_to_rpn(
 
             case InitDelimLeft():
                 tok_idx += 1   # Proceed to the struct init
-                res = build_struct_init(curr_scope,
+                res = build_initializer(curr_scope,
                                         struct_list,
                                         token_list,
                                         tok_idx)
@@ -380,7 +378,7 @@ def next_tok_is_struct_field(token_list:  list[Token],
     return True
 
 
-def build_struct_init(
+def build_initializer(
             curr_scope:  ScopeType,
             struct_list: list[StructDecl],
             token_list:  list[Token],
@@ -392,10 +390,7 @@ def build_struct_init(
     _tok_idx = tok_idx
     nesting_lvl = 1
 
-    mem_block = MemoryBlock()
-    addr_offset = 0
-
-    struct_init_tokens          : list[Token] = [mem_block]
+    struct_init_tokens          : list[Token] = []
     struct_field_init_token_list: list[Token] = []
 
     while _tok_idx < len(token_list):
@@ -408,18 +403,12 @@ def build_struct_init(
             nesting_lvl -= 1
 
         if nesting_lvl == 0:
-            rpn_tokens = convert_to_rpn(curr_scope,
-                                        struct_field_init_token_list,
-                                        struct_list)
-            # Add an offset point here
-            struct_init_tokens.append(MemoryBlockOffset(mem_block, addr_offset))
-            struct_init_tokens.extend(rpn_tokens)
-            # Add the send to memory operator here
-            struct_init_tokens.append(SendToMemOp())
-
-            field_expr_token_size = calc_expr_token_size(rpn_tokens)
-            addr_offset += field_expr_token_size
-            mem_block.update(expr_size=field_expr_token_size)
+            # Convert the initializer member expr into RPN.
+            struct_init_tokens.extend(
+                    convert_to_rpn(curr_scope,
+                                   struct_field_init_token_list,
+                                   struct_list)
+                    )
 
             # If the right delimiter is reached, the parsing ends
             if isinstance(token, InitDelimRight):
