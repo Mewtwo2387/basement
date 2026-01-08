@@ -142,12 +142,6 @@ def parse(input_tokens: list[Token], struct_list: list[StructDecl]) \
 
                 # Scopes
                 case ScopeStart():
-                    # For the if condition case
-                    if line_tokens:
-                        output_tokens.extend(
-                            convert_to_rpn(curr_scope, line_tokens, struct_list)
-                        )
-
                     if dest_scope_name not in curr_scope:
                         if dest_scope_name == NULL_SCOPE_STR:
                             raise ParseError("Destination scope not found")
@@ -191,6 +185,17 @@ def parse(input_tokens: list[Token], struct_list: list[StructDecl]) \
                     branch_name += f"{name_count}"
 
                     register_new_scope(curr_scope, branch_name)
+
+                    # The if token functions as an EOL pushing the condition
+                    # expression to the output list.
+                    if isinstance(token, If):
+                        output_tokens.extend(
+                                convert_to_rpn(curr_scope,
+                                               line_tokens,
+                                               struct_list)
+                            )
+                        line_tokens = []
+
                     output_tokens.append(token)
                     dest_scope_name = branch_name
 
@@ -206,6 +211,8 @@ def parse(input_tokens: list[Token], struct_list: list[StructDecl]) \
                     output_tokens.extend(
                         convert_to_rpn(curr_scope, line_tokens, struct_list)
                     )
+                    # If the line is empty anyways, don't bother putting an
+                    # EOL token to the output list.
                     if line_tokens:
                         output_tokens.append(token)
                     line_tokens = []

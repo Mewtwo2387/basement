@@ -660,12 +660,15 @@ def parse_if_stmt(prog_str: str) -> bool:
         "if", "(", expr, ")", scope_start, { stmt },
         { "else", [ "if", "(", expr, ")" ], scope_start, { stmt } },
         scope_end, [ "if" ]
+    
+    NOTE: To facilitate better code generation, the if token is placed after
+          the condition expression s.t. "if" boils down to checking the top of
+          the op stack.
     """
     brpt = BranchPoint()
 
     if not match_str(prog_str, IF_KEYWORD, True):
         return False
-    append_to_output(If())
     
     if_cond_parse_res = (
             match_str(prog_str, EXPR_GROUP_L_DELIM, True)
@@ -675,6 +678,8 @@ def parse_if_stmt(prog_str: str) -> bool:
     if not if_cond_parse_res:
         brpt.revert_point()
         return False
+    
+    append_to_output(If())
 
     # Parse statements
     if not parse_scope_start(prog_str):
