@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
     Prototype Basement Language (a.k.a. PRTTY-BS Language) Grammar
-        Version: 0.5.1
+        Version: 0.5.2
 --------------------------------------------------------------------------------
 program     := { decl | func | struct | comment }, EOF ;
 
@@ -16,7 +16,8 @@ struct      := "struct", id, scope_start, struct_mem, { struct_mem }, scope_end,
                [ "struct" ], [ id ] ;
 struct_mem  := type, id, { ",", id }, end_of_line ;
 
-type        := ( int_type | float_type | ( "struct", id ) | "void" | "ptr" ) ;
+type        := ( int_type | float_type | ( "struct", id ) | "void" | "ptr" )
+             | [ "[", integer, "]" ]  ;
 int_type    := "u8"
              | "u16"
              | "u32"
@@ -59,8 +60,8 @@ factor_op   := f_arith_op | f_bit_op ;
 func_call   := id, "(", [ expr, { ",", expr } ], ")" ;
 var_invoke  := id, [ "[", expr, "]" ], [ ".", var_invoke ] ;
 
-literal     := integer | float | char | string | braced_init ;
-braced_init := "{", [ expr, { ",", expr } ], "}" ;
+literal     := integer | float | char | string | initializer ;
+initializer := "{", [ expr, { ",", expr } ], "}" ;
 
 l_un_op     := "+"
              | "-"

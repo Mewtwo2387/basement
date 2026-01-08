@@ -31,9 +31,12 @@ from .data_type.number import (INT_TYPES,
                                IntType,
                                FloatType)
 from .data_type.struct_decl import StructDecl
+from .data_type.array       import ArrayType
 from .data_type.types       import DataType
 
 from .keywords import *
+
+from .error import ParseError
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
@@ -316,7 +319,8 @@ _DATA_TYPE_PARSEGET_FUNCS = (
 def parseget_data_type(prog_str: str) -> DataType | None:
     """
     Parse data type and obtain the output token:
-        ( int_type | float_type | ( "struct", id ) | "void" | "ptr" )
+          ( int_type | float_type | ( "struct", id ) | "void" | "ptr" )
+        | [ "[", integer, "]" ]
     """
     brpt = BranchPoint()
 
@@ -327,6 +331,25 @@ def parseget_data_type(prog_str: str) -> DataType | None:
     else:
         brpt.revert_point()
         return None
+    
+    # Check if the data type is an array.
+    if match_str(prog_str, ARR_L_DELIM, True):
+        # Get the length of the array.
+        skip_whitespace(prog_str)
+        arr_len_str = get_digit_seq(prog_str)
+        
+        if (       (len(arr_len_str) == 0)
+                or (not match_str(prog_str, ARR_R_DELIM, True))):
+            brpt.revert_point()
+            return None
+
+        arr_len = int(arr_len_str)
+        if arr_len <= 0:
+            raise ParseError("Array length must be 1 or greater.")
+        
+        # NOTE: The "data_type" in the RHS is the one obtained above with the
+        #       parseget_* functions.
+        data_type = ArrayType(arr_len, data_type)
 
     return data_type
 
@@ -1193,7 +1216,7 @@ _LITERAL_PARSE_FUNCS = (
 def parse_literal(prog_str: str) -> bool:
     """
     Parse a literal value:
-        integer | float | char | string | struct_init | array_init
+        integer | float | char | string | initializer
     """
     for func in _LITERAL_PARSE_FUNCS:
         if func(prog_str):
