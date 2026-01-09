@@ -25,7 +25,7 @@ def main():
         list_tokens(output)
         print("\n" + divider)
 
-        rpn_tokens = parser.parse(output, structs)
+        rpn_tokens, _ = parser.parse(output, structs)
         list_tokens(rpn_tokens)
         print("\n" + divider)
 

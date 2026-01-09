@@ -30,21 +30,17 @@ class Function(Token):
     def update(
             self, *,
             address:   Optional[int] = None,
-            local_var: Optional[list[Variable]] = None
+            local_var: Optional[Variable] = None
         ) -> None:
         if address is not None:
             self.address = address
 
         if local_var is not None:
-            if not isinstance(local_var, list):
-                raise TypeError("Invalid type for 'local_var'")
-
-            for var_token in local_var:
-                if var_token.name in self.local_var_dict:
-                    raise ValueError(f"Local variable '{id}' "
-                                     f"is already defined in {self.name}")
-                self.local_var_dict[var_token.name] = var_token
-                self.size += var_token.data_type
+            if local_var.name in self.local_var_dict:
+                raise ValueError(f"Local variable '{id}' "
+                                 f"is already defined in {self.name}")
+            self.local_var_dict[local_var.name] = local_var
+            self.size += local_var.data_type
 
     def get_value(self) -> ValueDict:
         return {
