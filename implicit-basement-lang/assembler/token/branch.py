@@ -22,6 +22,10 @@ class If(BranchControl):
     keyword = IF_KEYWORD
 
 
+class ElseIf(BranchControl):
+    keyword = ELSE_KEYWORD + IF_KEYWORD
+
+
 class Else(BranchControl):
     keyword = ELSE_KEYWORD
 

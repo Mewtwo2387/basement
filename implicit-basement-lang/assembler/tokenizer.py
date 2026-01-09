@@ -1,6 +1,6 @@
 from .token.array_elem  import ArraySubscriptDelimLeft, ArraySubscriptDelimRight
 from .token.block       import Block
-from .token.branch      import If, Else, Loop, LoopContinue, LoopBreak
+from .token.branch      import If, ElseIf, Else, Loop, LoopContinue, LoopBreak
 from .token.delim       import (EndOfLine,
                                 ExprGroupDelimLeft,
                                 ExprGroupDelimRight)
@@ -703,9 +703,8 @@ def parse_if_stmt(prog_str: str) -> bool:
         pass
 
     while match_str(prog_str, ELSE_KEYWORD, True):
-        # Insert an invisible ending scope delimter
+        # Insert an invisible ending scope delimiter
         append_to_output(ScopeEnd())
-        append_to_output(Else())
 
         # Parse for an optional else if statement
         if match_str(prog_str, IF_KEYWORD, True):
@@ -717,7 +716,9 @@ def parse_if_stmt(prog_str: str) -> bool:
             if not elif_cond_parse_res:
                 brpt.revert_point()
                 return False
-            append_to_output(If())
+            append_to_output(ElseIf())
+        else:
+            append_to_output(Else())
         
         # Parse statements for the else/else-if construct.
         if not parse_scope_start(prog_str):
@@ -794,7 +795,7 @@ def parse_scope_block(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    # Optional structure: "block"
+    # Optional structure: [ "block" ]
     match_str(prog_str, END_BLOCK_KEYWORD, True)
 
     return True
