@@ -27,10 +27,12 @@ from .token.initializer import (
     INITIALIZER_MMB_DELIM
 )
 from .token.scope_elem import (
-    SCOPE_START,
-    SCOPE_END,
-    SCOPE_BLOCK_KEYWORD,
-    END_SCOPE_BLOCK_KEYWORD
+    SCOPE_START_KEYWORD,
+    SCOPE_END_KEYWORD
+)
+from .token.block import (
+    BLOCK_KEYWORD,
+    END_BLOCK_KEYWORD
 )
 from .token.function import (
     FUNCTION_KEYWORD,

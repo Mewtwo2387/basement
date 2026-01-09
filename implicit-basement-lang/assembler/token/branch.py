@@ -33,5 +33,6 @@ class Loop(BranchControl):
 class LoopContinue(BranchControl):
     keyword = LOOP_CONT_KEYWORD
 
+
 class LoopBreak(BranchControl):
     keyword = LOOP_BREAK_KEYWORD

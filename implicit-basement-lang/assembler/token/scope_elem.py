@@ -1,10 +1,8 @@
 from .delim import Delim
 
 
-SCOPE_START = ":"
-SCOPE_END = "end"
-SCOPE_BLOCK_KEYWORD = "block"
-END_SCOPE_BLOCK_KEYWORD = "block"
+SCOPE_START_KEYWORD = ":"
+SCOPE_END_KEYWORD = "end"
 
 
 class ScopeStart(Delim):

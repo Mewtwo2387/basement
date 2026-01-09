@@ -1,37 +1,40 @@
-from .token.branch   import If, Else, Loop, LoopContinue, LoopBreak
-from .token.delim    import EndOfLine, ExprGroupDelimLeft, ExprGroupDelimRight
-from .token.function import (Function,
-                             FunctionDeclaration,
-                             Return,
-                             ArgBracketLeft,
-                             ArgBracketRight,
-                             ArgDelim)
-from .token.number   import Integer, Float
-from .token.operator import (AssignOp,
-                             FieldAccessOp,
-                             LeftUnaryOp,
-                             RightUnaryOp,
-                             TypeCastOp,
-                             BinaryOp,
-                             FunctionCall)
+from .token.array_elem  import ArraySubscriptDelimLeft, ArraySubscriptDelimRight
+from .token.block       import Block
+from .token.branch      import If, Else, Loop, LoopContinue, LoopBreak
+from .token.delim       import (EndOfLine,
+                                ExprGroupDelimLeft,
+                                ExprGroupDelimRight)
+from .token.function    import (Function,
+                                FunctionDeclaration,
+                                Return,
+                                ArgBracketLeft,
+                                ArgBracketRight,
+                                ArgDelim)
+from .token.initializer import InitDelimLeft, InitDelimRight, InitMemberDelim
+from .token.number      import Integer, Float
+from .token.operator    import (AssignOp,
+                                FieldAccessOp,
+                                LeftUnaryOp,
+                                RightUnaryOp,
+                                TypeCastOp,
+                                BinaryOp,
+                                FunctionCall)
 from .token.scope_elem  import ScopeStart, ScopeEnd
 from .token.string      import String
-from .token.array_elem  import ArraySubscriptDelimLeft, ArraySubscriptDelimRight
-from .token.initializer import InitDelimLeft, InitDelimRight, InitMemberDelim
 from .token.token       import Token
 from .token.variable    import Variable, VariableInvoke
 
-from .data_type.number import (INT_TYPES,
-                               FLOAT_TYPES,
-                               CHAR_TYPE,
-                               VOID_TYPE,
-                               POINTER_TYPE,
-                               DEFAULT_INT_TYPE,
-                               DEFAULT_FLOAT_TYPE,
-                               IntType,
-                               FloatType)
-from .data_type.struct_decl import StructDecl
 from .data_type.array       import ArrayType
+from .data_type.number      import (INT_TYPES,
+                                    FLOAT_TYPES,
+                                    CHAR_TYPE,
+                                    VOID_TYPE,
+                                    POINTER_TYPE,
+                                    DEFAULT_INT_TYPE,
+                                    DEFAULT_FLOAT_TYPE,
+                                    IntType,
+                                    FloatType)
+from .data_type.struct_decl import StructDecl
 from .data_type.types       import DataType
 
 from .keywords import *
@@ -40,8 +43,8 @@ from .error import ParseError
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from itertools import zip_longest
-from typing import Optional
+from itertools   import zip_longest
+from typing      import Optional
 
 
 struct_dict: dict[str, StructDecl] = {}
@@ -505,7 +508,7 @@ def parse_struct_decl(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    if not match_str(prog_str, SCOPE_START, True):
+    if not match_str(prog_str, SCOPE_START_KEYWORD, True):
         brpt.revert_point()
         return False
 
@@ -528,7 +531,7 @@ def parse_struct_decl(prog_str: str) -> bool:
         return False
 
     if (       (len(struct_field_dict) == 0)
-            or (not match_str(prog_str, SCOPE_END, True)) ):
+            or (not match_str(prog_str, SCOPE_END_KEYWORD, True)) ):
         brpt.revert_point()
         return False
 
@@ -621,7 +624,7 @@ def parse_scope_start(prog_str: str) -> bool:
     """
     Parse a starting delimiter for a scope
     """
-    if match_str(prog_str, SCOPE_START, True):
+    if match_str(prog_str, SCOPE_START_KEYWORD, True):
         append_to_output(ScopeStart())
         return True
     return False
@@ -631,7 +634,7 @@ def parse_scope_end(prog_str: str) -> bool:
     """
     Parse an ending delimiter for a scope
     """
-    if match_str(prog_str, SCOPE_END, True):
+    if match_str(prog_str, SCOPE_END_KEYWORD, True):
         append_to_output(ScopeEnd())
         return True
     return False
@@ -783,14 +786,17 @@ def parse_scope_block(prog_str: str) -> bool:
     """
     brpt = BranchPoint()
 
-    if not match_str(prog_str, SCOPE_BLOCK_KEYWORD, True):
+    if not match_str(prog_str, BLOCK_KEYWORD, True):
         return False
+    append_to_output(Block())
 
     if not parse_cmpd_stmt(prog_str):
         brpt.revert_point()
         return False
 
-    match_str(prog_str, END_SCOPE_BLOCK_KEYWORD, True)  # Optional structure
+    # Optional structure: "block"
+    match_str(prog_str, END_BLOCK_KEYWORD, True)
+
     return True
 
 
