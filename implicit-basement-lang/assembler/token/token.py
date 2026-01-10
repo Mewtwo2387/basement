@@ -2,8 +2,6 @@ from dataclasses import dataclass, field
 from typing import Iterable
 from ..data_type.data_type import DataType
 
-ValueDict = dict[str, int | float | Iterable | DataType | None]
-
 
 @dataclass
 class Token:

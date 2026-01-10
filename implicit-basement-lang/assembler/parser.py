@@ -21,13 +21,14 @@ from .token.operator import (Operator,
                              BinaryOp,
                              TypeCastOp,
                              AssignOp,
-                             FieldAccessOp,
+                             MemberAccessOp,
                              FunctionCall,
-                             OP_ARR_SUBSCR)
+                             OP_ARR_SUBS)
 from .token.scope_elem   import ScopeStart, ScopeEnd
 from .token.token        import Token
-from .token.variable     import Variable, VariableInvoke
+from .token.variable     import Variable, VariableInvoke, StructMemberInvoke
 
+from .data_type.array       import ArrayType
 from .data_type.struct_decl import StructDecl
 
 from .error import ParseError
@@ -64,10 +65,10 @@ def parse(
             match token:
                 case FunctionDeclaration():
                     func_decl_dict[token.name] = token
-                    func_name = ( curr_scope_key
-                                + SCOPE_PREFIX__FUNC
-                                + token.name)
-                    scope[func_name] = token
+                    func_key = ( curr_scope_key
+                               + SCOPE_PREFIX__FUNC
+                               + token.name)
+                    scope[func_key] = token
 
                 case Function():
                     func_dict[token.name] = token
@@ -77,10 +78,13 @@ def parse(
                         del func_decl_dict[token.name]
 
                     # Register this scoping unit to the scope dict.
-                    func_name = ( curr_scope_key
-                                + SCOPE_PREFIX__FUNC
-                                + token.name)
-                    scope[func_name] = token
+                    func_key = ( curr_scope_key
+                               + SCOPE_PREFIX__FUNC
+                               + token.name)
+                    scope[func_key] = token
+                    # ... and attach the key of this function to the token for
+                    # code generation.
+                    token.id = func_key
 
                     # Push the function and scope start token to the output
                     tok_idx += 1
@@ -88,7 +92,7 @@ def parse(
                     output_tokens.extend((token, scope_start_token))
 
                     # Go to this scoping unit's scope
-                    curr_scope_key = func_name + SCOPE_KEY_DELIM
+                    curr_scope_key = func_key + SCOPE_KEY_DELIM
                     # Also set this function's arguments as variables only
                     # visible within the function's scope.
                     for arg in token.arg_list:
@@ -96,13 +100,16 @@ def parse(
                 
                 case Block():
                     # Find and set an unused name for this block token.
-                    block_name = curr_scope_key + SCOPE_PREFIX__BLOCK
+                    block_key = curr_scope_key + SCOPE_PREFIX__BLOCK
                     block_idx = 0
-                    while f"{block_name}{block_idx}" in scope:
+                    while f"{block_key}{block_idx}" in scope:
                         block_idx += 1
-                    block_name += str(block_idx)
+                    block_key += str(block_idx)
 
-                    scope[block_name] = token
+                    # Register this block to the scope, and set the token's id
+                    # for code generation.
+                    scope[block_key] = token
+                    token.id = block_key
                     
                     # Pass this and the scope start token through the output
                     tok_idx += 1
@@ -110,28 +117,31 @@ def parse(
                     output_tokens.extend((token, scope_start_token))
 
                     # Go to the scoping block's scope
-                    curr_scope_key = block_name + SCOPE_KEY_DELIM
+                    curr_scope_key = block_key + SCOPE_KEY_DELIM
                 
                 # Branching statements
                 case If() | ElseIf() | Else() | Loop() :
-                    branch_name = curr_scope_key
+                    branch_key = curr_scope_key
                     match token:
                         case If():
-                            branch_name += SCOPE_PREFIX__IF
+                            branch_key += SCOPE_PREFIX__IF
                         case ElseIf():
-                            branch_name += SCOPE_PREFIX__ELIF
+                            branch_key += SCOPE_PREFIX__ELIF
                         case Else():
-                            branch_name += SCOPE_PREFIX__ELSE
+                            branch_key += SCOPE_PREFIX__ELSE
                         case _:
-                            branch_name += SCOPE_PREFIX__LOOP
+                            branch_key += SCOPE_PREFIX__LOOP
 
                     # Find and set a name for this branching statement token
                     branch_idx = 0
-                    while f"{branch_name}{branch_idx}" in scope:
+                    while f"{branch_key}{branch_idx}" in scope:
                         name_count += 1
-                    branch_name += str(branch_idx)
+                    branch_key += str(branch_idx)
 
-                    scope[branch_name] = token
+                    # Register this branching statement to the scope
+                    scope[branch_key] = token
+                    # ... and set the token's id for code generation.
+                    token.id = branch_key
 
                     # Collect the condition expr tokens.
                     cond_tokens: list[Token] = []
@@ -151,7 +161,7 @@ def parse(
                     output_tokens.extend((token, scope_start_token))
 
                     # Go to the scoping block's scope
-                    curr_scope_key = branch_name + SCOPE_KEY_DELIM
+                    curr_scope_key = branch_key + SCOPE_KEY_DELIM
 
                 case ScopeEnd():
                     output_tokens.append(token)
@@ -169,18 +179,22 @@ def parse(
                     while not isinstance(input_tokens[tok_idx], EndOfLine):
                         ret_expr_tokens.append(input_tokens[tok_idx])
                         tok_idx += 1
-                    eol_token = input_tokens[tok_idx]
-                    
+
                     # Push the return expression to the output
-                    # before return token and the EOL
+                    # NOTE: The EOL token is not needed anymore since the
+                    #       return is already a statement.
                     if ret_expr_tokens:
                         output_tokens.extend(
                                 convert_to_rpn(ret_expr_tokens, struct_list)
                             )
-                    output_tokens.extend([token, eol_token])
+                    output_tokens.append(token)
 
                 case Variable():
-                    scope[curr_scope_key + token.name] = token
+                    # Register this variable declaration to the scope
+                    var_key = curr_scope_key + token.name
+                    scope[var_key] = token
+                    # ... and set the token's id for code generation.
+                    token.id = var_key
 
                     # If we are in a (non-root) scope, we must be in a function.
                     # Update the current function's local variables
@@ -233,23 +247,37 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
     operator_stack: OperatorStack = []
     output_queue = []
 
-    var_is_struct_mmb = False
-
     tok_idx = 0
     while tok_idx < len(token_list):
         token = token_list[tok_idx]
         match token:
             case ( Integer()
                  | Float()
-                 | VariableInvoke() ):
+                 | VariableInvoke()
+                 | StructMemberInvoke() ):
 
-                if (        isinstance(token, VariableInvoke)
-                        and not var_is_struct_mmb):
-                    if not is_var_in_scope(token):
+                if isinstance(token, VariableInvoke):
+                    var_token = get_matching_var_token(token)
+                    if not var_token:
                         raise ParseError(
-                            f"Variable \"{token.name}\" is not defined"
+                            f"Variable \"{token.name}\" is not defined or "
+                             "visible within the scope the variable is invoked"
                         )
-                var_is_struct_mmb = False
+                    token.var = var_token
+
+                elif isinstance(token, StructMemberInvoke):
+                    matching_structs = get_matching_structs(token, struct_list)
+                    if not matching_structs:
+                        raise ParseError(
+                            f"\"{token.name}\" is not a member of any struct"
+                        )
+                    
+                    # Find the struct of the corresponding variable invoke token
+                    struct = get_struct_of_matching_var(token,
+                                                        token_list,
+                                                        tok_idx)
+                    token.struct = struct
+
                 output_queue.append(token)
 
             case ( LeftUnaryOp()
@@ -257,7 +285,7 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
                  | BinaryOp()
                  | TypeCastOp()
                  | AssignOp()
-                 | FieldAccessOp()
+                 | MemberAccessOp()
                  | FunctionCall() ):
 
                 if (    isinstance(token, FunctionCall)
@@ -265,11 +293,6 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
                         raise ParseError(
                             f"Function \"{token.func_name}\" is not defined"
                         )
-                
-                # For the struct member access operator
-                var_is_struct_mmb = next_tok_is_struct_mmb(token_list,
-                                                           tok_idx,
-                                                           struct_list)
 
                 while operator_stack:
                     op_token = operator_stack[-1]
@@ -288,28 +311,26 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
                 res = build_initializer(struct_list,
                                         token_list,
                                         tok_idx)
-                struct_init_tokens, tok_idx = res
-                output_queue.extend( struct_init_tokens )
+                init_tokens, tok_idx = res
+                output_queue.extend( init_tokens )
             case InitDelimRight():
                 raise ParseError("Misplaced right initializer delimiter")
             case InitMemberDelim():
                 raise ParseError("Misplaced initializer member delimiter")
 
-            case (    ExprGroupDelimLeft()
-                    | ArgBracketLeft()
-                    | ArraySubscriptDelimLeft()
-            ):
+            case ( ExprGroupDelimLeft()
+                 | ArgBracketLeft()
+                 | ArraySubscriptDelimLeft() ):
                 operator_stack.append(token)
 
-            case (      ExprGroupDelimRight()
-                      | ArgBracketRight()
-                      | ArraySubscriptDelimRight()
-            ):
+            case ( ExprGroupDelimRight()
+                 | ArgBracketRight()
+                 | ArraySubscriptDelimRight() ):
                 while operator_stack:
                     op_token = operator_stack[-1]
                     if (not isinstance(op_token, Operator)):
                         if isinstance(op_token, ArraySubscriptDelimLeft):
-                            output_queue.append(BinaryOp(OP_ARR_SUBSCR))
+                            output_queue.append(BinaryOp(OP_ARR_SUBS))
 
                         # Discard the left bracket
                         operator_stack.pop()
@@ -392,54 +413,119 @@ def go_up_one_scope(scope_key: str) -> str:
     return scope_key[:next_final_idx] + SCOPE_KEY_DELIM
 
 
-def is_var_in_scope(token: VariableInvoke) -> bool:
+def get_matching_var_token(token: VariableInvoke) -> Variable | None:
     __curr_scope_key = curr_scope_key
 
     while True:
-        token_name = __curr_scope_key + token.name
-        if token_name in scope:
-            return True
-        if len(__curr_scope_key) == 0:
+        var_token_key = __curr_scope_key + token.name
+        if var_token_key in scope:
             break
+        if len(__curr_scope_key) == 0:
+            return None
         __curr_scope_key = go_up_one_scope(__curr_scope_key)
     
-    return False
-
-
-def is_struct_mmb_defined(
-            mmb_token: VariableInvoke,
-            structs:   list[StructDecl]
-        ) -> bool:
-    
-    all_mmbs = {s.name: {mmb for mmb in s.members} for s in structs}
-    mmb_in_structs = [
-        mmb_token.name in f_set for f_set in all_mmbs.values()
-    ]
-    return any(mmb_in_structs)
-
-
-def next_tok_is_struct_mmb(token_list:  list[Token],
-                             tok_idx:     int,
-                             struct_list: list[StructDecl]) -> bool:
-
-    if not isinstance(token_list[tok_idx], FieldAccessOp):
-        return False
-    
-    if tok_idx >= len(token_list):
-        raise ParseError("Expected a struct member")
-    
-    mmb_token = token_list[tok_idx + 1]   # Peek at the next token
-    if not isinstance(mmb_token, VariableInvoke):
+    var_token = scope.get(var_token_key)
+    if not var_token:
         raise ParseError(
-            "Expects a name struct member name for the struct member access"
-            " operator."
-        ) 
-    if not is_struct_mmb_defined(mmb_token, struct_list):
+            f"Variable \"{token.name}\" is supposedly defined within the scope "
+            f"\"{__curr_scope_key}\", but the corresponding variable "
+             "declaration token cannot be found"
+        )
+    if not isinstance(var_token, Variable):
         raise ParseError(
-            f"The name '{mmb_token.name}' is not a member of any struct."
+            f"Variable \"{token.name}\" exists but its corresponding variable"
+             " declaration token is not the correct type.\n"
+            f"Found the following token instead: {var_token}"
         )
 
-    return True
+    return var_token
+
+
+def get_matching_structs(
+            mmb_token: StructMemberInvoke,
+            structs: list[StructDecl]
+        ) -> list[StructDecl]:
+    matched_structs = []
+
+    for s in structs:
+        if mmb_token.name in s.members:
+            matched_structs.append(s)
+
+    return matched_structs
+
+
+def get_struct_of_matching_var(
+            mmb_token:  StructMemberInvoke,
+            token_list: list[Token],
+            tok_idx:    int
+        ) -> StructDecl:
+
+    if tok_idx < 2:
+        raise ParseError(
+             "No more associated variable invoke token to search for for "
+            f" \"{mmb_token.name}\""
+        )
+    if not isinstance(token_list[tok_idx - 1], MemberAccessOp):
+        raise ParseError(
+             "Unexpected token before the struct member token. "
+            f"Must be a member access operator."
+        )
+
+    # Search for the variable invoke corresponding to this member token.
+    bracket_lvl = 0
+    peek_idx = tok_idx - 2
+    peek_token = token_list[peek_idx]
+    while peek_idx >= 0:
+        if isinstance(peek_token,
+                      (ArraySubscriptDelimRight, ExprGroupDelimRight)):
+            bracket_lvl += 1
+
+        if bracket_lvl == 0:
+            break
+
+        if isinstance(peek_token,
+                      (ArraySubscriptDelimLeft, ExprGroupDelimLeft)):
+            bracket_lvl -= 1
+
+        peek_idx -= 1
+        peek_token = token_list[peek_idx]
+    
+    if bracket_lvl > 0 or peek_idx < 0:
+        raise ParseError(
+             "No token associated to the struct member token "
+            f"\"{mmb_token.name}\""
+        )
+    
+    if not isinstance(peek_token, VariableInvoke):
+        raise ParseError(
+             "Expected a variable token to associate with the struct member "
+            f"\"{mmb_token.name}\". The following type is found instead: "
+            f"{type(peek_token).__name__}"
+        )
+
+    if peek_token.var is None:
+        raise ParseError(
+            f"Type of variable \"{peek_token.name}\" is unknown. "
+            f"Cannot verify the struct member \"{mmb_token.name}\""
+        )
+    
+    struct_type = peek_token.var.data_type
+
+    if isinstance(struct_type, ArrayType):
+        struct_type = struct_type.mmb_type
+
+    if not isinstance(struct_type, StructDecl):
+        raise ParseError(
+            f"Type of variable \"{peek_token.name}\" is not a struct. "
+            f"Struct member \"{mmb_token.name}\" cannot be its member"
+        )
+    if mmb_token.name not in struct_type.members:
+        raise ParseError(
+            f"\"{mmb_token.name}\" is not a member of the struct"
+            f" \"{peek_token.var.name}\""
+        )
+    
+    return struct_type
 
 
 def build_initializer(
@@ -485,16 +571,3 @@ def build_initializer(
         init_mmb_token_list.append(token)
 
     return output_tokens, _tok_idx
-
-
-def calc_expr_token_size(token_list: list[Token]) -> int:
-    size = 0    
-    for token in token_list:
-        if isinstance(token, TypeCastOp):
-            curr_size = token.to_type.size
-        else:
-            curr_size = token.size
-
-        if curr_size > size:
-            size = curr_size
-    return size

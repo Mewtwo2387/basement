@@ -96,12 +96,12 @@ OP_ASSIGN = "ASSIGN"
 OP_ASSIGN_CHAR = "="
 
 # --- Member Access Operator ---
-OP_FIELD_ACCESS = "STRUCT FIELD ACCESS"
-OP_FIELD_ACCESS_CHAR = "."
+OP_MMB_ACCESS = "STRUCT MEMBER ACCESS"
+OP_MMB_ACCESS_CHAR = "."
 
 # --- Array Subscripting Operator ---
-OP_ARR_SUBSCR = "ARRAY SUBSCRIPT"
-OP_ARR_SUBSCR_CHAR = "ArrSubscr" # NOTE: This operator has no overt symbol
+OP_ARR_SUBS = "ARRAY SUBSCRIPT"
+OP_ARR_SUBS_CHAR = "ArrSubs" # NOTE: This operator has no overt symbol
 
 # --- Function Call Operator ---
 OP_FUNC_CALL = "FUNCTION CALL"
@@ -148,10 +148,10 @@ REL_BIN_OP_DICT = OrderedDict([
 
 
 __OTHER_BIN_OPS = OrderedDict([
-    (OP_ASSIGN,       OP_ASSIGN_CHAR),
-    (OP_STORE,        OP_STORE_CHAR),
-    (OP_FIELD_ACCESS, OP_FIELD_ACCESS_CHAR),
-    (OP_FUNC_CALL,    OP_FUNC_CALL_CHAR),
+    (OP_ASSIGN,     OP_ASSIGN_CHAR),
+    (OP_STORE,      OP_STORE_CHAR),
+    (OP_MMB_ACCESS, OP_MMB_ACCESS_CHAR),
+    (OP_FUNC_CALL,  OP_FUNC_CALL_CHAR),
 ])
 
 
@@ -168,7 +168,7 @@ FACTOR_OP_DICT = (
     ARITH_BIN_OP_DICT["factor"] | BIT_BIN_OP_DICT["factor"]
 )
 
-ARR_SUBSCR_DICT = {OP_ARR_SUBSCR : OP_ARR_SUBSCR_CHAR}
+ARR_SUBSCR_DICT = {OP_ARR_SUBS : OP_ARR_SUBS_CHAR}
 
 _OP_STR_DICT = (
       TERM_OP_DICT
@@ -209,8 +209,8 @@ OP_PRECEDENCE = {
     OP_PRE_DEC      : OpOrder(10, OP_ASSOC_R2L),
     OP_POST_INC     : OpOrder(11, OP_ASSOC_L2R),
     OP_POST_DEC     : OpOrder(11, OP_ASSOC_L2R),
-    OP_FIELD_ACCESS : OpOrder(11, OP_ASSOC_L2R),
-    OP_ARR_SUBSCR   : OpOrder(11, OP_ASSOC_L2R),
+    OP_MMB_ACCESS   : OpOrder(11, OP_ASSOC_L2R),
+    OP_ARR_SUBS     : OpOrder(11, OP_ASSOC_L2R),
     OP_FUNC_CALL    : OpOrder(11, OP_ASSOC_L2R),
 }
 
@@ -218,7 +218,7 @@ OP_PRECEDENCE = {
 @dataclass
 class Operator(Token):
     name:  str
-    arity: int     = field(init=False)
+    arity: int     = field(init=False, default=0)
     order: OpOrder = field(init=False)
 
     def __post_init__(self):
@@ -229,12 +229,29 @@ class Operator(Token):
                 f"(\"{_OP_STR_DICT[self.name]}\")")
 
 
+# === Generic operator classes === #
 @dataclass
 class LeftUnaryOp(Operator):
     def __post_init__(self):
         super().__post_init__()
         self.arity = 1
 
+
+@dataclass
+class RightUnaryOp(Operator):
+    def __post_init__(self):
+        super().__post_init__()
+        self.arity = 1
+
+
+@dataclass
+class BinaryOp(Operator):
+    def __post_init__(self):
+        super().__post_init__()
+        self.arity = 2
+
+
+# === "Special" operator classes === #
 @dataclass
 class TypeCastOp(Operator):
     name:    str = field(init=False, default=OP_TCAST)
@@ -251,24 +268,12 @@ class TypeCastOp(Operator):
 
 
 @dataclass
-class RightUnaryOp(Operator):
-    def __post_init__(self):
-        super().__post_init__()
-        self.arity = 1
-
-
-@dataclass
-class BinaryOp(Operator):
-    def __post_init__(self):
-        super().__post_init__()
-        self.arity = 2
-
-@dataclass
 class AssignOp(Operator):
     name: str = field(init=False, default=OP_ASSIGN)
 
     def __str__(self) -> str:
         return f"\"{_OP_STR_DICT[self.name]}\""
+
 
 @dataclass
 class SendToMemOp(Operator):
@@ -279,11 +284,12 @@ class SendToMemOp(Operator):
     
 
 @dataclass
-class FieldAccessOp(Operator):
-    name: str = field(init=False, default=OP_FIELD_ACCESS)
+class MemberAccessOp(Operator):
+    name: str = field(init=False, default=OP_MMB_ACCESS)
 
     def __str__(self) -> str:
         return f"\"{_OP_STR_DICT[self.name]}\""
+
 
 @dataclass
 class FunctionCall(Operator):

@@ -13,7 +13,7 @@ from .token.function    import (Function,
 from .token.initializer import InitDelimLeft, InitDelimRight, InitMemberDelim
 from .token.number      import Integer, Float
 from .token.operator    import (AssignOp,
-                                FieldAccessOp,
+                                MemberAccessOp,
                                 LeftUnaryOp,
                                 RightUnaryOp,
                                 TypeCastOp,
@@ -22,7 +22,7 @@ from .token.operator    import (AssignOp,
 from .token.scope_elem  import ScopeStart, ScopeEnd
 from .token.string      import String
 from .token.token       import Token
-from .token.variable    import Variable, VariableInvoke
+from .token.variable    import Variable, VariableInvoke, StructMemberInvoke
 
 from .data_type.array       import ArrayType
 from .data_type.number      import (INT_TYPES,
@@ -944,7 +944,7 @@ def parse_func_call(prog_str: str) -> bool:
     return True
 
 
-def parse_var_invoke(prog_str: str) -> bool:
+def parse_var_invoke(prog_str: str, is_prev_mmb_access_op: bool=False) -> bool:
     """
     Parse a variable invocation:
         id, [ "[", expr, "]" ], [ ".", var_invoke ]
@@ -954,7 +954,11 @@ def parse_var_invoke(prog_str: str) -> bool:
     var_name = get_id(prog_str)
     if len(var_name) == 0:
         return False
-    append_to_output(VariableInvoke(var_name))
+    
+    if is_prev_mmb_access_op:
+        append_to_output(StructMemberInvoke(var_name))
+    else:
+        append_to_output(VariableInvoke(var_name))
 
     if match_str(prog_str, ARR_L_DELIM, True):
         append_to_output(ArraySubscriptDelimLeft())
@@ -966,10 +970,10 @@ def parse_var_invoke(prog_str: str) -> bool:
 
         append_to_output(ArraySubscriptDelimRight())
     
-    if match_str(prog_str, OP_FIELD_ACCESS_CHAR, True):
-        append_to_output(FieldAccessOp())
+    if match_str(prog_str, OP_MMB_ACCESS_CHAR, True):
+        append_to_output(MemberAccessOp())
 
-        if not parse_var_invoke(prog_str):
+        if not parse_var_invoke(prog_str, is_prev_mmb_access_op=True):
             brpt.revert_point()
             return False
 

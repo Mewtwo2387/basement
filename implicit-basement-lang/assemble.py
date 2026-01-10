@@ -32,8 +32,8 @@ def main():
         print("Structs:")
         for struct in structs:
             print(f"\t{struct.name}:")
-            for field, field_size in struct.fields.items():
-                print(f"\t\t{field}: {field_size} byte(s)")
+            for mmb, mmb_size in struct.members.items():
+                print(f"\t\t{mmb}: {mmb_size} byte(s)")
             print(f"\t(Total byte size: {struct})")
         print("\n" + divider)
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from .token import Token, ValueDict
+from .token import Token
 from ..data_type.data_type import DataType
 from ..data_type.types import get_data_type_name
 

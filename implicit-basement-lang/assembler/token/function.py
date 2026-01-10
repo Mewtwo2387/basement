@@ -1,4 +1,3 @@
-from .token import ValueDict
 from .token import Token
 from .variable import Variable
 from ..data_type.types import DataType, get_data_type_name
@@ -27,12 +26,7 @@ class Function(Token):
         self.size = self.ret_type
         self.local_var_dict = {}
 
-    def update(self, *,
-               address:   Optional[int]      = None,
-               local_var: Optional[Variable] = None) -> None:
-        if address is not None:
-            self.address = address
-
+    def update(self, local_var: Optional[Variable] = None) -> None:
         if local_var is not None:
             if local_var.name in self.local_var_dict:
                 raise ValueError(f"Local variable '{id}' "
