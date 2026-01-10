@@ -7,15 +7,10 @@ ValueDict = dict[str, int | float | Iterable | DataType | None]
 
 @dataclass
 class Token:
-    size:    int = field(init=False, default=0)
-    address: int = field(init=False, default=0)
+    size: int = field(init=False, default=0)
+    id:   str = field(init=False, default="")
 
     def update(self, **kwargs) -> None:
         raise NotImplementedError(
             "'update' method for Token not yet implemented"
-        )
-    
-    def get_value(self) -> ValueDict:
-        raise NotImplementedError(
-            "'get_value' method for Token not yet implemented"
         )

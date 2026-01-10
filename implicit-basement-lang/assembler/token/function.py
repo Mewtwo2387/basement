@@ -27,11 +27,9 @@ class Function(Token):
         self.size = self.ret_type
         self.local_var_dict = {}
 
-    def update(
-            self, *,
-            address:   Optional[int] = None,
-            local_var: Optional[Variable] = None
-        ) -> None:
+    def update(self, *,
+               address:   Optional[int]      = None,
+               local_var: Optional[Variable] = None) -> None:
         if address is not None:
             self.address = address
 
@@ -42,13 +40,6 @@ class Function(Token):
             self.local_var_dict[local_var.name] = local_var
             self.size += local_var.data_type
 
-    def get_value(self) -> ValueDict:
-        return {
-            "name": self.name,
-            "size": self.size,
-            "address": self.address
-        }
-    
     def __str__(self) -> str:
         ret_type_name = get_data_type_name(self.ret_type)
         arg_type_names = [get_data_type_name(arg.data_type) + f" {arg.name}"

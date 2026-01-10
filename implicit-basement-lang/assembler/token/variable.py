@@ -1,9 +1,12 @@
-from .token import ValueDict, Token
-from ..data_type.types import DataType, get_data_type_name
-from dataclasses import dataclass, field
-from typing import Optional
+from ..data_type.struct_decl  import StructDecl
+from ..data_type.types        import DataType, get_data_type_name
 
-from ..error import TokenizeError
+from ..error import TokenizeError, ParseError
+
+from .token  import ValueDict, Token
+
+from dataclasses import dataclass, field
+from typing      import Optional
 
 
 VAR_ATTR_STR_LIST = ("const", )
@@ -31,9 +34,6 @@ class Variable(Token):
         if address is not None:
             self.address = address
 
-    def get_value(self) -> ValueDict:
-        return {"size": self.size, "address": self.address}
-    
     def __str__(self) -> str:
         return (f"{self.__class__.__name__}(\"{self.name}\", "
                 f"type={get_data_type_name(self.data_type)})")
@@ -42,6 +42,7 @@ class Variable(Token):
 @dataclass
 class VariableInvoke(Token):
     name : str
+    var  : Variable | None = field(init=False, default=None)
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(\"{self.name}\")"
