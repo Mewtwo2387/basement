@@ -233,7 +233,7 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
     operator_stack: OperatorStack = []
     output_queue = []
 
-    var_is_struct_field = False
+    var_is_struct_mmb = False
 
     tok_idx = 0
     while tok_idx < len(token_list):
@@ -241,16 +241,15 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
         match token:
             case ( Integer()
                  | Float()
-                 | VariableInvoke()
-                 | Variable() ):
+                 | VariableInvoke() ):
 
                 if (        isinstance(token, VariableInvoke)
-                        and not var_is_struct_field):
+                        and not var_is_struct_mmb):
                     if not is_var_in_scope(token):
                         raise ParseError(
                             f"Variable \"{token.name}\" is not defined"
                         )
-                var_is_struct_field = False
+                var_is_struct_mmb = False
                 output_queue.append(token)
 
             case ( LeftUnaryOp()
@@ -267,10 +266,10 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
                             f"Function \"{token.func_name}\" is not defined"
                         )
                 
-                # For the struct field access operator
-                var_is_struct_field = next_tok_is_struct_field(token_list,
-                                                               tok_idx,
-                                                               struct_list)
+                # For the struct member access operator
+                var_is_struct_mmb = next_tok_is_struct_mmb(token_list,
+                                                           tok_idx,
+                                                           struct_list)
 
                 while operator_stack:
                     op_token = operator_stack[-1]
@@ -292,9 +291,9 @@ def convert_to_rpn(token_list: list[Token], struct_list: list[StructDecl]) \
                 struct_init_tokens, tok_idx = res
                 output_queue.extend( struct_init_tokens )
             case InitDelimRight():
-                raise ParseError("Misplaced right struct delimiter")
-            case InitDelimRight():
-                raise ParseError("Misplaced struct init member delimiter")
+                raise ParseError("Misplaced right initializer delimiter")
+            case InitMemberDelim():
+                raise ParseError("Misplaced initializer member delimiter")
 
             case (    ExprGroupDelimLeft()
                     | ArgBracketLeft()
@@ -407,19 +406,19 @@ def is_var_in_scope(token: VariableInvoke) -> bool:
     return False
 
 
-def is_struct_field_defined(
-            field_token: VariableInvoke,
-            structs:     list[StructDecl]
+def is_struct_mmb_defined(
+            mmb_token: VariableInvoke,
+            structs:   list[StructDecl]
         ) -> bool:
     
-    all_fields = {s.name: {field for field in s.fields} for s in structs}
-    field_in_structs = [
-        field_token.name in f_set for f_set in all_fields.values()
+    all_mmbs = {s.name: {mmb for mmb in s.members} for s in structs}
+    mmb_in_structs = [
+        mmb_token.name in f_set for f_set in all_mmbs.values()
     ]
-    return any(field_in_structs)
+    return any(mmb_in_structs)
 
 
-def next_tok_is_struct_field(token_list:  list[Token],
+def next_tok_is_struct_mmb(token_list:  list[Token],
                              tok_idx:     int,
                              struct_list: list[StructDecl]) -> bool:
 
@@ -427,18 +426,17 @@ def next_tok_is_struct_field(token_list:  list[Token],
         return False
     
     if tok_idx >= len(token_list):
-        raise ParseError("Expected a struct field member")
+        raise ParseError("Expected a struct member")
     
-    field_token = token_list[tok_idx + 1]   # Peek at the next token
-    if not isinstance(field_token, VariableInvoke):
+    mmb_token = token_list[tok_idx + 1]   # Peek at the next token
+    if not isinstance(mmb_token, VariableInvoke):
         raise ParseError(
-            "Expects a name struct field name for the struct field access"
+            "Expects a name struct member name for the struct member access"
             " operator."
         ) 
-    if not is_struct_field_defined(field_token, struct_list):
+    if not is_struct_mmb_defined(mmb_token, struct_list):
         raise ParseError(
-            f"The field name '{field_token.name}' is not a member of "
-            "any struct."
+            f"The name '{mmb_token.name}' is not a member of any struct."
         )
 
     return True

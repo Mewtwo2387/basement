@@ -496,7 +496,7 @@ def parseget_param(prog_str: str) -> tuple[str, DataType] | None:
 def parse_struct_decl(prog_str: str) -> bool:
     """
     Parse a `struct` declaration:
-        "struct", id, scope_start, struct_field, { struct_field }, scope_end,
+        "struct", id, scope_start, struct_member, { struct_member }, scope_end,
         [ "struct", id ]
     """
     brpt = BranchPoint()
@@ -512,25 +512,25 @@ def parse_struct_decl(prog_str: str) -> bool:
         brpt.revert_point()
         return False
 
-    struct_field_dict = OrderedDict()
+    struct_mmb_dict = OrderedDict()
     while True:
-        struct_field_tuple = parseget_struct_field_tuple(prog_str)
-        if struct_field_tuple is None:
+        struct_mmb_tuple = parseget_struct_member_tuple(prog_str)
+        if struct_mmb_tuple is None:
             break
         else:
             if not match_eol(prog_str):
                 brpt.revert_point()
                 return False
 
-            data_type, mmb_name_list = struct_field_tuple
+            data_type, mmb_name_list = struct_mmb_tuple
             for mmb_name in mmb_name_list:
-                struct_field_dict[mmb_name] = data_type
+                struct_mmb_dict[mmb_name] = data_type
     
-    if len(struct_field_dict) == 0:
+    if len(struct_mmb_dict) == 0:
         brpt.revert_point()
         return False
 
-    if (       (len(struct_field_dict) == 0)
+    if (       (len(struct_mmb_dict) == 0)
             or (not match_str(prog_str, SCOPE_END_KEYWORD, True)) ):
         brpt.revert_point()
         return False
@@ -540,16 +540,16 @@ def parse_struct_decl(prog_str: str) -> bool:
     if closing_struct_res:
         match_str(prog_str, struct_name, True)
 
-    struct = StructDecl(struct_name, struct_field_dict)
+    struct = StructDecl(struct_name, struct_mmb_dict)
     struct_dict[struct_name] = struct
 
     return True
 
 
-def parseget_struct_field_tuple(prog_str: str) \
+def parseget_struct_member_tuple(prog_str: str) \
         -> tuple[DataType, list[str]] | None:
     """
-    Parse and obtain a struct field:
+    Parse and obtain a struct member:
         type, id, { ",", id }
     """
     brpt = BranchPoint()
