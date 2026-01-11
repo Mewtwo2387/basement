@@ -1,5 +1,6 @@
-from .token import Token
-from .variable import Variable
+from .scope_elem import ScopeStart, ScopeEnd
+from .token      import Token
+from .variable   import Variable
 from ..data_type.types import DataType, get_data_type_name
 
 from dataclasses import dataclass, field
@@ -43,6 +44,14 @@ class Function(Token):
 
 @dataclass
 class FunctionDeclaration(Function):
+    pass
+
+
+class FunctionScopeStart(ScopeStart):
+    pass
+
+
+class FunctionScopeEnd(ScopeEnd):
     pass
 
 

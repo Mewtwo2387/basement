@@ -1,12 +1,20 @@
 from .token.array_elem  import (ArraySubscriptDelimLeft,
                                 ArraySubscriptDelimRight)
-from .token.block       import  Block
-from .token.branch      import  If, ElseIf, Else, Loop, LoopBreak, LoopContinue
+from .token.block       import  Block, BlockScopeEnd
+from .token.branch      import (If,
+                                ElseIf,
+                                Else,
+                                Loop,
+                                LoopBreak,
+                                LoopContinue,
+                                ConditionScopeEnd,
+                                LoopScopeEnd)
 from .token.delim       import (ExprGroupDelimLeft,
                                 ExprGroupDelimRight,
                                 EndOfLine)
 from .token.function    import (Function,
                                 FunctionDeclaration,
+                                FunctionScopeEnd,
                                 ArgBracketLeft,
                                 ArgBracketRight,
                                 ArgDelim,
@@ -163,7 +171,11 @@ def parse(
                     # Go to the scoping block's scope
                     curr_scope_key = branch_key + SCOPE_KEY_DELIM
 
-                case ScopeEnd():
+                case (  ScopeEnd()
+                      | FunctionScopeEnd()
+                      | BlockScopeEnd()
+                      | ConditionScopeEnd()
+                      | LoopScopeEnd() ):
                     output_tokens.append(token)
                     curr_scope_key = go_up_one_scope(curr_scope_key)
 

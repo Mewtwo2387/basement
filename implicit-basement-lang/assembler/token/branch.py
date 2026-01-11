@@ -1,3 +1,4 @@
+from .scope_elem import ScopeStart, ScopeEnd
 from .token import Token
 
 
@@ -40,3 +41,19 @@ class LoopContinue(BranchControl):
 
 class LoopBreak(BranchControl):
     keyword = LOOP_BREAK_KEYWORD
+
+
+class ConditionScopeStart(ScopeStart):
+    pass
+
+
+class ConditionScopeEnd(ScopeEnd):
+    pass
+
+
+class LoopScopeStart(ScopeStart):
+    pass
+
+
+class LoopScopeEnd(ScopeEnd):
+    pass

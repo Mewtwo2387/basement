@@ -1,11 +1,22 @@
 from .token.array_elem  import ArraySubscriptDelimLeft, ArraySubscriptDelimRight
-from .token.block       import Block
-from .token.branch      import If, ElseIf, Else, Loop, LoopContinue, LoopBreak
+from .token.block       import Block, BlockScopeStart, BlockScopeEnd
+from .token.branch      import (If,
+                                ElseIf,
+                                Else,
+                                Loop,
+                                LoopContinue,
+                                LoopBreak,
+                                ConditionScopeStart,
+                                ConditionScopeEnd,
+                                LoopScopeStart,
+                                LoopScopeEnd)
 from .token.delim       import (EndOfLine,
                                 ExprGroupDelimLeft,
                                 ExprGroupDelimRight)
 from .token.function    import (Function,
                                 FunctionDeclaration,
+                                FunctionScopeStart,
+                                FunctionScopeEnd,
                                 Return,
                                 ArgBracketLeft,
                                 ArgBracketRight,
@@ -19,7 +30,7 @@ from .token.operator    import (AssignOp,
                                 TypeCastOp,
                                 BinaryOp,
                                 FunctionCall)
-from .token.scope_elem  import ScopeStart, ScopeEnd
+from .token.scope_elem  import ScopeStart, ScopeEnd, ScopeType
 from .token.string      import String
 from .token.token       import Token
 from .token.variable    import Variable, VariableInvoke, StructMemberInvoke
@@ -576,8 +587,8 @@ def parseget_struct_member_tuple(prog_str: str) \
 def parse_func(prog_str: str) -> bool:
     """
     Parse a function:
-        "function", id, "(", [ param_list ], ")", [ "=>", type ], cmpd_stmt,
-        [ "function", id ]
+        "function", id, "(", [ param_list ], ")", [ "=>", type ],
+        scope_start, { stmt }, scope_end, [ "function" ], [ id ] ;
     """
     brpt = BranchPoint()
 
@@ -608,7 +619,18 @@ def parse_func(prog_str: str) -> bool:
 
     append_to_output( Function(func_name, ret_type, param_list) )
 
-    if not parse_cmpd_stmt(prog_str):
+    # Parse the contents of the function.
+    if (not (    parse_scope_start(prog_str, ScopeType.FUNCTION)
+             and parse_cmpd_stmt(prog_str)) ):
+        brpt.revert_point()
+        return False
+    
+    # Insert failsafe return statement.
+    append_to_output(Return())
+    append_to_output(Integer(0, type=DEFAULT_INT_TYPE))
+    append_to_output(EndOfLine())
+    
+    if not parse_scope_end(prog_str, ScopeType.FUNCTION):
         brpt.revert_point()
         return False
 
@@ -620,51 +642,63 @@ def parse_func(prog_str: str) -> bool:
     return True
 
 
-def parse_scope_start(prog_str: str) -> bool:
+def parse_scope_start(prog_str: str, kind: ScopeType) -> bool:
     """
-    Parse a starting delimiter for a scope
+    Parse a starting delimiter for a scope based on the provided type.
     """
     if match_str(prog_str, SCOPE_START_KEYWORD, True):
-        append_to_output(ScopeStart())
+        match kind:
+            case ScopeType.GENERIC:
+                append_to_output(ScopeStart())
+            case ScopeType.FUNCTION:
+                append_to_output(FunctionScopeStart())
+            case ScopeType.BLOCK:
+                append_to_output(BlockScopeStart())
+            case ScopeType.CONDITIONAL:
+                append_to_output(ConditionScopeStart())
+            case ScopeType.LOOP:
+                append_to_output(LoopScopeStart())
+            case _:
+                raise TokenizeError(f"Invalid scope type: {kind}")
         return True
     return False
 
 
-def parse_scope_end(prog_str: str) -> bool:
+def parse_scope_end(prog_str: str, kind: ScopeType) -> bool:
     """
-    Parse an ending delimiter for a scope
+    Parse an ending delimiter for a scope based on the provided type.
     """
     if match_str(prog_str, SCOPE_END_KEYWORD, True):
-        append_to_output(ScopeEnd())
+        match kind:
+            case ScopeType.GENERIC:
+                append_to_output(ScopeEnd())
+            case ScopeType.FUNCTION:
+                append_to_output(FunctionScopeEnd())
+            case ScopeType.BLOCK:
+                append_to_output(BlockScopeEnd())
+            case ScopeType.CONDITIONAL:
+                append_to_output(ConditionScopeEnd())
+            case ScopeType.LOOP:
+                append_to_output(LoopScopeEnd())
+            case _:
+                raise TokenizeError(f"Invalid scope type: {kind}")
         return True
     return False
 
 
 def parse_cmpd_stmt(prog_str: str) -> bool:
     """
-    Parse compound statements delimited by scope delimiters:
-        scope_start, { ( var_decl, EOL ) | stmt }, scope_end
+    Parse compound statements:
+        { stmt }
     """
-    brpt = BranchPoint()
-
-    if not parse_scope_start(prog_str):
-        return False
-
-    parsed_rule_count = 0
     while True:
         brpt_loop = BranchPoint()
 
         if parse_var_decl(prog_str) or parse_stmt(prog_str):
-            parsed_rule_count += 1
             continue
 
         brpt_loop.revert_point()
         break
-
-    if (parsed_rule_count == 0) or (not parse_scope_end(prog_str)):
-        brpt.revert_point()
-        return False
-
     return True
 
 
@@ -691,15 +725,14 @@ def parse_if_stmt(prog_str: str) -> bool:
         return False
 
     # Parse statements
-    if not parse_scope_start(prog_str):
+    if (not (    parse_scope_start(prog_str, ScopeType.CONDITIONAL)
+             and parse_cmpd_stmt(prog_str)) ):
         brpt.revert_point()
         return False
-    while parse_stmt(prog_str):
-        pass
 
     while match_str(prog_str, ELSE_KEYWORD, True):
         # Insert an invisible ending scope delimiter
-        append_to_output(ScopeEnd())
+        append_to_output(ConditionScopeEnd())
 
         # Parse for an optional else if statement
         if match_str(prog_str, IF_KEYWORD, True):
@@ -717,13 +750,12 @@ def parse_if_stmt(prog_str: str) -> bool:
             append_to_output(Else())
         
         # Parse statements for the else/else-if construct.
-        if not parse_scope_start(prog_str):
+        if (not (    parse_scope_start(prog_str, ScopeType.CONDITIONAL)
+                 and parse_cmpd_stmt(prog_str)) ):
             brpt.revert_point()
             return False
-        while parse_stmt(prog_str):
-            pass
 
-    if not parse_scope_end(prog_str):
+    if not parse_scope_end(prog_str, ScopeType.CONDITIONAL):
         brpt.revert_point()
         return False
     
@@ -736,7 +768,7 @@ def parse_if_stmt(prog_str: str) -> bool:
 def parse_loop_stmt(prog_str: str) -> bool:
     """
     Parse a loop statement:
-        "loop", cmpd_stmt, [ "loop" ]
+        "loop", scope_start, { stmt }, scope_end, [ "loop" ]
     """
     brpt = BranchPoint()
 
@@ -744,7 +776,9 @@ def parse_loop_stmt(prog_str: str) -> bool:
         return False
     append_to_output(Loop())
 
-    if not parse_cmpd_stmt(prog_str):
+    if (not (    parse_scope_start(prog_str, ScopeType.LOOP)
+             and parse_cmpd_stmt(prog_str)
+             and parse_scope_end(prog_str, ScopeType.LOOP)) ):
         brpt.revert_point()
         return False
 
@@ -779,7 +813,7 @@ def parse_loop_ctrl(prog_str: str) -> bool:
 def parse_scope_block(prog_str: str) -> bool:
     """
     Parse a scope block:
-        "block", cmpd_stmt, [ "block" ]
+        "block", scope_start, { stmt }, scope_end, [ "block" ]
     """
     brpt = BranchPoint()
 
@@ -787,7 +821,9 @@ def parse_scope_block(prog_str: str) -> bool:
         return False
     append_to_output(Block())
 
-    if not parse_cmpd_stmt(prog_str):
+    if (not (    parse_scope_start(prog_str, ScopeType.BLOCK)
+             and parse_cmpd_stmt(prog_str)
+             and parse_scope_end(prog_str, ScopeType.BLOCK)) ):
         brpt.revert_point()
         return False
 
