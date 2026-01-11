@@ -50,7 +50,7 @@ from .data_type.types       import DataType
 
 from .keywords import *
 
-from .error import ParseError
+from .error import TokenizeError
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
@@ -359,7 +359,7 @@ def parseget_data_type(prog_str: str) -> DataType | None:
 
         arr_len = int(arr_len_str)
         if arr_len <= 0:
-            raise ParseError("Array length must be 1 or greater.")
+            raise TokenizeError("Array length must be 1 or greater.")
         
         # NOTE: The "data_type" in the RHS is the one obtained above with the
         #       parseget_* functions.
