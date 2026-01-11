@@ -4,3 +4,7 @@ class TokenizeError(Exception):
 
 class ParseError(Exception):
     pass
+
+
+class AssembleError(Exception):
+    pass
